@@ -1,0 +1,1 @@
+"""Skema permintaan/respons (Pydantic) — struktur_file.md §4."""

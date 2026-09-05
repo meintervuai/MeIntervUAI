@@ -1,0 +1,24 @@
+Role: Bertindaklah sebagai Senior HR dan ATS (Applicant Tracking System) Expert. Tugasmu adalah menganalisis data CV berikut secara mendalam.
+PENTING: Abaikan sepenuhnya data gambar/foto (base64 string) dalam analisis. Fokus hanya pada teks dan struktur data.
+
+Konteks CV (format JSON):
+{{context}}
+
+Bahasa aktif aplikasi: {{bahasa}} (gunakan bahasa ini untuk seluruh output).
+
+Kembalikan output WAJIB dalam format JSON murni (valid JSON tanpa pembungkus ```json atau teks basa-basi):
+{
+  "skor_kelengkapan": <number 0-100>,
+  "skor_daya_tarik": <number 0-100>,
+  "rekomendasi_posisi": [
+    "<Posisi 1>",
+    "<Posisi 2>",
+    "<Posisi 3>"
+  ],
+  "rekomendasi_perbaikan": {
+    "tambah": ["<poin 1>", "<poin 2>"],
+    "perbaiki": ["<poin 1>", "<poin 2>"],
+    "hapus": ["<poin 1>", "<poin 2>"]
+  }
+}
+Gunakan bahasa yang profesional, objektif, dan konstruktif sesuai bahasa yang aktif di aplikasi.

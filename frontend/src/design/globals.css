@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  @apply bg-latar font-dasar text-batu-800 antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Cincin fokus oranye (aksesibilitas — prd.md §11) */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid theme('colors.oranye.500');
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* Aman area notch & gesture bar (mobile-first) */
+.pt-aman {
+  padding-top: env(safe-area-inset-top);
+}
+.pb-aman {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Kartu dasar (anti AI-slop: flat, border tipis, bayangan halus) */
+@layer components {
+  .kartu {
+    @apply rounded-kartu border border-batu-200 bg-white shadow-kartu;
+  }
+  .tombol-utama {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-tombol bg-oranye-600 px-4 text-sm font-semibold text-white transition-colors hover:bg-oranye-500 active:bg-oranye-700 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .tombol-netral {
+    @apply inline-flex min-h-[44px] items-center justify-center gap-2 rounded-tombol border border-batu-300 bg-white px-4 text-sm font-semibold text-batu-700 transition-colors hover:bg-batu-100 active:bg-batu-200 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .bidang-masukan {
+    @apply min-h-[44px] w-full rounded-tombol border border-batu-300 bg-white px-3 text-sm text-batu-800 placeholder:text-batu-400 focus:border-oranye-500 focus:outline-none;
+  }
+  .label-form {
+    @apply mb-1 block text-xs font-semibold uppercase tracking-wide text-batu-500;
+  }
+}

@@ -1,0 +1,1 @@
+"""Lapisan model (akses data Supabase) — 1 file = 1 tabel (database.md §5)."""

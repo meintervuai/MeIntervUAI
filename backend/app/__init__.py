@@ -1,0 +1,1 @@
+"""MENTERVU AI — backend FastAPI (pola MVC)."""
