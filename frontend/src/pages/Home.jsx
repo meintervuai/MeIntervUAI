@@ -55,7 +55,7 @@ export default function Home() {
   const [tabAktifMobile, setTabAktifMobile] = useState(() => {
     try {
       const tersimpan = localStorage.getItem('mentervu_home_tab_mobile');
-      return tersimpan && ['ringkasan', 'analisis', 'profil'].includes(tersimpan)
+      return tersimpan && ['ringkasan', 'analisis', 'aktivitas'].includes(tersimpan)
         ? tersimpan
         : 'ringkasan';
     } catch (e) {
@@ -66,7 +66,7 @@ export default function Home() {
   // Sinkronisasi tab dengan query URL (jika ada ?tab=...)
   useEffect(() => {
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['ringkasan', 'analisis', 'profil'].includes(tabParam)) {
+    if (tabParam && ['ringkasan', 'analisis', 'aktivitas'].includes(tabParam)) {
       setTabAktifMobile(tabParam);
       try {
         localStorage.setItem('mentervu_home_tab_mobile', tabParam);
@@ -326,35 +326,43 @@ export default function Home() {
         </div>
       </header>
 
+      {/* ================= BRANDING / IDENTITAS PERMANEN (FIXED HEADER BADGE) ================= */}
+      <div className="flex items-center">
+        <div className="inline-flex items-center gap-2 rounded-full border border-orange-200/80 bg-orange-50/90 px-3 py-1 text-[10px] sm:text-[11px] font-semibold tracking-wider text-orange-900 uppercase shadow-2xs">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#FF6B00] animate-pulse shrink-0" />
+          <span>POWERED BY AGIL MAHASISWA S1 SISTEM INFORMASI UKSW</span>
+        </div>
+      </div>
+
       {/* ================= 2. MOBILE TAB NAVIGATION (KHUSUS MOBILE / < lg) ================= */}
       <div className="lg:hidden">
-        <div className="flex items-center rounded-2xl bg-gray-100/90 p-1 border border-gray-200/80 shadow-2xs">
+        <div className="grid grid-cols-3 items-center rounded-2xl bg-gray-100/90 p-1 border border-gray-200/80 shadow-2xs gap-0.5">
           {/* Tab 1: Ringkasan */}
           <button
             type="button"
             onClick={() => gantiTabMobile('ringkasan')}
-            className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 px-2 text-xs font-bold transition-all duration-200 min-h-[44px] cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 rounded-xl py-2 px-2 text-xs font-bold transition-all duration-200 min-h-[44px] cursor-pointer ${
               tabAktifMobile === 'ringkasan'
                 ? 'bg-white text-[#FF6B00] shadow-xs'
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >
             <LayoutDashboard className="h-4 w-4 shrink-0" />
-            <span>Ringkasan</span>
+            <span className="truncate">Ringkasan</span>
           </button>
 
           {/* Tab 2: Analisis CV */}
           <button
             type="button"
             onClick={() => gantiTabMobile('analisis')}
-            className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 px-2 text-xs font-bold transition-all duration-200 min-h-[44px] cursor-pointer ${
+            className={`flex items-center justify-center gap-1.5 rounded-xl py-2 px-2 text-xs font-bold transition-all duration-200 min-h-[44px] cursor-pointer ${
               tabAktifMobile === 'analisis'
                 ? 'bg-white text-[#FF6B00] shadow-xs'
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >
             <Sparkles className="h-4 w-4 shrink-0" />
-            <span>Analisis CV</span>
+            <span className="truncate">Analisis CV</span>
             {analisisTerbaru?.skor_kelengkapan && (
               <span className="hidden xs:inline-block rounded-full bg-orange-100 px-1.5 py-0.2 text-[9px] font-bold text-[#FF6B00]">
                 {analisisTerbaru.skor_kelengkapan}
@@ -362,21 +370,18 @@ export default function Home() {
             )}
           </button>
 
-          {/* Tab 3: Profil CV */}
+          {/* Tab 3: Aktivitas Terakhir */}
           <button
             type="button"
-            onClick={() => gantiTabMobile('profil')}
-            className={`flex-1 flex items-center justify-center gap-1.5 rounded-xl py-2 px-2 text-xs font-bold transition-all duration-200 min-h-[44px] cursor-pointer ${
-              tabAktifMobile === 'profil'
+            onClick={() => gantiTabMobile('aktivitas')}
+            className={`flex items-center justify-center gap-1.5 rounded-xl py-2 px-2 text-xs font-bold transition-all duration-200 min-h-[44px] cursor-pointer ${
+              tabAktifMobile === 'aktivitas'
                 ? 'bg-white text-[#FF6B00] shadow-xs'
                 : 'text-gray-500 hover:text-gray-800'
             }`}
           >
-            <FileText className="h-4 w-4 shrink-0" />
-            <span>Profil CV</span>
-            <span className="hidden xs:inline-block rounded-full bg-emerald-100 px-1.5 py-0.2 text-[9px] font-bold text-emerald-700">
-              {persentase}%
-            </span>
+            <Clock className="h-4 w-4 shrink-0" />
+            <span className="truncate">Aktivitas</span>
           </button>
         </div>
       </div>
@@ -393,11 +398,6 @@ export default function Home() {
               <div className="pointer-events-none absolute -bottom-10 right-20 h-40 w-40 rounded-full bg-amber-400/20 blur-xl" />
 
               <div className="relative z-10">
-                {/* Badge Atas */}
-                <div className="mb-3 inline-block rounded-full bg-white/20 px-2.5 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[10px] font-semibold tracking-wider text-white uppercase backdrop-blur-sm shadow-2xs">
-                  POWERED BY AGIL MAHASISWA S1 SISTEM INFORMASI UKSW
-                </div>
-
                 {/* Judul & Subtitle */}
                 <h2 className="text-lg sm:text-2xl font-bold mb-1 tracking-tight text-white">
                   Simulasi Wawancara AI
@@ -420,91 +420,67 @@ export default function Home() {
             </section>
           </div>
 
-          {/* B. GRID 3 KARTU STATISTIK (Bagian dari Tab 'ringkasan' di mobile, selalu tampil di desktop) */}
+          {/* B. GRID 3 KARTU STATISTIK (1 Baris Horizontal di Mobile & Desktop) */}
           <div className={tabAktifMobile === 'ringkasan' ? 'block' : 'hidden lg:block'}>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-3.5">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3.5">
               {/* Kartu 1: SKOR TERAKHIR */}
               <div
                 onClick={() => gantiTabMobile('analisis')}
-                className="flex items-center gap-3.5 rounded-2xl border border-gray-100 bg-white p-3.5 sm:p-4 shadow-sm transition-transform hover:-translate-y-0.5 cursor-pointer lg:cursor-default"
+                className="flex flex-col sm:flex-row items-center sm:items-center gap-1.5 sm:gap-3.5 rounded-xl sm:rounded-2xl border border-gray-100 bg-white p-2 sm:p-4 shadow-2xs text-center sm:text-left transition-transform hover:-translate-y-0.5 cursor-pointer lg:cursor-default"
               >
-                <span className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                  <Trophy className="h-5 w-5" />
+                <span className="flex h-7 w-7 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-amber-50 text-amber-600">
+                  <Trophy className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                 </span>
-                <div className="min-w-0">
-                  <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">
+                <div className="min-w-0 w-full">
+                  <span className="block text-[8px] xs:text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">
                     SKOR TERAKHIR
                   </span>
-                  <p className="font-display text-base sm:text-lg font-bold text-gray-800 mt-0.5 truncate">
+                  <p className="font-display text-xs sm:text-lg font-bold text-gray-800 mt-0.5 truncate">
                     {analisisTerbaru?.skor_kelengkapan
-                      ? `${analisisTerbaru.skor_kelengkapan} / 100`
+                      ? `${analisisTerbaru.skor_kelengkapan}/100`
                       : '- / 100'}
                   </p>
                 </div>
               </div>
 
               {/* Kartu 2: SESI LATIHAN */}
-              <div className="flex items-center gap-3.5 rounded-2xl border border-gray-100 bg-white p-3.5 sm:p-4 shadow-sm transition-transform hover:-translate-y-0.5">
-                <span className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                  <MessageSquare className="h-5 w-5" />
+              <div
+                onClick={() => gantiTabMobile('aktivitas')}
+                className="flex flex-col sm:flex-row items-center sm:items-center gap-1.5 sm:gap-3.5 rounded-xl sm:rounded-2xl border border-gray-100 bg-white p-2 sm:p-4 shadow-2xs text-center sm:text-left transition-transform hover:-translate-y-0.5 cursor-pointer lg:cursor-default"
+              >
+                <span className="flex h-7 w-7 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-blue-50 text-blue-600">
+                  <MessageSquare className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                 </span>
-                <div className="min-w-0">
-                  <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">
+                <div className="min-w-0 w-full">
+                  <span className="block text-[8px] xs:text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">
                     SESI LATIHAN
                   </span>
-                  <p className="font-display text-base sm:text-lg font-bold text-gray-800 mt-0.5 truncate">
+                  <p className="font-display text-xs sm:text-lg font-bold text-gray-800 mt-0.5 truncate">
                     0 sesi
                   </p>
                 </div>
               </div>
 
               {/* Kartu 3: SISA KUOTA AI */}
-              <div className="flex items-center gap-3.5 rounded-2xl border border-gray-100 bg-white p-3.5 sm:p-4 shadow-sm transition-transform hover:-translate-y-0.5">
-                <span className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#FF6B00]">
-                  <Zap className="h-5 w-5" />
+              <div className="flex flex-col sm:flex-row items-center sm:items-center gap-1.5 sm:gap-3.5 rounded-xl sm:rounded-2xl border border-gray-100 bg-white p-2 sm:p-4 shadow-2xs text-center sm:text-left transition-transform hover:-translate-y-0.5">
+                <span className="flex h-7 w-7 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-orange-50 text-[#FF6B00]">
+                  <Zap className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
                 </span>
-                <div className="min-w-0">
-                  <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">
+                <div className="min-w-0 w-full">
+                  <span className="block text-[8px] xs:text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-wider truncate">
                     SISA KUOTA AI
                   </span>
-                  <p className="font-display text-base sm:text-lg font-bold text-gray-800 mt-0.5 truncate">
+                  <p className="font-display text-xs sm:text-lg font-bold text-gray-800 mt-0.5 truncate">
                     {kuota?.sisa !== undefined
-                      ? `${kuota.sisa} / ${kuota.batas}`
-                      : '20 / 20'}
+                      ? `${kuota.sisa}/${kuota.batas}`
+                      : '20/20'}
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* C. KARTU RINGKASAN PROFIL CV DI TAB RINGKASAN (Khusus Mobile < lg) */}
-          <div className={tabAktifMobile === 'ringkasan' ? 'block lg:hidden' : 'hidden'}>
-            <div className="flex items-center justify-between rounded-2xl border border-gray-100 bg-white p-4 shadow-xs">
-              <div className="flex items-center gap-3 min-w-0">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-[#FF6B00] font-black text-sm border border-orange-200/60">
-                  {persentase}%
-                </div>
-                <div className="min-w-0">
-                  <h4 className="font-display text-xs font-bold text-gray-800 truncate">
-                    Kelengkapan Profil CV
-                  </h4>
-                  <p className="text-[11px] text-gray-500 truncate">
-                    {seksiLengkapCount} dari 6 seksi telah dilengkapi
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => gantiTabMobile('profil')}
-                className="flex items-center gap-1 text-xs font-bold text-[#FF6B00] hover:underline shrink-0 ml-2 cursor-pointer"
-              >
-                <span>Lihat</span>
-                <ArrowRight className="h-3 w-3" />
-              </button>
-            </div>
-          </div>
-
-          {/* D. KOTAK ANALISIS CV AI (Tampil di Tab 'analisis' pada mobile, selalu tampil di desktop) */}
+          {/* C. KOTAK ANALISIS CV AI (Tampil di Tab 'analisis' pada mobile, selalu tampil di desktop) */}
           <div className={tabAktifMobile === 'analisis' ? 'block' : 'hidden lg:block'}>
             <KotakAnalisisCv
               cvData={cvData}
@@ -515,13 +491,18 @@ export default function Home() {
             />
           </div>
 
-          {/* E. SEKSI: AKTIVITAS TERAKHIR (Bagian dari Tab 'ringkasan' di mobile, selalu tampil di desktop) */}
-          <div className={tabAktifMobile === 'ringkasan' ? 'block' : 'hidden lg:block'}>
+          {/* D. SEKSI: AKTIVITAS TERAKHIR (Khusus Tab 'aktivitas' di mobile, selalu tampil di desktop) */}
+          <div className={tabAktifMobile === 'aktivitas' ? 'block' : 'hidden lg:block'}>
             <section className="space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm sm:text-base font-bold text-gray-800">
-                  Aktivitas Terakhir
-                </h2>
+                <div>
+                  <h2 className="text-sm sm:text-base font-bold text-gray-800">
+                    Aktivitas Terakhir
+                  </h2>
+                  <p className="text-[11px] text-gray-500">
+                    Riwayat sesi simulasi dan latihan wawancaramu
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={() => navigate('/simulasi')}
@@ -532,21 +513,33 @@ export default function Home() {
               </div>
 
               {/* Empty State */}
-              <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8 text-center text-xs text-gray-400 flex flex-col items-center justify-center gap-2">
-                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-50 text-gray-300">
+              <div className="rounded-2xl border border-gray-100 bg-white p-6 sm:p-8 text-center text-xs text-gray-400 flex flex-col items-center justify-center gap-2.5 shadow-2xs">
+                <span className="flex h-11 w-11 items-center justify-center rounded-full bg-orange-50 text-[#FF6B00]">
                   <Clock className="h-5 w-5" />
                 </span>
-                <p>Belum ada aktivitas wawancara.</p>
+                <div>
+                  <p className="font-bold text-gray-700 text-sm">Belum ada aktivitas wawancara</p>
+                  <p className="text-gray-400 text-xs mt-0.5 max-w-xs mx-auto">
+                    Mulai sesi simulasi pertamamu dengan AI untuk merekam riwayat latihan di sini.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate('/simulasi')}
+                  className="mt-1 inline-flex items-center gap-2 rounded-xl bg-[#FF6B00] px-4 py-2 text-xs font-bold text-white shadow-xs hover:bg-orange-600 transition-colors cursor-pointer"
+                >
+                  <Play className="h-3.5 w-3.5 fill-white" />
+                  <span>Mulai Simulasi Wawancara</span>
+                </button>
               </div>
             </section>
           </div>
         </div>
 
-        {/* ================= KOLOM KANAN: SIDEBAR PROFIL CV ================= */}
-        {/* Di mobile: tampil ketika Tab 'profil' aktif. Di desktop: selalu tampil di kolom kanan */}
+        {/* ================= PROFIL CV: TAMPIL DI TAB RINGKASAN PADA MOBILE & KOLOM KANAN DESKTOP ================= */}
         <aside
           className={`space-y-4 sm:space-y-5 lg:col-span-1 ${
-            tabAktifMobile === 'profil' ? 'block' : 'hidden lg:block'
+            tabAktifMobile === 'ringkasan' ? 'block' : 'hidden lg:block'
           }`}
         >
           {/* Kartu Profil CV & Circular Progress */}

@@ -73,6 +73,8 @@ Produk dibangun di atas 5 pilar utama:
 - Formulir interaktif **bertahap** (langkah demi langkah) untuk menyusun CV dari nol.
 - **5 template profesional** yang dapat disesuaikan: ATS Friendly, Kronologis, Fungsional, Kombinasi, Kreatif (entitas `templat_cv` — `database.md` §5).
 - **Tata Letak Pratinjau Sticky (Desktop):** Pratinjau lembar A4 di kolom kanan berposisi diam/sticky (`lg:sticky lg:top-[168px] lg:h-[calc(100vh-180px)] lg:overflow-y-auto`) dengan scrollbar internal tersendiri saat form kiri digulir ke bawah. Pada perangkat seluler, tersedia tombol toggle mode Formulir vs Pratinjau.
+- **Daftar Pilihan Template Horizontal Scroll (Mobile):** Di layar seluler, daftar template ditampilkan dalam baris horizontal yang dapat digeser ke samping (`overflow-x-auto snap-x`) dengan ukuran kartu kompak (`w-[215px]`) untuk menghindari scrolling vertikal panjang.
+- **Restrukturisasi Keterangan Template & Panduan Dinamis:** Deskripsi singkat diletakkan rapi persis di bawah masing-masing nama template, dilengkapi rekomendasi posisi/industri, serta kotak panduan khusus dinamis di bagian bawah yang menyesuaikan dengan template aktif yang dipilih pengguna.
 - **Tautan Media Sosial Lengkap (6 Platform):** Pilihan tipe tautan sosial media populer (LinkedIn, GitHub, Portofolio / Website, Twitter / X, Instagram, Facebook) menggunakan **ikon SVG kustom** di formulir editor dan seluruh template pratinjau A4.
 - **Simpan otomatis setiap 30 detik** ke Supabase + cache browser sebagai cadangan saat koneksi terputus (NFR-06).
 - **Ekspor PDF** ramah ATS menggunakan `html2pdf.js` (jalankan di sisi klien).
@@ -361,25 +363,65 @@ Token desain disimpan di `frontend/src/design/tokens.js` (`struktur_file.md` §5
 2. Navigasi utama = **bottom navigation** di mobile, pindah ke sidebar/topbar di desktop.
 3. Gunakan `Visual Viewport` + `env(safe-area-inset)` untuk area keyboard/notch.
 4. Progres bar & CTA penting selalu terlihat (sticky) tanpa menghalangi konten.
-5. CV Builder: Sidebar pratinjau sticky pada desktop (`lg:sticky lg:top-[168px] lg:h-[calc(100vh-180px)] lg:overflow-y-auto`) dengan scrollbar independen; pada mobile tersedia toggle mode form vs pratinjau.
+5. CV Builder: Sidebar pratinjau sticky pada desktop (`lg:sticky lg:top-[168px] lg:h-[calc(100vh-180px)] lg:overflow-y-auto lg:overflow-x-auto`) dengan scrollbar visual yang disembunyikan (`[scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden`), tetap mendukung scroll mouse wheel / trackpad, serta dilengkapi interaksi **Drag-to-Pan** (klik dan seret kanvas abu-abu untuk panning dokumen A4 secara mulus); pada mobile tersedia toggle mode form vs pratinjau.
 
-### 11.7 Mobile Tab Navigation (Home Dashboard)
-Pada layar seluler (`< lg` / `< 1024px`), konten dasbor utama dibagi menjadi 3 segmented pill/tab untuk mencegah scroll terlalu panjang dan meningkatkan kenyamanan satu tangan (thumb-friendly):
-1. **Tab "Ringkasan" (`ringkasan`):**
-   - Banner Hero Simulasi Wawancara AI (CTA Mulai Latihan)
-   - 3 Kartu Statistik (Skor Terakhir, Sesi Latihan, Sisa Kuota Harian)
-   - Menu Tindakan Cepat (shortcut fitur)
-   - Aktivitas Terakhir
-2. **Tab "Analisis CV" (`analisis`):**
-   - Kotak Analisis CV dengan AI (`KotakAnalisisCv`) inline lengkap dengan skor ATS/HR, evaluasi, chips rekomendasi posisi interaktif, dan rincian saran perbaikan (tambah, perbaiki, hapus).
-3. **Tab "Profil CV" (`profil`):**
-   - Skor kelengkapan profil (donut chart 0–100%)
-   - Akordion 6 checklist kelengkapan data diri (Informasi Kontak, Ringkasan, Pengalaman, Pendidikan, Keahlian, Proyek)
+### 11.7 Header Branding Permanen & Mobile Tab Navigation di Home Dashboard
+Pada halaman utama (Home Dashboard), tata letak dioptimalkan untuk mobile dan desktop:
+1. **Header Branding Permanen (Fixed Header Badge):**
+   - Badge identitas `"POWERED BY AGIL MAHASISWA S1 SISTEM INFORMASI UKSW"` diletakkan secara permanen tepat di bawah salam sapaan header dan di atas menu tab.
+   - Badge selalu terlihat secara konsisten di desktop maupun mobile tanpa berpindah-pindah atau tersembunyi saat pergantian tab.
+2. **Mobile Tab Navigation 3 Tab Ringkas (`< lg` / `< 1024px`):**
+   - **Tab "Ringkasan" (`ringkasan`):**
+     - Banner Hero Simulasi Wawancara AI (CTA Mulai Latihan)
+     - **1 Baris Horizontal 3 Stat Cards (`grid-cols-3 gap-2`):** Skor Terakhir, Sesi Latihan, dan Sisa Kuota AI tersusun sejajar hemat ruang vertikal.
+     - **Integrasi Penuh Profil CV:** Komponen kelengkapan Profil CV (lingkaran persentase SVG + 6 akordion checklist data diri) tampil langsung di dalam tab Ringkasan berdampingan dengan banner dan stat cards.
+   - **Tab "Analisis CV" (`analisis`):**
+     - Kotak Analisis CV dengan AI (`KotakAnalisisCv`) inline lengkap dengan skor ATS/HR, evaluasi, chips rekomendasi posisi interaktif, dan rincian saran perbaikan (tambah, perbaiki, hapus).
+   - **Tab "Aktivitas" (`aktivitas`):**
+     - Log aktivitas wawancara, riwayat sesi latihan, dan tombol pintas mulai simulasi baru.
+   *(Tab terpisah khusus Profil CV dihapus karena sudah diintegrasikan langsung ke tab Ringkasan sehingga navigasi lebih ringkas)*.
 
 **Perilaku Status Persisten:**
 - Status tab aktif disimpan di `localStorage` (`mentervu_home_tab_mobile`) dan disinkronkan ke URL search parameter `?tab=...`.
-- Saat pengguna berpindah halaman lalu kembali ke Home, tab yang terakhir aktif akan tetap terbuka.
-- Pada layar desktop (`≥ 1024px`), tab pill disembunyikan otomatis dan antarmuka beralih ke tata letak 2 kolom standar (kolom kiri: ringkasan & kartu analisis CV inline; kolom kanan: kelengkapan profil CV).
+- Pada layar desktop (`≥ 1024px`), tab pill otomatis disembunyikan dan antarmuka beralih ke tata letak 2 kolom (kiri: banner, stat cards, analisis CV inline, aktivitas; kanan: sidebar kelengkapan profil CV).
+
+### 11.8 Penyederhanaan Kartu Template CV (CV Builder)
+1. **Kartu Pilihan Template Super Ringkas:**
+   - Di dalam grid/carousel pilihan template, teks deskripsi panjang dan keterangan "Cocok untuk..." dipangkas dari dalam kartu.
+   - Kartu hanya menampilkan: miniatur wireframe/thumbnail layout (`IlustrasiTemplateCv`) + penanda "Dipilih", badge kategori (misal: `STANDAR ATS`, `KORPORAT & BUMN`), dan Judul/Nama Template saja (misal: `CV ATS Friendly`, `CV Kronologis`, `CV Fungsional`).
+   - Ukuran kartu lebih ramping (`w-[155px] sm:w-auto`), hemat ruang vertikal dan horizontal.
+2. **Panduan & Keterangan Lengkap di Kotak Detail Aktif:**
+   - Seluruh deskripsi lengkap template serta rekomendasi industri/kesesuaian karir dipindahkan ke kotak informasi khusus di bawah kartu yang aktif secara dinamis sesuai template yang dipilih pengguna.
+
+### 11.9 Preset Palet Warna Profesional & Pembatasan Kontras Teks (CV Builder)
+1. **Konsep Preset Tema Profesional:**
+   - Menggantikan pemilihan warna acak dengan 6 kurasi tema warna profesional:
+     - **Classic Monochrome** (Formal & Legal): `#1E293B` aksen, `#0F172A` heading, `#334155` subheading, `#1E293B` teks.
+     - **Navy Blue** (Korporat & BUMN): `#1E40AF` aksen, `#172554` heading, `#1E3A8A` subheading, `#1F2937` teks.
+     - **Deep Teal** (Eksekutif & Medis): `#0F766E` aksen, `#134E4A` heading, `#115E59` subheading, `#1F2937` teks.
+     - **Warm Copper** (Tech & Modern): `#EA580C` aksen, `#7C2D12` heading, `#9A3412` subheading, `#1F2937` teks.
+     - **Modern Charcoal** (Software & Tech): `#374151` aksen, `#111827` heading, `#4B5563` subheading, `#1F2937` teks.
+     - **Royal Burgundy** (Hukum & Luxury): `#881337` aksen, `#4C0519` heading, `#9F1239` subheading, `#1F2937` teks.
+   - Sekali klik pada salah satu kartu preset, sistem secara otomatis menerapkan racikan kombinasi yang aman, harmonis, dan memenuhi standar kontras WCAG AA untuk keempat komponen sekaligus (*Warna Aksen, Heading, Subheading, dan Teks Biasa*).
+2. **Penguncian Teks Biasa pada Spektrum Gelap (Dark Grayscale):**
+   - Pada kustomisasi manual lanjutan, disediakan palet cepat *Dark Grayscale* (`#111827`, `#1F2937`, `#374151`, `#0F172A`, `#18181B`).
+   - Input manual warna teks biasa dilengkapi validasi *perceived luminance*. Jika pengguna memilih warna terang (kuning, merah terang, hijau muda, dsb. dengan *luminance* > 90), sistem secara otomatis mengunci dan mengembalikan warna teks ke abu gelap standar (`#1F2937`) disertai notifikasi penjelasan. Hal ini krusial untuk menjamin keterbacaan (*readability*) paragraf isi di lembar putih A4 dan mencegah penolakan oleh scanner ATS.
+
+### 11.10 Parsing Bullet Point Semantis & Standar Ekspor PDF Bersih Bebas Watermark (CV Builder)
+1. **Parser & Format Line Break Semantis (`renderDeskripsiTeks`):**
+   - Mengatasi isu teks deskripsi proyek/portofolio yang sebelumnya menyatu dalam satu baris panjang tanpa mengenali newline (`\n`).
+   - Sistem membaca baris baru secara terstruktur dengan utilitas `renderDeskripsiTeks`:
+     - Karakter pemisah (`\n`) terbaca otomatis menggunakan `whitespace-pre-line` dan perataan teks `text-justify`.
+     - Mengenali karakter penanda poin daftar (`•`, `-`, `*`, `⁃`, `–`) di awal baris dan mengonversinya menjadi elemen daftar semantis (`<ul>` dan `<li>`).
+     - Setiap item daftar menggunakan struktur `flex items-start gap-1.5` dengan dot bulat berwaran aksen dinamis (`accentColor`) dan perataan teks gantung yang rapi (hanging indent), sehingga teks yang turun baris tidak menusuk ke bawah simbol bullet.
+     - Diterapkan secara seragam pada bagian **Pengalaman Kerja** maupun **Proyek & Portofolio** di seluruh 5 template CV.
+2. **Ekspor PDF Bersih Bebas Watermark Promosi:**
+   - Menghapus seluruh label promosi aplikasi / watermark (seperti `"Dibuat dengan MeIntervU AI · Format Ramah ATS"`, `"CV Kronologis Profesional · MeIntervU AI"`, dsb.) pada bagian *footer* dokumen di semua 5 template.
+   - Hasil akhir cetak dokumen hanya menyisakan penomoran halaman resmi yang elegan di sudut kanan bawah (`Halaman 1 dari 1`).
+3. **Penguncian Skala Ekspor 100% (Isolasi UI Zoom Level):**
+   - Mencegah kerusakan rasio, font mengecil/membesar, atau halaman terpotong saat pengguna mengunduh PDF dalam keadaan kanvas pratinjau di-zoom (misal 30%, 65%, atau 120%).
+   - Fungsi `handleDownloadPdf` melakukan kloning elemen DOM `#cv-preview-sheet` ke dalam kontainer *off-screen* terisolasi (`left: -9999px`).
+   - Kloning dibersihkan dari atribut CSS transform (`transform: none`), dinormalkan ke dimensi standar A4 (`width: 595px; minHeight: 842px; margin: 0`), dan dirender oleh `html2pdf.js` / `html2canvas` dengan `scale: 2.5` beresolusi tinggi dan proporsi 100% sempurna sesuai standar cetak kertas A4.
 
 ---
 

@@ -30,6 +30,9 @@ import {
   Palette,
   Eye,
   Edit3,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
 import PratinjauCv from '../components/cv/PratinjauCv';
@@ -143,6 +146,83 @@ export default function PembuatCv() {
   const [documentId, setDocumentId] = useState(null);
   const [documentTitle, setDocumentTitle] = useState('CV Utama');
   const [isExporting, setIsExporting] = useState(false);
+
+  // Drag-to-Pan state & handlers untuk Pratinjau A4
+  const previewContainerRef = useRef(null);
+  const [isPanning, setIsPanning] = useState(false);
+  const panStartRef = useRef({ startX: 0, startY: 0, scrollLeft: 0, scrollTop: 0 });
+
+  const handleMouseDown = (e) => {
+    // Abaikan jika interaksi pada tombol kontrol zoom, input, atau link
+    if (e.target.closest('button, input, select, a, textarea')) return;
+    if (!previewContainerRef.current) return;
+
+    setIsPanning(true);
+    panStartRef.current = {
+      startX: e.pageX - previewContainerRef.current.offsetLeft,
+      startY: e.pageY - previewContainerRef.current.offsetTop,
+      scrollLeft: previewContainerRef.current.scrollLeft,
+      scrollTop: previewContainerRef.current.scrollTop,
+    };
+  };
+
+  const handleMouseMove = (e) => {
+    if (!isPanning || !previewContainerRef.current) return;
+    e.preventDefault();
+    const x = e.pageX - previewContainerRef.current.offsetLeft;
+    const y = e.pageY - previewContainerRef.current.offsetTop;
+    const walkX = x - panStartRef.current.startX;
+    const walkY = y - panStartRef.current.startY;
+    previewContainerRef.current.scrollLeft = panStartRef.current.scrollLeft - walkX;
+    previewContainerRef.current.scrollTop = panStartRef.current.scrollTop - walkY;
+  };
+
+  const handleMouseUpOrLeave = () => {
+    setIsPanning(false);
+  };
+
+  // State & Handler Preset Warna Profesional & Pembatasan Kontras Teks
+  const [showManualColors, setShowManualColors] = useState(false);
+  const [textColorWarning, setTextColorWarning] = useState(false);
+
+  const applyColorPreset = (preset) => {
+    setFormData((prev) => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        accentColor: preset.accentColor,
+        headingColor: preset.headingColor,
+        subheadingColor: preset.subheadingColor,
+        textColor: preset.textColor,
+      },
+    }));
+  };
+
+  const validateAndSetTextColor = (hex) => {
+    const clean = hex.replace('#', '');
+    let luminance = 0;
+    if (clean.length === 6) {
+      const r = parseInt(clean.substr(0, 2), 16);
+      const g = parseInt(clean.substr(2, 2), 16);
+      const b = parseInt(clean.substr(4, 2), 16);
+      luminance = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+    }
+    // Jika terlalu terang (luminance > 90), kunci otomatis ke spektrum gelap aman demi keterbacaan
+    if (luminance > 90) {
+      setTextColorWarning(true);
+      setFormData((prev) => ({
+        ...prev,
+        settings: { ...prev.settings, textColor: '#1F2937' },
+      }));
+      setTimeout(() => setTextColorWarning(false), 5000);
+    } else {
+      setTextColorWarning(false);
+      setFormData((prev) => ({
+        ...prev,
+        settings: { ...prev.settings, textColor: hex },
+      }));
+    }
+  };
 
   // Inisialisasi data dari Profil atau Supabase saat pertama dimuat
   useEffect(() => {
@@ -283,36 +363,154 @@ export default function PembuatCv() {
     });
   };
 
-  // Export PDF Handler menggunakan html2pdf.js
+  // Export PDF Handler menggunakan html2pdf.js (Kunci Skala 100% & Bebas Watermark)
   const handleDownloadPdf = async () => {
-    const element = document.getElementById('cv-preview-sheet');
-    if (!element) return;
+    const originalElement = document.getElementById('cv-preview-sheet');
+    if (!originalElement) return;
 
     setIsExporting(true);
+    let tempWrapper = null;
+
     try {
       // Dynamic import html2pdf.js
       const html2pdfModule = await import('html2pdf.js');
       const html2pdf = html2pdfModule.default || html2pdfModule;
 
+      // 1. Kloning elemen pratinjau agar berdiri independen di luar skala zoom UI
+      const clone = originalElement.cloneNode(true);
+      clone.id = 'cv-preview-sheet-export';
+
+      // Pastikan klon berada pada skala murni 100% tanpa CSS transform, margin, atau zoom
+      clone.style.transform = 'none';
+      clone.style.margin = '0';
+      clone.style.boxShadow = 'none';
+      clone.style.width = '595px';
+      clone.style.minHeight = '842px';
+      clone.style.boxSizing = 'border-box';
+      clone.style.backgroundColor = '#FFFFFF';
+
+      // 2. Pasang di wrapper tersembunyi yang tetap di-render browser secara off-screen
+      tempWrapper = document.createElement('div');
+      tempWrapper.style.position = 'fixed';
+      tempWrapper.style.left = '-9999px';
+      tempWrapper.style.top = '0';
+      tempWrapper.style.width = '595px';
+      tempWrapper.style.zIndex = '-9999';
+      tempWrapper.style.overflow = 'visible';
+      tempWrapper.appendChild(clone);
+      document.body.appendChild(tempWrapper);
+
+      // Micro-tick untuk memastikan layout DOM klon selesai dihitung browser
+      await new Promise((resolve) => setTimeout(resolve, 60));
+
       const opt = {
         margin: [0, 0, 0, 0],
         filename: `${(formData.personal.fullName || 'CV').replace(/\s+/g, '_')}_CV.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, letterRendering: true },
+        html2canvas: {
+          scale: 2.5, // Resolusi tinggi tajam untuk dokumen cetak A4
+          useCORS: true,
+          letterRendering: true,
+          scrollX: 0,
+          scrollY: 0,
+          windowWidth: 595,
+        },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       };
 
-      await html2pdf().set(opt).from(element).save();
+      await html2pdf().set(opt).from(clone).save();
     } catch (e) {
       console.warn('Gagal mengekspor PDF:', e);
       // Fallback ke window.print
       window.print();
     } finally {
+      if (tempWrapper && document.body.contains(tempWrapper)) {
+        document.body.removeChild(tempWrapper);
+      }
       setIsExporting(false);
     }
   };
 
-  // Swatches Warna Aksen
+  // Preset Palet Warna Profesional (Aksen, Heading, Subheading, Teks Biasa)
+  const colorPresets = [
+    {
+      id: 'classic-slate',
+      name: 'Classic Monochrome',
+      tag: 'Formal & Legal',
+      desc: 'Monokrom slate hitam pekat formal standar industri konservatif, legal, dan perbankan.',
+      accentColor: '#1E293B',
+      headingColor: '#0F172A',
+      subheadingColor: '#334155',
+      textColor: '#1E293B',
+      preview: ['#1E293B', '#0F172A', '#334155', '#475569'],
+    },
+    {
+      id: 'navy-corporate',
+      name: 'Navy Blue',
+      tag: 'Korporat & BUMN',
+      desc: 'Biru navy elegan dan terpercaya untuk instansi BUMN, finansial, konsultan, dan manajemen.',
+      accentColor: '#1E40AF',
+      headingColor: '#172554',
+      subheadingColor: '#1E3A8A',
+      textColor: '#1F2937',
+      preview: ['#1E40AF', '#172554', '#1E3A8A', '#374151'],
+    },
+    {
+      id: 'deep-teal',
+      name: 'Deep Teal',
+      tag: 'Eksekutif & Medis',
+      desc: 'Teal pekat kredibel untuk kepemimpinan, sains, kesehatan, dan konsultan profesional.',
+      accentColor: '#0F766E',
+      headingColor: '#134E4A',
+      subheadingColor: '#115E59',
+      textColor: '#1F2937',
+      preview: ['#0F766E', '#134E4A', '#115E59', '#374151'],
+    },
+    {
+      id: 'copper-executive',
+      name: 'Warm Copper',
+      tag: 'Tech & Modern',
+      desc: 'Oranye tembaga hangat dinamis yang selaras dengan palet identitas MENTERVU AI.',
+      accentColor: '#EA580C',
+      headingColor: '#7C2D12',
+      subheadingColor: '#9A3412',
+      textColor: '#1F2937',
+      preview: ['#EA580C', '#7C2D12', '#9A3412', '#374151'],
+    },
+    {
+      id: 'modern-charcoal',
+      name: 'Modern Charcoal',
+      tag: 'Software & Tech',
+      desc: 'Arang gelap minimalis dengan kontras optimal dan tingkat kelulusan ATS maksimal.',
+      accentColor: '#374151',
+      headingColor: '#111827',
+      subheadingColor: '#4B5563',
+      textColor: '#1F2937',
+      preview: ['#374151', '#111827', '#4B5563', '#374151'],
+    },
+    {
+      id: 'burgundy-luxury',
+      name: 'Royal Burgundy',
+      tag: 'Hukum & Luxury',
+      desc: 'Merah anggur berwibawa untuk firma hukum, humas, pariwisata, dan perhotelan.',
+      accentColor: '#881337',
+      headingColor: '#4C0519',
+      subheadingColor: '#9F1239',
+      textColor: '#1F2937',
+      preview: ['#881337', '#4C0519', '#9F1239', '#374151'],
+    },
+  ];
+
+  // Swatches Dark Grayscale Pilihan untuk Teks Biasa (Keterbacaan Terjamin)
+  const darkTextSwatches = [
+    { name: 'Hitam Pekat', hex: '#111827' },
+    { name: 'Abu Gelap Standar (Default)', hex: '#1F2937' },
+    { name: 'Abu Tua Netral', hex: '#374151' },
+    { name: 'Slate Gelap', hex: '#0F172A' },
+    { name: 'Zinc Gelap', hex: '#18181B' },
+  ];
+
+  // Swatches Warna Aksen (Manual)
   const accentColors = [
     { name: 'Orange', hex: '#EA580C' },
     { name: 'Blue', hex: '#2563EB' },
@@ -1533,7 +1731,8 @@ export default function PembuatCv() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-2">
+                  {/* Daftar Pilihan Template: Horizontal Scroll di Mobile, Grid di Desktop */}
+                  <div className="flex flex-row overflow-x-auto gap-3 pt-2 pb-3.5 snap-x snap-mandatory sm:grid sm:grid-cols-2 lg:grid-cols-3 sm:overflow-visible sm:pb-0 scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent overscroll-x-contain">
                     {templates.map((tpl) => {
                       const isSelected =
                         formData.settings.template === tpl.id ||
@@ -1547,67 +1746,78 @@ export default function PembuatCv() {
                               settings: { ...prev.settings, template: tpl.id },
                             }))
                           }
-                          className={`group relative flex flex-col justify-between rounded-xl border p-3 cursor-pointer transition-all duration-200 text-left ${
+                          className={`group relative flex flex-col justify-between rounded-xl border p-2.5 cursor-pointer transition-all duration-200 text-left shrink-0 w-[155px] sm:w-auto snap-start ${
                             isSelected
                               ? 'border-[#FF6B00] bg-orange-50/30 shadow-sm ring-2 ring-orange-500/30'
                               : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-xs'
                           }`}
                         >
                           {/* Miniatur Ilustrasi Wireframe A4 */}
-                          <div className="relative mb-2.5 flex h-48 w-full items-center justify-center rounded-lg border border-gray-100 bg-slate-50 p-2 overflow-hidden transition-transform group-hover:scale-[1.01]">
+                          <div className="relative mb-2 flex h-36 sm:h-44 w-full items-center justify-center rounded-lg border border-gray-100 bg-slate-50 p-2 overflow-hidden transition-transform group-hover:scale-[1.01]">
                             <IlustrasiTemplateCv
                               templateId={tpl.id}
                               accentColor={formData.settings.accentColor || '#EA580C'}
                               isSelected={isSelected}
                             />
                             {isSelected && (
-                              <div className="absolute right-2 top-2 flex items-center gap-1 rounded-full bg-[#FF6B00] px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
+                              <div className="absolute right-1.5 top-1.5 flex items-center gap-1 rounded-full bg-[#FF6B00] px-2 py-0.5 text-[10px] font-bold text-white shadow-xs">
                                 <Check className="h-3 w-3" />
                                 <span>Dipilih</span>
                               </div>
                             )}
                           </div>
 
-                          {/* Detail Info Template */}
-                          <div className="flex flex-col flex-1 justify-between space-y-2">
+                          {/* Detail Info Ringkas Template: Hanya Badge Kategori & Judul/Nama Template */}
+                          <div className="flex flex-col space-y-1">
                             <div>
-                              <div className="flex items-center justify-between gap-1.5 mb-1">
-                                <span
-                                  className={`rounded px-1.5 py-0.5 text-[9.5px] font-bold uppercase ${
-                                    isSelected ? 'bg-orange-100 text-[#FF6B00]' : 'bg-gray-100 text-gray-600'
-                                  }`}
-                                >
-                                  {tpl.tag}
-                                </span>
-                              </div>
-                              <h3 className="font-display text-sm font-bold text-gray-900">
-                                {tpl.name}
-                              </h3>
-                              <p className="mt-1 text-[11px] text-gray-500 leading-snug line-clamp-2">
-                                {tpl.desc}
-                              </p>
+                              <span
+                                className={`inline-block rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                                  isSelected ? 'bg-orange-100 text-[#FF6B00]' : 'bg-gray-100 text-gray-600'
+                                }`}
+                              >
+                                {tpl.tag}
+                              </span>
                             </div>
-
-                            <div className="border-t border-gray-100 pt-2 text-[10.5px]">
-                              <p className="text-gray-400 font-medium">Cocok untuk:</p>
-                              <p className="font-semibold text-gray-700 truncate">{tpl.cocok}</p>
-                            </div>
+                            <h3 className="font-display text-xs sm:text-sm font-bold text-gray-900 leading-tight">
+                              {tpl.name}
+                            </h3>
                           </div>
                         </div>
                       );
                     })}
                   </div>
 
-                  {/* Keterangan Otomatisasi Live Preview */}
-                  <div className="mt-3.5 flex items-start gap-2.5 rounded-lg bg-orange-50/60 p-3 border border-orange-100 text-[11.5px] text-orange-950">
-                    <Sparkles className="h-4 w-4 shrink-0 text-[#FF6B00] mt-0.5" />
-                    <div>
-                      <p className="font-semibold">Perubahan Tata Letak Real-Time</p>
-                      <p className="text-[11px] text-orange-900/80 mt-0.5">
-                        Klik salah satu template di atas untuk melihat lembar A4 Live Preview di sebelah kanan otomatis berubah tata letak dan posisinya. Pada smartphone, beralih ke tombol <strong>Pratinjau</strong> di atas untuk melihat tampilan dokumen penuh.
-                      </p>
-                    </div>
-                  </div>
+                  {/* Informasi Detail & Panduan Khusus Template yang Sedang Aktif Dipilih */}
+                  {(() => {
+                    const tplAktif =
+                      templates.find(
+                        (t) =>
+                          formData.settings.template === t.id ||
+                          (t.alias && t.alias.includes(formData.settings.template))
+                      ) || templates[0];
+                    return (
+                      <div className="mt-4 flex items-start gap-3 rounded-xl bg-orange-50/80 p-3.5 sm:p-4 border border-orange-200/80 text-xs text-orange-950 shadow-2xs">
+                        <Sparkles className="h-4 w-4 shrink-0 text-[#FF6B00] mt-0.5" />
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="font-bold text-sm text-orange-900">
+                              {tplAktif.name}
+                            </span>
+                            <span className="rounded-full bg-orange-200/80 px-2 py-0.5 text-[9.5px] font-bold text-orange-800">
+                              {tplAktif.tag}
+                            </span>
+                          </div>
+                          <p className="text-xs text-gray-700 leading-relaxed">
+                            {tplAktif.desc}
+                          </p>
+                          <div className="pt-1.5 border-t border-orange-200/60 text-xs">
+                            <span className="font-bold text-orange-950">Cocok & Direkomendasikan untuk: </span>
+                            <span className="text-gray-800 font-medium">{tplAktif.cocok}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })()}
                 </div>
 
                 {/* 2. Pengaturan Tampilan */}
@@ -1668,149 +1878,289 @@ export default function PembuatCv() {
                       </select>
                     </div>
                   </div>
-
-                  {/* Warna Aksen */}
-                  <div className="mt-4 pt-3 border-t border-gray-100">
-                    <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-600">
-                      Warna Aksen
-                    </label>
-                    <div className="flex flex-wrap items-center gap-2.5">
-                      {accentColors.map(({ name, hex }) => {
-                        const isChosen = formData.settings.accentColor === hex;
-                        return (
-                          <button
-                            key={hex}
-                            type="button"
-                            onClick={() =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                settings: { ...prev.settings, accentColor: hex },
-                              }))
-                            }
-                            title={name}
-                            style={{ backgroundColor: hex }}
-                            className={`flex h-8 w-8 items-center justify-center rounded-full transition-transform active:scale-95 ${
-                              isChosen ? 'ring-2 ring-offset-2 ring-gray-600' : ''
-                            }`}
-                          >
-                            {isChosen && <Check className="h-4 w-4 text-white" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
                 </div>
 
-                {/* 3. Tipografi & Warna */}
-                <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-xs">
-                  <div className="mb-3 flex items-center gap-2">
+                {/* 3. Preset Tema Warna & Tipografi */}
+                <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-xs space-y-5">
+                  <div className="flex items-center gap-2">
                     <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-orange-50 text-[#FF6B00]">
-                      <Type className="h-4 w-4" />
+                      <Palette className="h-4 w-4" />
                     </span>
                     <div>
                       <h2 className="font-display text-base font-bold text-gray-800">
-                        Tipografi & Warna
+                        Preset Tema Warna & Tipografi
                       </h2>
                       <p className="text-xs text-gray-500">
-                        Kustomisasi jenis font dan warna pada CV Anda.
+                        Pilih tema palet profesional yang selaras dan teruji tingkat keterbacaannya.
                       </p>
                     </div>
                   </div>
 
-                  <div className="space-y-4 pt-2">
-                    <div>
-                      <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-gray-600">
-                        Jenis Font
-                      </label>
-                      <select
-                        value={formData.settings.fontFamily}
-                        onChange={(e) =>
-                          setFormData((prev) => ({
-                            ...prev,
-                            settings: { ...prev.settings, fontFamily: e.target.value },
-                          }))
-                        }
-                        className="h-11 w-full rounded-lg border border-gray-300 bg-white px-3 text-xs font-semibold text-gray-800 focus:border-orange-500 focus:outline-none"
-                      >
-                        <option value="Inter">Inter (Modern Sans)</option>
-                        <option value="Roboto">Roboto (Clean Sans)</option>
-                        <option value="Open Sans">Open Sans (Friendly Sans)</option>
-                        <option value="Poppins">Poppins (Geometric Sans)</option>
-                        <option value="Georgia">Georgia (Classic Serif)</option>
-                        <option value="Times New Roman">Times New Roman (Formal Serif)</option>
-                        <option value="Geist">Geist (Tech Sans)</option>
-                        <option value="Hanken Grotesk">Hanken Grotesk (Elegant Sans)</option>
-                      </select>
+                  {/* 1. Grid Pilihan Preset Tema Profesional */}
+                  <div>
+                    <label className="mb-2 block text-xs font-bold uppercase tracking-wider text-gray-700">
+                      Preset Palet Warna Profesional
+                    </label>
+                    <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                      {colorPresets.map((preset) => {
+                        const isSelected =
+                          (formData.settings.accentColor || '').toLowerCase() === preset.accentColor.toLowerCase() &&
+                          (formData.settings.headingColor || '').toLowerCase() === preset.headingColor.toLowerCase() &&
+                          (formData.settings.subheadingColor || '').toLowerCase() === preset.subheadingColor.toLowerCase();
+
+                        return (
+                          <div
+                            key={preset.id}
+                            onClick={() => applyColorPreset(preset)}
+                            className={`group relative flex flex-col justify-between rounded-xl border p-3 cursor-pointer transition-all duration-200 text-left ${
+                              isSelected
+                                ? 'border-[#FF6B00] bg-orange-50/40 shadow-xs ring-2 ring-orange-500/20'
+                                : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/60'
+                            }`}
+                          >
+                            <div>
+                              <div className="flex items-center justify-between gap-1.5 mb-1.5">
+                                <span
+                                  className={`rounded px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wider ${
+                                    isSelected
+                                      ? 'bg-orange-100 text-[#FF6B00]'
+                                      : 'bg-gray-100 text-gray-600'
+                                  }`}
+                                >
+                                  {preset.tag}
+                                </span>
+                                {isSelected && (
+                                  <span className="flex items-center gap-0.5 text-[10px] font-bold text-[#FF6B00]">
+                                    <Check className="h-3 w-3" />
+                                    <span>Aktif</span>
+                                  </span>
+                                )}
+                              </div>
+                              <h3 className="font-display text-xs sm:text-sm font-bold text-gray-900 leading-tight">
+                                {preset.name}
+                              </h3>
+                              <p className="mt-1 text-[10.5px] text-gray-500 line-clamp-2 leading-relaxed">
+                                {preset.desc}
+                              </p>
+                            </div>
+
+                            {/* Baris Palet 4 Warna (Aksen, Heading, Subheading, Teks) */}
+                            <div className="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between">
+                              <span className="text-[9.5px] font-semibold text-gray-400">Palet:</span>
+                              <div className="flex items-center gap-1.5">
+                                <span
+                                  title={`Aksen: ${preset.accentColor}`}
+                                  className="h-4 w-4 rounded-full border border-black/10 shadow-2xs"
+                                  style={{ backgroundColor: preset.accentColor }}
+                                />
+                                <span
+                                  title={`Heading: ${preset.headingColor}`}
+                                  className="h-4 w-4 rounded-full border border-black/10 shadow-2xs"
+                                  style={{ backgroundColor: preset.headingColor }}
+                                />
+                                <span
+                                  title={`Subheading: ${preset.subheadingColor}`}
+                                  className="h-4 w-4 rounded-full border border-black/10 shadow-2xs"
+                                  style={{ backgroundColor: preset.subheadingColor }}
+                                />
+                                <span
+                                  title={`Teks: ${preset.textColor}`}
+                                  className="h-4 w-4 rounded-full border border-black/10 shadow-2xs"
+                                  style={{ backgroundColor: preset.textColor }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
+                  </div>
 
-                    {/* Grid Warna Teks (3 Kolom) */}
-                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                      <div>
-                        <label className="mb-1 block text-[11px] font-bold text-gray-600">
-                          Warna Heading
-                        </label>
-                        <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white p-1.5">
-                          <input
-                            type="color"
-                            value={formData.settings.headingColor}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                settings: { ...prev.settings, headingColor: e.target.value },
-                              }))
-                            }
-                            className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent"
-                          />
-                          <span className="font-mono text-xs text-gray-600">
-                            {formData.settings.headingColor}
-                          </span>
+                  {/* 2. Pemilihan Jenis Font */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <label className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-gray-700">
+                      Jenis Font
+                    </label>
+                    <select
+                      value={formData.settings.fontFamily}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          settings: { ...prev.settings, fontFamily: e.target.value },
+                        }))
+                      }
+                      className="h-11 w-full rounded-lg border border-gray-300 bg-white px-3 text-xs font-semibold text-gray-800 focus:border-orange-500 focus:outline-none"
+                    >
+                      <option value="Inter">Inter (Modern Sans)</option>
+                      <option value="Roboto">Roboto (Clean Sans)</option>
+                      <option value="Open Sans">Open Sans (Friendly Sans)</option>
+                      <option value="Poppins">Poppins (Geometric Sans)</option>
+                      <option value="Georgia">Georgia (Classic Serif)</option>
+                      <option value="Times New Roman">Times New Roman (Formal Serif)</option>
+                      <option value="Geist">Geist (Tech Sans)</option>
+                      <option value="Hanken Grotesk">Hanken Grotesk (Elegant Sans)</option>
+                    </select>
+                  </div>
+
+                  {/* 3. Kustomisasi Manual & Pembatasan Kontras Gelap */}
+                  <div className="pt-2 border-t border-gray-100">
+                    <button
+                      type="button"
+                      onClick={() => setShowManualColors((prev) => !prev)}
+                      className="flex items-center justify-between w-full py-2 text-xs font-bold text-gray-700 hover:text-orange-600 transition-colors cursor-pointer select-none"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Sliders className="h-3.5 w-3.5 text-[#FF6B00]" />
+                        <span>Kustomisasi Manual Warna (Lanjutan)</span>
+                      </div>
+                      {showManualColors ? (
+                        <ChevronUp className="h-4 w-4 text-gray-400" />
+                      ) : (
+                        <ChevronDown className="h-4 w-4 text-gray-400" />
+                      )}
+                    </button>
+
+                    {showManualColors && (
+                      <div className="mt-3 space-y-4 rounded-xl bg-gray-50/70 p-4 border border-gray-200/80 animate-in fade-in duration-200">
+                        {/* Grid Warna Heading & Subheading & Aksen */}
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                          {/* Warna Aksen */}
+                          <div>
+                            <label className="mb-1 block text-[11px] font-bold text-gray-700">
+                              Warna Aksen
+                            </label>
+                            <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white p-1.5 shadow-2xs">
+                              <input
+                                type="color"
+                                value={formData.settings.accentColor}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    settings: { ...prev.settings, accentColor: e.target.value },
+                                  }))
+                                }
+                                className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent"
+                              />
+                              <span className="font-mono text-xs text-gray-700 font-semibold">
+                                {formData.settings.accentColor}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Warna Heading */}
+                          <div>
+                            <label className="mb-1 block text-[11px] font-bold text-gray-700">
+                              Warna Heading
+                            </label>
+                            <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white p-1.5 shadow-2xs">
+                              <input
+                                type="color"
+                                value={formData.settings.headingColor}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    settings: { ...prev.settings, headingColor: e.target.value },
+                                  }))
+                                }
+                                className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent"
+                              />
+                              <span className="font-mono text-xs text-gray-700 font-semibold">
+                                {formData.settings.headingColor}
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Warna Subheading */}
+                          <div>
+                            <label className="mb-1 block text-[11px] font-bold text-gray-700">
+                              Warna Subheading
+                            </label>
+                            <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white p-1.5 shadow-2xs">
+                              <input
+                                type="color"
+                                value={formData.settings.subheadingColor}
+                                onChange={(e) =>
+                                  setFormData((prev) => ({
+                                    ...prev,
+                                    settings: { ...prev.settings, subheadingColor: e.target.value },
+                                  }))
+                                }
+                                className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent"
+                              />
+                              <span className="font-mono text-xs text-gray-700 font-semibold">
+                                {formData.settings.subheadingColor}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Input Khusus Warna Teks Biasa (Terkunci Spektrum Gelap) */}
+                        <div className="rounded-lg border border-gray-200 bg-white p-3 space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="block text-xs font-bold text-gray-800">
+                                Warna Teks Biasa (Paragraf Isi)
+                              </span>
+                              <span className="text-[10.5px] text-gray-500">
+                                Terkunci pada spektrum gelap (Dark Grayscale) demi keterbacaan di kertas putih.
+                              </span>
+                            </div>
+                            <span className="rounded bg-gray-100 px-2 py-0.5 text-[10px] font-mono font-bold text-gray-700">
+                              {formData.settings.textColor}
+                            </span>
+                          </div>
+
+                          {/* Swatches Dark Grayscale Cepat */}
+                          <div className="flex flex-wrap items-center gap-2">
+                            {darkTextSwatches.map((sw) => {
+                              const isCur =
+                                (formData.settings.textColor || '').toLowerCase() === sw.hex.toLowerCase();
+                              return (
+                                <button
+                                  key={sw.hex}
+                                  type="button"
+                                  onClick={() => validateAndSetTextColor(sw.hex)}
+                                  className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-medium transition-all cursor-pointer ${
+                                    isCur
+                                      ? 'border-[#FF6B00] bg-orange-50 text-[#FF6B00] shadow-2xs'
+                                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                                  }`}
+                                >
+                                  <span
+                                    className="h-3 w-3 rounded-full border border-black/10"
+                                    style={{ backgroundColor: sw.hex }}
+                                  />
+                                  <span>{sw.name}</span>
+                                  {isCur && <Check className="h-3 w-3 ml-0.5 text-[#FF6B00]" />}
+                                </button>
+                              );
+                            })}
+
+                            {/* Color Picker Manual dengan Validasi */}
+                            <div className="flex items-center gap-1.5 border border-gray-200 rounded-lg px-2 py-0.5 bg-white">
+                              <input
+                                type="color"
+                                value={formData.settings.textColor}
+                                onChange={(e) => validateAndSetTextColor(e.target.value)}
+                                title="Pilih custom dark color"
+                                className="h-5 w-5 cursor-pointer rounded border-0 bg-transparent"
+                              />
+                              <span className="text-[11px] text-gray-500 font-mono">Kustom</span>
+                            </div>
+                          </div>
+
+                          {/* Peringatan Kunci Kontras Jika Pengguna Memilih Warna Terang */}
+                          {textColorWarning && (
+                            <div className="flex items-center gap-2 rounded-lg bg-amber-50 border border-amber-200 p-2.5 text-xs text-amber-900 animate-in fade-in">
+                              <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
+                              <span>
+                                <strong>Warna terlalu terang!</strong> Sistem otomatis menguncinya ke abu gelap standar (`#1F2937`) untuk mencegah teks sulit terbaca atau ditolak scanner ATS rekrutmen.
+                              </span>
+                            </div>
+                          )}
                         </div>
                       </div>
-
-                      <div>
-                        <label className="mb-1 block text-[11px] font-bold text-gray-600">
-                          Warna Subheading
-                        </label>
-                        <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white p-1.5">
-                          <input
-                            type="color"
-                            value={formData.settings.subheadingColor}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                settings: { ...prev.settings, subheadingColor: e.target.value },
-                              }))
-                            }
-                            className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent"
-                          />
-                          <span className="font-mono text-xs text-gray-600">
-                            {formData.settings.subheadingColor}
-                          </span>
-                        </div>
-                      </div>
-
-                      <div>
-                        <label className="mb-1 block text-[11px] font-bold text-gray-600">
-                          Warna Teks Biasa
-                        </label>
-                        <div className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white p-1.5">
-                          <input
-                            type="color"
-                            value={formData.settings.textColor}
-                            onChange={(e) =>
-                              setFormData((prev) => ({
-                                ...prev,
-                                settings: { ...prev.settings, textColor: e.target.value },
-                              }))
-                            }
-                            className="h-6 w-6 cursor-pointer rounded border-0 bg-transparent"
-                          />
-                          <span className="font-mono text-xs text-gray-600">
-                            {formData.settings.textColor}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1820,15 +2170,27 @@ export default function PembuatCv() {
 
         {/* ================= KOLOM KANAN: LIVE PREVIEW (STICKY A4 CANVAS) ================= */}
         <div
-          className={`w-full flex-col items-center bg-gray-200/60 p-4 sm:p-6 lg:w-1/2 lg:flex lg:sticky lg:top-[168px] lg:h-[calc(100vh-180px)] lg:overflow-y-auto rounded-2xl shadow-inner ${
+          ref={previewContainerRef}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUpOrLeave}
+          onMouseLeave={handleMouseUpOrLeave}
+          className={`w-full flex-col items-center bg-gray-200/60 p-4 sm:p-6 lg:w-1/2 lg:flex lg:sticky lg:top-[168px] lg:h-[calc(100vh-180px)] lg:overflow-y-auto lg:overflow-x-auto rounded-2xl shadow-inner select-none [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden ${
+            isPanning ? 'cursor-grabbing' : 'cursor-grab'
+          } ${
             mobileMode === 'preview' ? 'flex' : 'hidden'
           }`}
         >
           {/* Header Control Preview (Sticky dalam Container Preview) */}
-          <div className="sticky top-0 z-10 mb-4 flex w-full max-w-[595px] items-center justify-between rounded-xl bg-gray-200/90 py-1.5 px-2 backdrop-blur-xs shadow-2xs">
-            <span className="font-display text-xs font-bold uppercase tracking-wider text-gray-700">
-              Pratinjau (A4)
-            </span>
+          <div className="sticky top-0 z-10 mb-4 flex w-full max-w-[595px] items-center justify-between rounded-xl bg-gray-200/90 py-1.5 px-2 backdrop-blur-xs shadow-2xs select-none">
+            <div className="flex items-center gap-2">
+              <span className="font-display text-xs font-bold uppercase tracking-wider text-gray-700">
+                Pratinjau (A4)
+              </span>
+              <span className="hidden sm:inline-block rounded bg-gray-300/70 px-1.5 py-0.5 text-[9.5px] font-medium text-gray-600">
+                Klik & geser untuk pan
+              </span>
+            </div>
 
             {/* Zoom Controls */}
             <div className="flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white p-1 text-xs shadow-xs">
@@ -1836,7 +2198,7 @@ export default function PembuatCv() {
                 type="button"
                 onClick={() => setZoomLevel((z) => Math.max(30, z - 10))}
                 title="Perkecil"
-                className="rounded p-1 text-gray-600 hover:bg-gray-100"
+                className="rounded p-1 text-gray-600 hover:bg-gray-100 cursor-pointer"
               >
                 <ZoomOut className="h-3.5 w-3.5" />
               </button>
@@ -1849,7 +2211,7 @@ export default function PembuatCv() {
                 type="button"
                 onClick={() => setZoomLevel((z) => Math.min(120, z + 10))}
                 title="Perbesar"
-                className="rounded p-1 text-gray-600 hover:bg-gray-100"
+                className="rounded p-1 text-gray-600 hover:bg-gray-100 cursor-pointer"
               >
                 <ZoomIn className="h-3.5 w-3.5" />
               </button>
@@ -1858,7 +2220,7 @@ export default function PembuatCv() {
                 type="button"
                 onClick={() => setZoomLevel(65)}
                 title="Reset Skala"
-                className="rounded p-1 text-gray-500 hover:bg-gray-100 text-[10px] font-bold ml-1 border-l border-gray-200 pl-2"
+                className="rounded p-1 text-gray-500 hover:bg-gray-100 text-[10px] font-bold ml-1 border-l border-gray-200 pl-2 cursor-pointer"
               >
                 Fit
               </button>
@@ -1866,7 +2228,7 @@ export default function PembuatCv() {
           </div>
 
           {/* Canvas Sheet Container with Transform Scale */}
-          <div className="flex w-full justify-center overflow-x-auto pb-24">
+          <div className="flex w-full justify-center overflow-x-auto pb-24 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
             <div
               style={{
                 transform: `scale(${zoomLevel / 100})`,

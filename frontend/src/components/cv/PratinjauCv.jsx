@@ -62,6 +62,7 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
 
   const accentColor = settings.accentColor || '#EA580C';
   const headingColor = settings.headingColor || '#1F2937';
+  const subheadingColor = settings.subheadingColor || '#4B5563';
   const textColor = settings.textColor || '#1F2937';
 
   // Filter hanya item yang aktif (toggle switch ON)
@@ -78,6 +79,51 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
   // SUB-KOMPONEN SEKSI DATA
   // =========================================================================
 
+  /**
+   * Parser Deskripsi Pengalaman Kerja & Proyek:
+   * Mengubah teks deskripsi menjadi list semantik (<ul> <li>) jika terdapat pola bullet/dash (•, -, *, ⁃),
+   * atau paragraf multi-baris rapi dengan whitespace-pre-line dan indentasi sempurna.
+   */
+  const renderDeskripsiTeks = (teks, customStyle = {}) => {
+    if (!teks) return null;
+
+    // Normalisasi baris teks
+    const lines = teks.split('\n').map((l) => l.trim()).filter(Boolean);
+
+    // Cek apakah terdapat pola bullet (•, -, *, ⁃, dsb.)
+    const adaBullet = lines.some((l) => /^[•\-\*\⁃\–]\s*/.test(l));
+
+    if (adaBullet) {
+      return (
+        <ul className="mt-1 space-y-1 list-none pl-0">
+          {lines.map((line, i) => {
+            const cleanText = line.replace(/^[•\-\*\⁃\–]\s*/, '');
+            return (
+              <li key={i} className="flex items-start gap-1.5 text-[9.5px] leading-relaxed text-justify" style={customStyle}>
+                <span
+                  className="mt-1 h-1 w-1 rounded-full shrink-0 select-none"
+                  style={{ backgroundColor: accentColor }}
+                />
+                <span className="flex-1">{cleanText}</span>
+              </li>
+            );
+          })}
+        </ul>
+      );
+    }
+
+    // Jika teks multi-baris biasa tanpa simbol bullet
+    return (
+      <div className="mt-1 space-y-1">
+        {lines.map((line, i) => (
+          <p key={i} className="text-[9.5px] leading-relaxed text-justify whitespace-pre-line" style={customStyle}>
+            {line}
+          </p>
+        ))}
+      </div>
+    );
+  };
+
   const renderSummarySection = (customTitle = labelSummary) => {
     if (!personal.bio) return null;
     return (
@@ -89,7 +135,7 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
           <span>{customTitle}</span>
           <span className="flex-1 h-px bg-gray-200" />
         </h2>
-        <p className="text-[10px] leading-relaxed text-gray-700 whitespace-pre-line text-justify">
+        <p className="text-[10px] leading-relaxed whitespace-pre-line text-justify" style={{ color: textColor }}>
           {personal.bio}
         </p>
       </section>
@@ -121,7 +167,7 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
                   <h3 className="font-bold text-[10.5px]" style={{ color: headingColor }}>
                     {item.position || 'Posisi / Jabatan'}
                   </h3>
-                  <p className="text-[10px] font-semibold text-gray-700">
+                  <p className="text-[10px] font-semibold" style={{ color: subheadingColor }}>
                     {item.company || 'Perusahaan / Organisasi'}
                   </p>
                 </div>
@@ -129,11 +175,7 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
                   {item.startDate || 'Mulai'} &ndash; {item.endDate || 'Sekarang'}
                 </span>
               </div>
-              {item.description && (
-                <p className="mt-1 text-[9.5px] text-gray-600 leading-relaxed whitespace-pre-line">
-                  {item.description}
-                </p>
-              )}
+              {item.description && renderDeskripsiTeks(item.description, { color: textColor })}
             </div>
           ))}
         </div>
@@ -159,7 +201,7 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
                 <h3 className="font-bold text-[10.5px]" style={{ color: headingColor }}>
                   {item.institution || 'Nama Institusi / Universitas'}
                 </h3>
-                <p className="text-[10px] text-gray-700 font-medium">
+                <p className="text-[10px] font-medium" style={{ color: subheadingColor }}>
                   {item.degree || 'Gelar / Jurusan'}
                 </p>
               </div>
@@ -192,7 +234,11 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
                   <h3 className="font-bold text-[10.5px]" style={{ color: headingColor }}>
                     {item.name || 'Nama Proyek'}
                   </h3>
-                  {item.role && <span className="text-[9.5px] text-gray-500">| {item.role}</span>}
+                  {item.role && (
+                    <span className="text-[9.5px]" style={{ color: subheadingColor }}>
+                      | {item.role}
+                    </span>
+                  )}
                 </div>
                 {item.projectUrl && (
                   <a
@@ -206,11 +252,7 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
                   </a>
                 )}
               </div>
-              {item.description && (
-                <p className="mt-0.5 text-[9.5px] text-gray-600 leading-relaxed">
-                  {item.description}
-                </p>
-              )}
+              {item.description && renderDeskripsiTeks(item.description, { color: textColor })}
               {item.techStack && (
                 <p className="mt-0.5 text-[9px] font-mono text-gray-500">
                   <strong>Tech:</strong> {item.techStack}
@@ -302,20 +344,20 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
         <div className="space-y-1 text-[9.5px]">
           {activeHardSkills.length > 0 && (
             <div>
-              <strong className="text-gray-800">{isEn ? 'Technical Skills: ' : 'Keahlian Teknis: '}</strong>
-              <span className="text-gray-700">{activeHardSkills.map((s) => s.name).join(', ')}</span>
+              <strong style={{ color: subheadingColor }}>{isEn ? 'Technical Skills: ' : 'Keahlian Teknis: '}</strong>
+              <span style={{ color: textColor }}>{activeHardSkills.map((s) => s.name).join(', ')}</span>
             </div>
           )}
           {activeSoftSkills.length > 0 && (
             <div>
-              <strong className="text-gray-800">{isEn ? 'Soft Skills: ' : 'Soft Skills: '}</strong>
-              <span className="text-gray-700">{activeSoftSkills.map((s) => s.name).join(', ')}</span>
+              <strong style={{ color: subheadingColor }}>{isEn ? 'Soft Skills: ' : 'Soft Skills: '}</strong>
+              <span style={{ color: textColor }}>{activeSoftSkills.map((s) => s.name).join(', ')}</span>
             </div>
           )}
           {activeLangSkills.length > 0 && (
             <div>
-              <strong className="text-gray-800">{isEn ? 'Languages: ' : 'Bahasa: '}</strong>
-              <span className="text-gray-700">{activeLangSkills.map((s) => s.name).join(', ')}</span>
+              <strong style={{ color: subheadingColor }}>{isEn ? 'Languages: ' : 'Bahasa: '}</strong>
+              <span style={{ color: textColor }}>{activeLangSkills.map((s) => s.name).join(', ')}</span>
             </div>
           )}
         </div>
@@ -369,8 +411,7 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
           {renderProjectsSection()}
         </div>
 
-        <footer className="pt-3 border-t border-gray-100 flex items-center justify-between text-[8.5px] text-gray-400">
-          <span>Dibuat dengan MeIntervU AI · Format Ramah ATS</span>
+        <footer className="pt-3 border-t border-gray-100 flex items-center justify-end text-[8.5px] text-gray-400">
           <span>Halaman 1 dari 1</span>
         </footer>
       </div>
@@ -445,8 +486,7 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
           {renderSkillsSection()}
         </div>
 
-        <footer className="pt-3 border-t border-gray-100 flex items-center justify-between text-[8.5px] text-gray-400">
-          <span>CV Kronologis Profesional · MeIntervU AI</span>
+        <footer className="pt-3 border-t border-gray-100 flex items-center justify-end text-[8.5px] text-gray-400">
           <span>Halaman 1 dari 1</span>
         </footer>
       </div>
@@ -521,8 +561,7 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
           {renderEducationSection()}
         </div>
 
-        <footer className="pt-3 border-t border-gray-100 flex items-center justify-between text-[8.5px] text-gray-400">
-          <span>CV Fungsional / Berbasis Keahlian · MeIntervU AI</span>
+        <footer className="pt-3 border-t border-gray-100 flex items-center justify-end text-[8.5px] text-gray-400">
           <span>Halaman 1 dari 1</span>
         </footer>
       </div>
@@ -654,8 +693,7 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
           </main>
         </div>
 
-        <footer className="pt-3 border-t border-gray-100 flex items-center justify-between text-[8.5px] text-gray-400">
-          <span>CV Kombinasi / Hybrid 2 Kolom · MeIntervU AI</span>
+        <footer className="pt-3 border-t border-gray-100 flex items-center justify-end text-[8.5px] text-gray-400">
           <span>Halaman 1 dari 1</span>
         </footer>
       </div>
@@ -769,8 +807,7 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
         </div>
       </div>
 
-      <footer className="p-4 border-t border-gray-100 flex items-center justify-between text-[8.5px] text-gray-400">
-        <span>CV Kreatif Modern · MeIntervU AI</span>
+      <footer className="p-4 border-t border-gray-100 flex items-center justify-end text-[8.5px] text-gray-400">
         <span>Halaman 1 dari 1</span>
       </footer>
     </div>

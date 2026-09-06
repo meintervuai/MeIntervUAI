@@ -224,13 +224,13 @@ MeIntervUAI/                          # ROOT
 | `design/tokens.js` | Semua variabel desain dari `prd.md` §11 (warna, tipografi, radius, spacing, breakpoints) |
 | `design/globals.css` | Reset, kelas utilitas dasar, `color-scheme`, focus ring oranye |
 | `pages/Masuk.jsx` | Tombol "Masuk dengan Google" via `supabase.auth.signInWithOAuth`, redirect |
-| `pages/Home.jsx` | FR-19: Dashboard utama dengan **Mobile Tab Navigation** (Ringkasan, Analisis CV, Profil CV) persisten (`localStorage` + `?tab=`), KartuKuota, dan kotak inline `KotakAnalisisCv` |
-| `pages/PembuatCv.jsx` | Form interaktif CV builder bertahap + **sidebar pratinjau A4 sticky** pada desktop & toggle mode pada mobile |
+| `pages/Home.jsx` | FR-19: Dashboard utama dengan **Header Branding Permanen**, **Mobile Tab Navigation 3 Tab** (Ringkasan, Analisis CV, Aktivitas) persisten (`localStorage` + `?tab=`), 1 baris stat cards horizontal, integrasi Profil CV langsung ke tab Ringkasan, dan kotak inline `KotakAnalisisCv` |
+| `pages/PembuatCv.jsx` | Form interaktif CV builder bertahap + **Preset Tema Warna Profesional** + **Kunci Spektrum Gelap Teks Isi** + **Sidebar Pratinjau A4 Sticky & Drag-to-Pan** + **Fungsi Ekspor PDF Kloning Off-screen 100% Unscaled** |
 | `pages/EditorCv.jsx` | Form bertahap + autosave 30 dtk (debounce) ke `POST /api/cv` |
 | `pages/AnalisisCv.jsx` | Detail hasil: KartuSkorCv + DaftarPosisi + BagianPerbaikanCv (render dari DB) |
 | `components/cv/KotakAnalisisCv.jsx` | Kotak inline persisten Analisis CV AI di Home (skor ATS/HR, evaluasi, interactive chips konfirmasi posisi, saran perbaikan) |
 | `components/cv/IkonMediaSosial.jsx` | Komponen SVG kustom untuk 6 platform media sosial (LinkedIn, GitHub, Website/Portofolio, Twitter/X, Instagram, Facebook) |
-| `components/cv/PratinjauCv.jsx` | Render lembar A4 CV langsung di browser untuk 5 template (ATS Friendly, Kronologis, Fungsional, Kombinasi, Kreatif) |
+| `components/cv/PratinjauCv.jsx` | Render lembar A4 CV langsung di browser untuk 5 template (ATS Friendly, Kronologis, Fungsional, Kombinasi, Kreatif) + **Parser Bullet Point Semantis (`<ul><li>`) untuk Pengalaman & Proyek** + **Bebas Watermark Promosi (Footer Bersih)** |
 | `components/PelindungRute.jsx` | Cek `KonteksOtentikasi`; belum login → redirect `/masuk` |
 | `components/icons/*` | SVG inline kustom (`aria-label` wajib) — lihat `prd.md` §11.4 |
 | `contexts/KonteksKuota.jsx` | Menyimpan sisa kuota; diperbarui setelah panggilan AI |
