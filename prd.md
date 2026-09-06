@@ -95,18 +95,29 @@ Produk dibangun di atas 5 pilar utama:
 - **Hasil disimpan ke DB** (`analisis_cv`) lalu ambil dari DB dan **dirender sebagai komponen UI/CSS** — bukan menampilkan teks AI mentah (pola: `struktur_file.md` §9).
 - *(Fase berikutnya)* Saran per bagian bisa diterima/ditolak satu per satu atau massal (FR-07, FR-15), tampilan bandingkan berdampingan.
 
-### 5.3 Simulasi Wawancara (3 Mode)
-- **Mode Teks** (default, paling ringan, cocok untuk koneksi lambat), **Audio** (speech-to-text + live caption), **Video** (opsional, analisis non-verbal MediaPipe). Mode video hanya dimuat jika dipilih terpisah.
-- **Pertanyaan dinamis** 5–15 (tidak ditampilkan totalnya ke pengguna agar terasa seperti wawancara nyata):
-  - Inisialisasi **batching**: 5–8 pertanyaan inti dibuat sekaligus dalam 1 panggilan API berdasarkan posisi target + data CV.
-  - **Follow-up adaptif** (maks 3 per pertanyaan inti) untuk menggali jawaban bagus / mengklarifikasi jawaban kurang.
-  - **Exit question**: "Ada yang ingin Anda tanyakan tentang posisi ini?"
-- **Hybrid input**: textarea ketik + tombol mic (speech-to-text), dapat berpindah kapan saja; **auto-correct** hasil STT digabung dengan evaluasi dalam 1 panggilan AI (hemat token).
-- **Timer + progress bar sticky** di atas layar, indikator "Pertanyaan X" (tanpa /total), badge "Follow-up ke-Y", perubahan warna dinamis (hijau → kuning → merah).
-- **Kontrol darurat**: jeda, lewati pertanyaan (maks 2×), akhiri sesi.
-- **Peringatan koneksi**: deteksi latency tinggi / frame rendah → peringatan + tombol cepat pindah mode audio.
-- **Mode privasi**: opsi simulasi tanpa video bagi pengguna tanpa ruang privat.
-- **Solusi keyboard mobile**: sticky header, auto-scroll textarea, deteksi keyboard via **Visual Viewport API**, tombol "Kirim" sticky di atas keyboard.
+### 5.3 Simulasi Wawancara (3 Mode & Strict Single-Screen View)
+- **Mode Teks** (default, chat WhatsApp/Telegram style, paling ringan), **Audio** (voice waveform oranye dinamis + speech-to-text), **Video** (kamera real-time mirror + live speech transcript strip).
+- **Pertanyaan 1 & 2 Wajib Perkenalan Diri & Cross-Check CV**:
+  - **Pertanyaan 1**: Perkenalan diri profesional & elevator pitch (latar belakang pendidikan, rangkuman karier, dan motivasi melamar).
+  - **Pertanyaan 2**: Validasi & cross-check mendalam terhadap riwayat CV (mengaitkan peran spesifik di pengalaman kerja, proyek portofolio, atau latar belakang edukasi & keahlian yang tercantum di CV pengguna).
+  - **Pertanyaan 3 s/d 10+**: Pertanyaan berbasis standar HRD & metode STAR teknikal/umum + adaptive follow-up cerdas.
+- **Cross-Check AI Real-Time**: AI membandingkan transkrip ucapan pengguna dengan entitas CV asli (perusahaan, jabatan, nama proyek, institusi, jurusan, keahlian) dan menampilkan status validasi instan (`✓ Cocok dengan CV: [entitas]`).
+- **Live Speech Transcript Dual-Buffer (Bebas Double Teks)**:
+  - Pemisahan ketat antara buffer final terakumulasi (`finalTranscriptRef.current`) dan buffer sementara non-final (`interimText`).
+  - Mencegah penumpukan rekaman ganda ("cerita ceritakan ceritakan ar..."), buffer dibersihkan tuntas setiap transisi pertanyaan baru.
+- **Tata Letak Strict 1 Layar Penuh (Zero Scrolling / `h-[100dvh]` Non-Scrollable)**:
+  - Ruang simulasi aktif mengunci scroll halaman (`fixed inset-0 z-50 h-[100dvh] w-screen overflow-hidden` dan `document.body.style.overflow = 'hidden'`).
+  - Header bar kompak (`h-12 sm:h-14`), viewport utama fleksibel (`flex-1 min-h-0`), floating transcript strip internal scroll (`max-h-20 sm:max-h-24`), dan control action bar bawah terfiksasi (`h-14 sm:h-16`) sehingga bebas dari window scrolling vertikal.
+- **Konsistensi Tema Oranye Terang (`oranye-*`)**:
+  - Seluruh aksen interaktif (tombol "Masuk Ruang Simulasi", tombol "Selesai Menjawab (Lanjut)", audio waveform, recording pulse, dan badge skor evaluasi) menggunakan palet oranye terang seragam (`#FF6B00`, `bg-oranye-500`, `text-oranye-400`, `border-oranye-500/30`) berpadu netral hangat `batu-*`.
+- **Sistem Tab Ganda Menu Simulasi (Pilih Mode vs. Hasil Review Sesi)**:
+  - **Tab 1 ("Pilih Mode Simulasi")**: Akses gate validasi kelengkapan CV, seleksi 3 format simulasi (Teks, Suara, Video), konfigurasi posisi pekerjaan & bahasa, serta panel uji kesiapan perangkat (kamera, mic berfilter echo, dan speaker audio).
+  - **Tab 2 ("Hasil Review Sesi")**: Rekapitulasi riwayat ulasan sesi yang diselesaikan, skor total numerik, predikat kompetensi, 4 metrik pilar (Kesesuaian Isi, Struktur STAR, Kosa Kata Profesional, Kejelasan Artikulasi), catatan kekuatan & perbaikan, serta navigasi interaktif membuka rapor detail per sesi atau melatih ulang posisi target.
+- **Penyimpanan & Navigasi Otomatis Pasca-Sesi**:
+  - Ketika sesi diselesaikan (mencapai 10+ pertanyaan atau tombol Akhiri Sesi ditekan), hasil evaluasi langsung disimpan secara persisten ke basis data Supabase (`evaluasi_wawancara`, `sesi_wawancara`) dan cadangan `localStorage` (`mentervu_riwayat_simulasi`), kemudian pengguna otomatis diarahkan membuka tampilan rincian review pada Tab 2.
+- **Hybrid input**: textarea ketik / tombol koreksi manual + speech-to-text.
+- **Kontrol darurat**: jeda, akhiri sesi, mute mic, dan toggle kamera (dengan auto-downgrade cerdas Video → Audio).
+- **Jaminan Privasi**: Video & audio diproses lokal di browser, tidak ada rekaman video/suara yang diunggah ke server mana pun.
 
 ### 5.4 Evaluasi Komprehensif
 - **Verbal** (via LLM): isi jawaban, struktur (metode STAR), relevansi dengan CV, kelengkapan — dengan **normalisasi skor antar model**.
@@ -139,11 +150,11 @@ Prioritas: **P0** = wajib di Milestone 1 • **P1** = penting • **P2** = pelen
 | FR-06 | Analisis CV AI | AI menganalisis kelengkapan, daya tarik, rekomendasi posisi, dan perbaikan | P0 | M1 | `analisis_cv`, `pemakaian_ai` |
 | FR-07 | Saran Revisi CV | Saran per bagian (Ringkasan/Pengalaman/Keahlian) yang bisa diterima/ditolak | P1 | M4 | `saran_revisi_cv` |
 | FR-08 | Unduh CV PDF | Ekspor PDF profesional & ramah ATS via `html2pdf.js` | P1 | M2 | `riwayat_cv` |
-| FR-09 | Persiapan Simulasi | Pilih posisi target, mode (Teks/Audio/Video), bahasa (id/en) | P0 | M3 | `sesi_wawancara` |
+| FR-09 | Persiapan Simulasi | Navigasi Tab 1 ("Pilih Mode Simulasi"): Akses gate kelengkapan CV, pilih posisi target, mode (Teks/Audio/Video), bahasa (id/en), & device check | P0 | M3 | `sesi_wawancara` |
 | FR-10 | Simulasi Real-time | STT, analisis MediaPipe, hybrid input, auto-correct, timer & progress sticky, kontrol darurat | P0 | M3 | `sesi_wawancara`, `pertanyaan_sesi`, `jawaban_sesi` |
 | FR-11 | Peringatan Koneksi | Deteksi latency tinggi / frame rendah → peringatan + tombol cepat ke mode audio | P1 | M3 | `pengaturan_sistem` |
 | FR-12 | Evaluasi AI | Evaluasi verbal & non-verbal real-time + normalisasi skor antar model | P0 | M3 | `evaluasi_sesi`, `metrik_performa` |
-| FR-13 | Review Hasil | Transkrip (mentah + terkoreksi), skor, tab Evaluasi/Rekomendasi Posisi/Lowongan | P0 | M3 | `evaluasi_sesi`, `jawaban_sesi` |
+| FR-13 | Review Hasil | Tab 2 ("Hasil Review Sesi"): Transkrip (mentah + ideal), skor total numerik, metrik pilar STAR, kekuatan & perbaikan, rekomendasi karir | P0 | M3 | `evaluasi_sesi`, `jawaban_sesi`, `evaluasi_wawancara` |
 | FR-14 | Analisis Kesenjangan | AI membandingkan CV dengan jawaban → kesenjangan keahlian | P1 | M4 | `analisis_cv`, `evaluasi_sesi` |
 | FR-15 | Terapkan Saran Sekali Klik | Terima/tolak saran per bagian; "Terima Semua" / "Tolak Semua" | P1 | M4 | `saran_revisi_cv` |
 | FR-16 | Pencarian Lowongan | Cari & filter lowongan manual dari JSearch API | P1 | M5 | `lowongan` |
@@ -152,7 +163,7 @@ Prioritas: **P0** = wajib di Milestone 1 • **P1** = penting • **P2** = pelen
 | FR-19 | Home (Dashboard) | Ringkasan kuota AI, skor CV terakhir, tindakan cepat, riwayat kegiatan, **kotak Analisis CV inline persisten**, serta **Mobile Tab Navigation** (Ringkasan, Analisis CV, Profil CV) dengan persistent active tab | P0 | M1 | `profil`, `analisis_cv`, `pemakaian_ai` |
 | FR-20 | Statistik Progress | Grafik tren skor & skill dari waktu ke waktu | P2 | M5 | `evaluasi_sesi` |
 | FR-21 | Sistem Notifikasi | Notifikasi saran CV, lowongan baru, pencapaian | P2 | M5 | `notifikasi` |
-| FR-22 | Riwayat Simulasi | Daftar riwayat sesi dengan filter & sorting | P1 | M4 | `sesi_wawancara` |
+| FR-22 | Riwayat Simulasi | Tab 2 Menu Simulasi: Kartu rekapitulasi riwayat sesi dengan skor, predikat, metrik STAR, tombol buka review, & tombol latih ulang | P1 | M3 | `sesi_wawancara`, `evaluasi_wawancara` |
 
 ## 7. Non-Functional Requirements (NFR-01 s/d NFR-13)
 
@@ -418,10 +429,51 @@ Pada halaman utama (Home Dashboard), tata letak dioptimalkan untuk mobile dan de
 2. **Ekspor PDF Bersih Bebas Watermark Promosi:**
    - Menghapus seluruh label promosi aplikasi / watermark (seperti `"Dibuat dengan MeIntervU AI · Format Ramah ATS"`, `"CV Kronologis Profesional · MeIntervU AI"`, dsb.) pada bagian *footer* dokumen di semua 5 template.
    - Hasil akhir cetak dokumen hanya menyisakan penomoran halaman resmi yang elegan di sudut kanan bawah (`Halaman 1 dari 1`).
-3. **Penguncian Skala Ekspor 100% (Isolasi UI Zoom Level):**
-   - Mencegah kerusakan rasio, font mengecil/membesar, atau halaman terpotong saat pengguna mengunduh PDF dalam keadaan kanvas pratinjau di-zoom (misal 30%, 65%, atau 120%).
-   - Fungsi `handleDownloadPdf` melakukan kloning elemen DOM `#cv-preview-sheet` ke dalam kontainer *off-screen* terisolasi (`left: -9999px`).
-   - Kloning dibersihkan dari atribut CSS transform (`transform: none`), dinormalkan ke dimensi standar A4 (`width: 595px; minHeight: 842px; margin: 0`), dan dirender oleh `html2pdf.js` / `html2canvas` dengan `scale: 2.5` beresolusi tinggi dan proporsi 100% sempurna sesuai standar cetak kertas A4.
+3. **Penguncian Skala Ekspor 100% & Fiksasi 1:1 Rendering (Isolasi UI Zoom & Media Screen):**
+   - Mencegah kerusakan rasio, font mengecil/membesar, atau pergeseran margin saat pengguna mengunduh PDF dalam keadaan kanvas pratinjau di-zoom (misal 30%, 65%, atau 120%).
+   - Fungsi `handleDownloadPdf` melakukan kloning elemen DOM `#cv-preview-sheet` ke dalam kontainer *off-screen* terisolasi (`left: -9999px`) dengan lebar desktop `1200px` dan `windowWidth: 1200` pada `html2canvas` agar aturan CSS media `screen` tetap berlaku konsisten (mencegah aturan `@media print` merusak latar belakang dan layout).
+   - Menunggu font dan aset selesai dimuat (`await document.fonts.ready` dan verifikasi semua gambar avatar/foto profil telah `complete`) sebelum kanvas digambar untuk mencegah fallback font sistem ke Arial/Times New Roman.
+   - Menerapkan `-webkit-print-color-adjust: exact;` dan `print-color-adjust: exact;` pada seluruh container template dan klon PDF untuk menjamin warna latar, header, dan border tampil akurat 100%.
+   - Kloning dinormalkan ke dimensi standar A4 (`width: 595px; minHeight: 842px; margin: 0; boxSizing: border-box`), dan dirender oleh `html2pdf.js` / `html2canvas` dengan `scale: 2.5` beresolusi tinggi dan proporsi 100% sempurna sesuai standar cetak kertas A4.
+
+### 11.11 Menu Simulasi Wawancara AI Multi-Mode (`/simulasi`) — Standar Video Interview (HireVue)
+Halaman interaktif persiapan dan ruang simulasi wawancara kerja berbasis AI (FR-09, FR-10, FR-12, FR-13):
+1. **Prasyarat Akses Berdasarkan Kelengkapan CV (Access Gate):**
+   - Tombol mulai simulasi terkunci (*disabled*) jika profil CV pengguna belum memenuhi prasyarat minimal analisis AI.
+   - Syarat minimal: Memiliki data **Pengalaman Kerja** (minimal 1 riwayat pekerjaan/proyek yang valid) dan **Keahlian / Skills** (minimal 1 hard/soft skills).
+   - Jika belum lengkap, sistem menampilkan kartu peringatan khusus yang merinci bagian apa saja yang masih kosong disertai tombol CTA langsung menuju CV Builder (`/pembuat-cv`).
+2. **Deteksi Otomatis Tingkat Pengalaman dari CV (Tanpa Input Manual):**
+   - Menghilangkan input manual pilihan tingkat pengalaman (Junior/Mid/Senior).
+   - AI mendeteksi dan mengambil konteks tingkat pengalaman langsung dari data riwayat kerja, durasi, dan tanggung jawab yang tercatat di CV pengguna (*Fresh Graduate*, *Junior 1-2 tahun*, *Mid-Level 3-5 tahun*, atau *Senior 5+ tahun*), ditampilkan dalam badge otomatis.
+3. **Perekaman Media Bebas Echo & Desync (WebRTC Best Practice):**
+   - **Pencegahan Suara Double (Echo Loop):**
+     - Elemen pratinjau `<video>` lokal wajib memiliki atribut `autoPlay playsInline muted` serta penetapan imperative `el.muted = true` dan `el.volume = 0` pada callback/ref hook DOM.
+     - Penerapan Acoustic Echo Cancellation (AEC), noise suppression, dan auto gain control pada constraint audio: `{ echoCancellation: true, noiseSuppression: true, autoGainControl: true }`.
+     - Jeda otomatis STT (*SpeechRecognition*) saat AI sedang berbicara (*speechSynthesis*) untuk mencegah suara AI masuk kembali sebagai jawaban pengguna.
+     - Pembersihan dan penghentian seluruh track lama (`track.stop()`) sebelum memulai stream baru.
+   - **Pencegahan Audio/Video Tidak Sinkron (Desync):**
+     - Penggabungan track audio dan video ke dalam satu `MediaStream` tunggal sebelum diinisialisasi ke `MediaRecorder`.
+     - Penggunaan codec stabil yang didukung peramban: `video/webm;codecs=vp9,opus` atau `video/webm;codecs=vp8,opus`.
+     - Penambahan buffer jeda singkat (~300ms) sebelum recorder mulai merekam untuk memastikan sinkronisasi clock hardware encoder.
+4. **Multi-Mode Simulasi Wawancara (Teks, Audio, Video):**
+   - **Dynamic Device Check:**
+     - **Mode Teks:** Melewati (*skip*) pengecekan perangkat keras sama sekali. Pengguna dapat langsung masuk ke ruang simulasi.
+     - **Mode Audio:** Hanya meminta izin dan menguji Mikrofon (visual level meter). Pengecekan kamera disembunyikan.
+     - **Mode Video:** Meminta izin dan menguji Mikrofon serta Kamera depan (*webcam*).
+   - **Tata Letak (UI) Dinamis Berdasarkan Mode:**
+     - **Mode Teks (Chat Interface):** Tampilan bertema aplikasi pesan instan (mirip WhatsApp/Telegram). Pertanyaan AI muncul sebagai *chat bubble* di kiri disertai avatar bot, jawaban pengguna di bubble kanan oranye, serta input multiline textarea dan tombol "Kirim" di bagian bawah.
+     - **Mode Audio (Voice-Only Interface):** Fokus layar pada teks pertanyaan besar di tengah, avatar pengguna dengan *Audio Visualizer* gelombang suara (SVG waveform animasi) yang bereaksi terhadap suara pengguna, serta dock bawah dengan tombol Mute/Unmute Mic dan Selesai Menjawab.
+     - **Mode Video (Camera & Voice Interface):** Standar HireVue dengan tata letak split-screen 40:60 di Desktop dan vertical stack di Mobile, live camera feed, indikator merah berkedip `⏺ RECORDING`, dan dock kontrol lengkap (Kamera On/Off, Mic Mute/Unmute, Selesai Menjawab).
+   - **Mode Switching (Downgrade Dinamis):**
+     - Pada Mode Video, pengguna dapat mematikan kamera (Camera Off) di tengah simulasi jika terjadi kendala jaringan atau privasi, secara otomatis mengalihkan visual ke mode audio tanpa menghentikan atau mereset sesi wawancara.
+5. **Pewawancara AI Adaptif Berbasis CV & Dynamic Follow-up (Minimal 10 Pertanyaan):**
+   - **Pertanyaan Awal Berbasis CV Nyata:** Pertanyaan pertama (Ice-breaking) dirancang secara spesifik dengan membaca data riwayat proyek atau pekerjaan nyata dari profil CV pengguna (menyebutkan nama proyek atau perusahaan secara eksplisit).
+   - **Adaptive Follow-up Questioning:** AI menganalisis kata kunci dari jawaban pengguna (misal: kepemimpinan tim, penanganan bug kritis, optimasi performa, atau negosiasi stakeholder) untuk menghasilkan pertanyaan lanjutan mendalam layaknya wawancara asli.
+   - **Batas Minimal Sesi:** Setiap sesi simulasi menyusun minimal 10 pertanyaan komprehensif sebelum sesi diperbolehkan selesai secara otomatis.
+6. **Persistensi Database & Evaluasi Skor Komprehensif (FR-12, FR-13):**
+   - Rangkaian sesi, butir pertanyaan, dan jawaban pengguna disimpan secara persisten ke database Supabase (`sesi_wawancara`, `pertanyaan_sesi`, `jawaban_sesi`, `evaluasi_sesi`) dengan sinkronisasi ke penyimpanan lokal.
+   - Evaluasi pasca-wawancara menyajikan Skor Keseluruhan (0–100), Predikat Kesiapan Kerja, 4 Pilar Metrik (Kesesuaian Isi, Analisis Metode STAR, Kosa Kata Profesional, Kepercayaan Diri), Rincian Pertanyaan & Jawaban Ideal, serta Rekomendasi Karir/CV lanjutan.
+
 
 ---
 

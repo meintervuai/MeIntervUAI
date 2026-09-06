@@ -372,8 +372,16 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
     return (
       <div
         id={id}
-        style={{ ...fontStyle, color: textColor, width: '595px', minHeight: '842px', backgroundColor: '#FFFFFF' }}
-        className="relative shadow-2xl p-8 sm:p-10 flex flex-col justify-between box-border text-[11px] leading-relaxed transition-all duration-200"
+        style={{
+          ...fontStyle,
+          color: textColor,
+          width: '595px',
+          minHeight: '842px',
+          backgroundColor: '#FFFFFF',
+          WebkitPrintColorAdjust: 'exact',
+          printColorAdjust: 'exact',
+        }}
+        className="cv-preview-canvas relative shadow-2xl p-10 flex flex-col justify-between box-border text-[11px] leading-relaxed transition-all duration-200"
       >
         <div>
           {/* Header ATS Bersih Tengah / Kiri */}
@@ -425,8 +433,16 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
     return (
       <div
         id={id}
-        style={{ ...fontStyle, color: textColor, width: '595px', minHeight: '842px', backgroundColor: '#FFFFFF' }}
-        className="relative shadow-2xl p-8 sm:p-10 flex flex-col justify-between box-border text-[11px] leading-relaxed transition-all duration-200"
+        style={{
+          ...fontStyle,
+          color: textColor,
+          width: '595px',
+          minHeight: '842px',
+          backgroundColor: '#FFFFFF',
+          WebkitPrintColorAdjust: 'exact',
+          printColorAdjust: 'exact',
+        }}
+        className="cv-preview-canvas relative shadow-2xl p-10 flex flex-col justify-between box-border text-[11px] leading-relaxed transition-all duration-200"
       >
         <div>
           {/* Header Formal Bergaris Aksen Tebal */}
@@ -500,8 +516,16 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
     return (
       <div
         id={id}
-        style={{ ...fontStyle, color: textColor, width: '595px', minHeight: '842px', backgroundColor: '#FFFFFF' }}
-        className="relative shadow-2xl p-8 sm:p-10 flex flex-col justify-between box-border text-[11px] leading-relaxed transition-all duration-200"
+        style={{
+          ...fontStyle,
+          color: textColor,
+          width: '595px',
+          minHeight: '842px',
+          backgroundColor: '#FFFFFF',
+          WebkitPrintColorAdjust: 'exact',
+          printColorAdjust: 'exact',
+        }}
+        className="cv-preview-canvas relative shadow-2xl p-10 flex flex-col justify-between box-border text-[11px] leading-relaxed transition-all duration-200"
       >
         <div>
           {/* Header Ringkas Berorientasi Kompetensi */}
@@ -575,8 +599,16 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
     return (
       <div
         id={id}
-        style={{ ...fontStyle, color: textColor, width: '595px', minHeight: '842px', backgroundColor: '#FFFFFF' }}
-        className="relative shadow-2xl p-6 sm:p-8 flex flex-col justify-between box-border text-[11px] leading-relaxed transition-all duration-200"
+        style={{
+          ...fontStyle,
+          color: textColor,
+          width: '595px',
+          minHeight: '842px',
+          backgroundColor: '#FFFFFF',
+          WebkitPrintColorAdjust: 'exact',
+          printColorAdjust: 'exact',
+        }}
+        className="cv-preview-canvas relative shadow-2xl p-8 flex flex-col justify-between box-border text-[11px] leading-relaxed transition-all duration-200"
       >
         <div className="grid grid-cols-12 gap-5 h-full">
           {/* SIDEBAR KIRI (35% / 4 Kolom) */}
@@ -706,8 +738,16 @@ export default function PratinjauCv({ formData, id = 'cv-preview-sheet' }) {
   return (
     <div
       id={id}
-      style={{ ...fontStyle, color: textColor, width: '595px', minHeight: '842px', backgroundColor: '#FFFFFF' }}
-      className="relative shadow-2xl flex flex-col justify-between box-border text-[11px] leading-relaxed transition-all duration-200"
+      style={{
+        ...fontStyle,
+        color: textColor,
+        width: '595px',
+        minHeight: '842px',
+        backgroundColor: '#FFFFFF',
+        WebkitPrintColorAdjust: 'exact',
+        printColorAdjust: 'exact',
+      }}
+      className="cv-preview-canvas relative shadow-2xl flex flex-col justify-between box-border text-[11px] leading-relaxed transition-all duration-200"
     >
       <div>
         {/* Banner Atas Berwarna Aksen Tebal */}

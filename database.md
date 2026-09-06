@@ -270,11 +270,11 @@ Seed utama (⊕ = ditambah migrasi 002):
 
 | Tabel | FR | Kolom utama (ringkas) |
 |---|---|---|
-| `sesi_wawancara` | FR-09,10,22 | id, profil_id FK, mode (`teks/audio/video`), bahasa, posisi_target, status (`berlangsung/selesai/dibatalkan`), skor_total, tanggal_mulai, tanggal_selesai |
-| `pertanyaan_sesi` | FR-10 | id, sesi_id FK, tipe (`inti/lanjutan`), pertanyaan, urutan, pertanyaan_induk_id FK (self, untuk follow-up), status (`terjawab/dilewati`) |
+| `sesi_wawancara` | FR-09,10,22 | id, profil_id FK, mode (`teks/audio/video`), bahasa, posisi_target, status (`berlangsung/selesai/dibatalkan`), skor_total, predikat, level, tanggal_mulai, tanggal_selesai |
+| `pertanyaan_sesi` | FR-10 | id, sesi_id FK, tipe (`perkenalan_diri/cross_check_cv/inti/lanjutan`), sumber_konteks, pertanyaan, urutan, pertanyaan_induk_id FK (self, untuk follow-up), status (`terjawab/dilewati`) |
 | `jawaban_sesi` | FR-10,13 | id, pertanyaan_sesi_id FK, teks_mentah, teks_terkoreksi (auto-correct), durasi (detik) |
 | `metrik_performa` | FR-12 | id, jawaban_sesi_id FK, kontak_mata_persen, postur (`tegak/membungkuk`), durasi, skor_kepercayaan_diri |
-| `evaluasi_sesi` | FR-12,13,14 | id, sesi_id FK, skor_verbal, skor_non_verbal, skor_total, rincian jsonb (rubrik per pertanyaan), rekomendasi_posisi jsonb |
+| `evaluasi_sesi` / `evaluasi_wawancara` | FR-12,13,22 | id, sesi_id FK, profil_id FK, skor_total, predikat, metrik jsonb (`relevansiIsi`, `strukturStar`, `kosaKataProfesional`, `kejelasanArtikulasi`), kekuatan jsonb, area_peningkatan jsonb, rincian_pertanyaan jsonb, tanggal timestamptz. Cadangan offline: `localStorage` (`mentervu_riwayat_simulasi`). |
 | `umpan_balik_akurasi` | FR-13 | id, evaluasi_sesi_id FK, profil_id FK, kategori, catatan |
 | `saran_revisi_cv` | FR-07,15 | id, analisis_cv_id FK, bagian (`ringkasan/pengalaman/keahlian/dll`), teks_asli, saran_ai, status (`menunggu/diterima/ditolak`) |
 | `lowongan` | FR-16 | id, judul, perusahaan, lokasi, gaji_min/maks, tipe, url, sumber (JSearch), tanggal_publikasi, data_mentah jsonb |
@@ -294,7 +294,7 @@ Seed utama (⊕ = ditambah migrasi 002):
 | `status_analisis` | `berhasil`, `diproses`, `gagal` |
 | `mode_sesi` | `teks`, `audio`, `video` |
 | `status_sesi` | `berlangsung`, `selesai`, `dibatalkan` |
-| `tipe_pertanyaan` | `inti`, `lanjutan` (follow-up) |
+| `tipe_pertanyaan` | `perkenalan_diri`, `cross_check_cv`, `inti`, `lanjutan` (follow-up) |
 | `postur` | `tegak`, `membungkuk` |
 | `status_saran` | `menunggu`, `diterima`, `ditolak` |
 | `fitur_ai` | `analisis_cv`, `generate_pertanyaan`, `follow_up`, `auto_correct`, `evaluasi_akhir`, `pencocokan_lowongan` |
@@ -381,7 +381,8 @@ CREATE INDEX idx_sesi_profil_tgl          ON public.sesi_wawancara (profil_id, d
 | 003 | `003_entitas_milestone_1.sql` | saat mulai M1 | bikin `riwayat_cv`; tambah kolom `analisis_cv` (skor_kelengkapan, skor_daya_tarik, rekomendasi_perbaikan, riwayat_cv_id, penyedia, model, status); rename `templat_cv` (5 template Indonesia); trigger `perbarui_waktu`, `reset_kuota_harian`; RLS `riwayat_cv`; indeks |
 | 004 | `004_penyimpanan_foto.sql` | saat mulai M1 | bucket Storage `foto-profil` (publik) + kebijakan RLS per-uid `{uid}/avatar.*` |
 | 005 | `005_perbaikan_status_akun.sql` | saat mulai M1 | default & nilai `status_akun` → `aktif` + CHECK enum Indonesia |
-| 004+ | (fase berikut) | M3–M5 | `sesi_wawancara`, `pertanyaan_sesi`, `jawaban_sesi`, `metrik_performa`, `evaluasi_sesi`, `saran_revisi_cv`, `lowongan`, `notifikasi`, dll |
+| 006 | `006_sesi_wawancara_m3.sql` | M3 | Buat tabel `sesi_wawancara`, `pertanyaan_sesi`, `jawaban_sesi`, `evaluasi_sesi`, RLS, dan indeks performa |
+| 007+ | (fase berikut) | M4–M5 | `metrik_performa`, `saran_revisi_cv`, `lowongan`, `rekomendasi_lowongan`, `notifikasi`, dll |
 
 > ⚠️ `000_*`-seed & migrasi lama di dashboard Supabase (quota, RLS admin, testimoni) **dibiarkan/tidak dihapus**; migrasi baru menyesuaikan (rename) — dokumentasikan setiap penyimpangan di kolom "Catatan".
 

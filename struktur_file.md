@@ -52,7 +52,8 @@ MeIntervUAI/                          # ROOT
 │     ├─ 002_kuota_harian_20.sql
 │     ├─ 003_entitas_milestone_1.sql
 │     ├─ 004_penyimpanan_foto.sql
-│     └─ 005_perbaikan_status_akun.sql
+│     ├─ 005_perbaikan_status_akun.sql
+│     └─ 006_sesi_wawancara_m3.sql
 ├─ backend/                           # Python FastAPI (Controller + Model + Service)
 │  ├─ .env.example
 │  ├─ requirements.txt
@@ -136,6 +137,7 @@ MeIntervUAI/                          # ROOT
       │  ├─ PembuatCv.jsx             # daftar CV + pilih template
       │  ├─ EditorCv.jsx              # editor CV bertahap (autosave 30 dtk)
       │  ├─ AnalisisCv.jsx            # detail hasil analisis (atau diatas Home)
+      │  ├─ Simulasi.jsx              # ruang simulasi multi-mode (Teks/Audio/Video) + Sistem Tab Ganda (Mode & Hasil Review)
       │  ├─ Profil.jsx
       │  └─ Segera.jsx                # halaman "Segera Hadir" (modul non-M1)
       ├─ components/                  # komponen UI reuse
@@ -174,7 +176,8 @@ MeIntervUAI/                          # ROOT
       │  ├─ api_profil.js
       │  ├─ api_kuota.js
       │  ├─ api_cv.js
-      │  └─ api_analisis_cv.js
+      │  ├─ api_analisis_cv.js
+      │  └─ api_simulasi.js           # persistensi sesi, pertanyaan, jawaban, & riwayat evaluasi (ambilRiwayatSimulasi)
       ├─ contexts/                    # state global React
       │  ├─ KonteksOtentikasi.jsx
       │  ├─ KonteksKuota.jsx
@@ -225,12 +228,13 @@ MeIntervUAI/                          # ROOT
 | `design/globals.css` | Reset, kelas utilitas dasar, `color-scheme`, focus ring oranye |
 | `pages/Masuk.jsx` | Tombol "Masuk dengan Google" via `supabase.auth.signInWithOAuth`, redirect |
 | `pages/Home.jsx` | FR-19: Dashboard utama dengan **Header Branding Permanen**, **Mobile Tab Navigation 3 Tab** (Ringkasan, Analisis CV, Aktivitas) persisten (`localStorage` + `?tab=`), 1 baris stat cards horizontal, integrasi Profil CV langsung ke tab Ringkasan, dan kotak inline `KotakAnalisisCv` |
-| `pages/PembuatCv.jsx` | Form interaktif CV builder bertahap + **Preset Tema Warna Profesional** + **Kunci Spektrum Gelap Teks Isi** + **Sidebar Pratinjau A4 Sticky & Drag-to-Pan** + **Fungsi Ekspor PDF Kloning Off-screen 100% Unscaled** |
+| `pages/PembuatCv.jsx` | Form interaktif CV builder bertahap + **Preset Tema Warna Profesional** + **Kunci Spektrum Gelap Teks Isi** + **Sidebar Pratinjau A4 Sticky & Drag-to-Pan** + **Fungsi Ekspor PDF Kloning Off-screen 1:1 Rendering (Media Screen, Await Fonts/Assets, print-color-adjust)** |
+| `pages/Simulasi.jsx` | FR-09, FR-10, FR-12, FR-13: Ruang Simulasi Wawancara AI modern standar HireVue — **Konsistensi Tema Oranye Terang (`oranye-*`)**, **Pertanyaan 1 & 2 Wajib Perkenalan Diri & Cross-Check CV**, **Mesin Cross-Check AI Real-Time (Matching CV Entities)**, **Live Speech Transcript Dual-Buffer (Bebas Bug Double Teks)**, **Strict 1-Screen Viewport (`h-[100dvh]` Zero Scrolling / Body Scroll Lock)**, **Access Gate CV**, **Deteksi Otomatis Level CV**, **Device Check**, countdown timer 120s, dan laporan evaluasi komprehensif |
 | `pages/EditorCv.jsx` | Form bertahap + autosave 30 dtk (debounce) ke `POST /api/cv` |
 | `pages/AnalisisCv.jsx` | Detail hasil: KartuSkorCv + DaftarPosisi + BagianPerbaikanCv (render dari DB) |
 | `components/cv/KotakAnalisisCv.jsx` | Kotak inline persisten Analisis CV AI di Home (skor ATS/HR, evaluasi, interactive chips konfirmasi posisi, saran perbaikan) |
 | `components/cv/IkonMediaSosial.jsx` | Komponen SVG kustom untuk 6 platform media sosial (LinkedIn, GitHub, Website/Portofolio, Twitter/X, Instagram, Facebook) |
-| `components/cv/PratinjauCv.jsx` | Render lembar A4 CV langsung di browser untuk 5 template (ATS Friendly, Kronologis, Fungsional, Kombinasi, Kreatif) + **Parser Bullet Point Semantis (`<ul><li>`) untuk Pengalaman & Proyek** + **Bebas Watermark Promosi (Footer Bersih)** |
+| `components/cv/PratinjauCv.jsx` | Render lembar A4 CV langsung di browser untuk 5 template (ATS Friendly, Kronologis, Fungsional, Kombinasi, Kreatif) + **Parser Bullet Point Semantis (`<ul><li>`) untuk Pengalaman & Proyek** + **Bebas Watermark Promosi (Footer Bersih)** + **Padding Tetap & exact print-color-adjust untuk 1:1 PDF** |
 | `components/PelindungRute.jsx` | Cek `KonteksOtentikasi`; belum login → redirect `/masuk` |
 | `components/icons/*` | SVG inline kustom (`aria-label` wajib) — lihat `prd.md` §11.4 |
 | `contexts/KonteksKuota.jsx` | Menyimpan sisa kuota; diperbarui setelah panggilan AI |

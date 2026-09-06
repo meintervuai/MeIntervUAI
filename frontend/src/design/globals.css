@@ -22,6 +22,14 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* Color Adjust & Rendering Presisi untuk Pratinjau & Ekspor PDF */
+#cv-preview-sheet,
+#cv-preview-sheet-export,
+.cv-preview-canvas {
+  -webkit-print-color-adjust: exact !important;
+  print-color-adjust: exact !important;
+}
+
 /* Cincin fokus oranye (aksesibilitas — prd.md §11) */
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
   outline: 2px solid theme('colors.oranye.500');

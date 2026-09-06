@@ -363,7 +363,7 @@ export default function PembuatCv() {
     });
   };
 
-  // Export PDF Handler menggunakan html2pdf.js (Kunci Skala 100% & Bebas Watermark)
+  // Export PDF Handler menggunakan html2pdf.js (Kunci Skala 100% A4, Media Screen, Await Fonts & Assets)
   const handleDownloadPdf = async () => {
     const originalElement = document.getElementById('cv-preview-sheet');
     if (!originalElement) return;
@@ -372,11 +372,30 @@ export default function PembuatCv() {
     let tempWrapper = null;
 
     try {
+      // 1. Tunggu seluruh font browser dan ikon selesai dimuat (Anti-fallback font)
+      if (document.fonts && document.fonts.ready) {
+        await document.fonts.ready;
+      }
+
+      // 2. Tunggu seluruh gambar (foto profil / avatar) selesai dimuat sepenuhnya
+      const images = Array.from(originalElement.querySelectorAll('img'));
+      if (images.length > 0) {
+        await Promise.all(
+          images.map((img) => {
+            if (img.complete) return Promise.resolve();
+            return new Promise((resolve) => {
+              img.onload = resolve;
+              img.onerror = resolve;
+            });
+          })
+        );
+      }
+
       // Dynamic import html2pdf.js
       const html2pdfModule = await import('html2pdf.js');
       const html2pdf = html2pdfModule.default || html2pdfModule;
 
-      // 1. Kloning elemen pratinjau agar berdiri independen di luar skala zoom UI
+      // 3. Kloning elemen pratinjau agar berdiri independen di luar skala zoom UI
       const clone = originalElement.cloneNode(true);
       clone.id = 'cv-preview-sheet-export';
 
@@ -388,20 +407,24 @@ export default function PembuatCv() {
       clone.style.minHeight = '842px';
       clone.style.boxSizing = 'border-box';
       clone.style.backgroundColor = '#FFFFFF';
+      clone.style.webkitPrintColorAdjust = 'exact';
+      clone.style.printColorAdjust = 'exact';
+      clone.style.colorAdjust = 'exact';
 
-      // 2. Pasang di wrapper tersembunyi yang tetap di-render browser secara off-screen
+      // 4. Pasang di wrapper tersembunyi dengan lebar desktop agar media query 'screen' aktif konsisten
       tempWrapper = document.createElement('div');
       tempWrapper.style.position = 'fixed';
       tempWrapper.style.left = '-9999px';
       tempWrapper.style.top = '0';
-      tempWrapper.style.width = '595px';
+      tempWrapper.style.width = '1200px';
       tempWrapper.style.zIndex = '-9999';
       tempWrapper.style.overflow = 'visible';
+      tempWrapper.style.backgroundColor = '#FFFFFF';
       tempWrapper.appendChild(clone);
       document.body.appendChild(tempWrapper);
 
-      // Micro-tick untuk memastikan layout DOM klon selesai dihitung browser
-      await new Promise((resolve) => setTimeout(resolve, 60));
+      // Tunggu layout DOM klon selesai dihitung browser
+      await new Promise((resolve) => setTimeout(resolve, 150));
 
       const opt = {
         margin: [0, 0, 0, 0],
@@ -410,10 +433,13 @@ export default function PembuatCv() {
         html2canvas: {
           scale: 2.5, // Resolusi tinggi tajam untuk dokumen cetak A4
           useCORS: true,
+          allowTaint: true,
           letterRendering: true,
           scrollX: 0,
           scrollY: 0,
-          windowWidth: 595,
+          windowWidth: 1200, // Menjamin media query dihitung dalam mode desktop screen, bukan print
+          backgroundColor: '#FFFFFF',
+          logging: false,
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
       };
