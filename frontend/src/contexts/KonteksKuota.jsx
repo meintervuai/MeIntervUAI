@@ -49,3 +49,11 @@ export function KonteksKuota({ children }) {
     </Konteks.Provider>
   );
 }
+
+export function pakaiKuota() {
+  const konteks = useContext(Konteks);
+  if (!konteks) {
+    throw new Error('pakaiKuota harus dipakai di dalam <KonteksKuota>.');
+  }
+  return konteks;
+}

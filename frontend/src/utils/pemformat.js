@@ -22,3 +22,17 @@ export function namaDepan(nama) {
   if (!bersih) return '';
   return bersih.split(/\s+/)[0];
 }
+
+/** Format tanggal lengkap dengan nama hari & bulan */
+export function formatTanggal(tanggal = new Date(), bahasa = 'id') {
+  try {
+    return new Intl.DateTimeFormat(bahasa === 'en' ? 'en-US' : 'id-ID', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }).format(tanggal instanceof Date ? tanggal : new Date(tanggal));
+  } catch {
+    return '';
+  }
+}

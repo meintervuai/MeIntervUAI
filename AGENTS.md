@@ -41,16 +41,33 @@ Aturan lengkap: `struktur_file.md` §2 — Konvensi Penamaan.
 1. Baca PRD → tentukan FR & milestone terkait.
 2. Cek `struktur_file.md` → letakkan file sesuai konvensi (folder Inggris, nama file Indonesia).
 3. Cek `database.md` → tambah/ubah tabel lewat migrasi di `supabase/migrasi/`.
-4. Perbarui **ketiga dokumen** jika pekerjaan menyentuh kebutuhan/struktur/data.
+4. **WAJIB SINKRONISASI DOKUMEN SETIAP PERUBAHAN**: Setiap kali selesai membuat/mengubah fitur, UI, komponen, endpoint, atau skema data, **SEGERA perbarui `prd.md`, `struktur_file.md`, dan `database.md`** sebelum mengakhiri tugas. Ini aturan mutlak agar agen AI berikutnya memiliki konteks akurat dan tidak bingung.
 5. Ikuti Panduan Desain (`prd.md` §11): tanpa AI slop, warna utama oranye, ikon SVG kustom, mobile-first.
 
-## 5. Checklist Sebelum Selesai
+## 5. Protokol Wajib Pembaruan Dokumen (Global AI Rule)
 
+> **ATURAN MUTLAK BAGI AGEN AI:** Jangan pernah menyelesaikan interaksi/tugas tanpa memperbarui dokumentasi proyek jika ada perubahan kode, tata letak antarmuka, komponen, endpoint, atau basis data.
+
+Setiap agen AI yang bekerja di repositori ini WAJIB memeriksa dan memperbarui:
+1. **`prd.md`**:
+   - Catat perilaku fitur baru atau perubahan spesifikasi UI/UX di §5 (Lima Pilar) atau §6 (Functional Requirements).
+   - Catat perubahan interaksi, navigasi responsif/mobile (seperti tab navigation, modal ke inline box, sticky preview), dan komponen di §11 (Panduan Desain & UI/UX).
+2. **`struktur_file.md`**:
+   - Daftarkan setiap file atau komponen baru yang dibuat (misal di `components/`, `pages/`, `services/`, `utils/`).
+   - Perbarui peta modul di §4 (Backend) & §5 (Frontend).
+   - Catat endpoint baru atau perubahan controller di §7.
+3. **`database.md`**:
+   - Catat penambahan tabel, kolom, indeks, enum, atau kebijakan RLS baru di §5 dan §11.
+   - Perbarui catatan kuota jika ada perubahan logika kuota AI di §9.
+
+## 6. Checklist Sebelum Selesai
+
+- [ ] **DOKUMENTASI DIPERBARUI:** `prd.md`, `struktur_file.md`, dan `database.md` telah disinkronkan dengan kode terkini
 - [ ] Tidak ada nama file berbahasa Inggris di folder kode (nama file WAJIB Indonesia)
 - [ ] Tidak ada folder berbahasa Indonesia di folder kode (folder disarankan Inggris)
 - [ ] Endpoint baru tercatat di `struktur_file.md` §7
 - [ ] Tabel/kolom baru tercatat di `database.md` §5
-- [ ] Perilaku baru tercatat di `prd.md` §6
+- [ ] Perilaku/fitur/UI baru tercatat di `prd.md` §5, §6, atau §11
 - [ ] Kuota AI diperhitungkan (kena hitung batas 20/hari) & dicatat di `pemakaian_ai`
 - [ ] Tampilan dicek versi mobile (viewport ≤390px) sebelum desktop
 - [ ] Ikon memakai SVG kustom (bukan font icon / emoji)

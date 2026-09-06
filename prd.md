@@ -71,7 +71,9 @@ Produk dibangun di atas 5 pilar utama:
 
 ### 5.1 Pembuat CV & Manajemen CV
 - Formulir interaktif **bertahap** (langkah demi langkah) untuk menyusun CV dari nol.
-- **4–5 template** yang dapat disesuaikan: Profesional, Kreatif, Minimalis, Modern, Lulusan Baru (entitas `templat_cv` — `database.md` §5).
+- **5 template profesional** yang dapat disesuaikan: ATS Friendly, Kronologis, Fungsional, Kombinasi, Kreatif (entitas `templat_cv` — `database.md` §5).
+- **Tata Letak Pratinjau Sticky (Desktop):** Pratinjau lembar A4 di kolom kanan berposisi diam/sticky (`lg:sticky lg:top-[168px] lg:h-[calc(100vh-180px)] lg:overflow-y-auto`) dengan scrollbar internal tersendiri saat form kiri digulir ke bawah. Pada perangkat seluler, tersedia tombol toggle mode Formulir vs Pratinjau.
+- **Tautan Media Sosial Lengkap (6 Platform):** Pilihan tipe tautan sosial media populer (LinkedIn, GitHub, Portofolio / Website, Twitter / X, Instagram, Facebook) menggunakan **ikon SVG kustom** di formulir editor dan seluruh template pratinjau A4.
 - **Simpan otomatis setiap 30 detik** ke Supabase + cache browser sebagai cadangan saat koneksi terputus (NFR-06).
 - **Ekspor PDF** ramah ATS menggunakan `html2pdf.js` (jalankan di sisi klien).
 - **Riwayat versi CV** untuk pemulihan (entitas `riwayat_cv` — `database.md` §5).
@@ -80,6 +82,9 @@ Produk dibangun di atas 5 pilar utama:
 
 ### 5.2 Analisis & Revisi CV AI
 - AI berperan sebagai **Senior HR dan ATS Expert** sesuai prompt resmi (lihat [§9](#9-prompt-resmi--analisis-cv-ats)).
+- **Format Kotak Inline Permanen (Bukan Modal/Popup):** Analisis CV disajikan sebagai kartu inline (`KotakAnalisisCv.jsx`) permanen di dalam dashboard Home tanpa tombol tutup (X).
+- **Penyimpanan Status Permanen (Persistent State):** Hasil analisis terakhir (skor ATS, skor HR, evaluasi, rekomendasi posisi, saran perbaikan) tersimpan di `localStorage` (`mentervu_analisis_cv`) & Supabase `analisis_cv`, langsung tampil saat halaman dibuka kembali.
+- **Chips Rekomendasi Posisi Interaktif:** Mengklik salah satu chip rekomendasi memicu modal konfirmasi "Ubah Posisi Target?". Jika disetujui, target posisi profil diperbarui dan AI otomatis menjalankan analisis ulang.
 - Keluaran AI (JSON):
   - `skor_kelengkapan` (0–100)
   - `skor_daya_tarik` (0–100)
@@ -142,7 +147,7 @@ Prioritas: **P0** = wajib di Milestone 1 • **P1** = penting • **P2** = pelen
 | FR-16 | Pencarian Lowongan | Cari & filter lowongan manual dari JSearch API | P1 | M5 | `lowongan` |
 | FR-17 | Pencocokan Lowongan AI | Skor kecocokan (skill 40%, pengalaman 30%, gaji 20%, lokasi 10%) | P1 | M5 | `rekomendasi_lowongan` |
 | FR-18 | Lamar Pekerjaan | Tombol mengarahkan ke URL lamaran eksternal | P1 | M5 | `rekomendasi_lowongan` |
-| FR-19 | Home (Dashboard) | Ringkasan kuota AI, skor CV terakhir, tindakan cepat, riwayat kegiatan, **bagian Analisis CV** | P0 | M1 | `profil`, `analisis_cv`, `pemakaian_ai` |
+| FR-19 | Home (Dashboard) | Ringkasan kuota AI, skor CV terakhir, tindakan cepat, riwayat kegiatan, **kotak Analisis CV inline persisten**, serta **Mobile Tab Navigation** (Ringkasan, Analisis CV, Profil CV) dengan persistent active tab | P0 | M1 | `profil`, `analisis_cv`, `pemakaian_ai` |
 | FR-20 | Statistik Progress | Grafik tren skor & skill dari waktu ke waktu | P2 | M5 | `evaluasi_sesi` |
 | FR-21 | Sistem Notifikasi | Notifikasi saran CV, lowongan baru, pencapaian | P2 | M5 | `notifikasi` |
 | FR-22 | Riwayat Simulasi | Daftar riwayat sesi dengan filter & sorting | P1 | M4 | `sesi_wawancara` |
@@ -339,14 +344,15 @@ Token desain disimpan di `frontend/src/design/tokens.js` (`struktur_file.md` §5
 - **Dilarang:** font icon (`@fortawesome/fontawesome`), ikon bawaan boilerplate, emoji sebagai ikon.
 - Setiap ikon wajib `aria-label`/`title`.
 
-### 11.5 Komponen Inti Halaman Analisis CV (di-render dari DB)
-| Komponen | Fungsi | Data (`analisis_cv`) |
+### 11.5 Komponen Inti Analisis CV AI (Inline Box Persisten)
+| Komponen | Fungsi | Data (`analisis_cv` / state) |
 |---|---|---|
-| `KartuSkorCv` | 2 progress bar / donut: kelengkapan & daya tarik | `skor_kelengkapan`, `skor_daya_tarik` |
-| `DaftarPosisi` | Chips rekomendasi posisi | `rekomendasi_posisi[]` |
+| `KotakAnalisisCv` | Kartu utama inline (tanpa tombol close) yang merender ringkasan ATS, HR, posisi, evaluasi, dan saran perbaikan | `skor_kelengkapan`, `skor_daya_tarik`, `rekomendasi_posisi`, `rekomendasi_perbaikan` |
+| `KartuSkorCv` | 2 progress bar / donut: kelengkapan (ATS) & daya tarik (HR) | `skor_kelengkapan`, `skor_daya_tarik` |
+| `DaftarPosisi` | Chips rekomendasi posisi (dapat diklik untuk beralih target posisi dengan dialog konfirmasi) | `rekomendasi_posisi[]` |
 | `BagianPerbaikanCv` | 3 kolom berwarna: ➕ Tambah (hijau) · 🔧 Perbaiki (oranye) · 🗑️ Hapus (merah) | `rekomendasi_perbaikan` |
-| `SkeletonAnalisis` | Skeleton saat AI memproses | — |
-| `TombolAnalisisCv` | Jalankan/ulangi analisis (cek kuota) | — |
+| `SkeletonAnalisis` | Skeleton loader saat AI memproses analisis | — |
+| `TombolAnalisisCv` | Jalankan/ulangi analisis (memeriksa kuota harian) | — |
 
 > Catatan: kolom `BagianPerbaikanCv` menggunakan **warna status** (hijau=sukses untuk "tambah", oranye=peringatan untuk "perbaiki", merah=bahaya untuk "hapus") untuk membedakan makna — ini pengecualian sah dari aturan "warna status hanya untuk fungsi".
 
@@ -355,6 +361,25 @@ Token desain disimpan di `frontend/src/design/tokens.js` (`struktur_file.md` §5
 2. Navigasi utama = **bottom navigation** di mobile, pindah ke sidebar/topbar di desktop.
 3. Gunakan `Visual Viewport` + `env(safe-area-inset)` untuk area keyboard/notch.
 4. Progres bar & CTA penting selalu terlihat (sticky) tanpa menghalangi konten.
+5. CV Builder: Sidebar pratinjau sticky pada desktop (`lg:sticky lg:top-[168px] lg:h-[calc(100vh-180px)] lg:overflow-y-auto`) dengan scrollbar independen; pada mobile tersedia toggle mode form vs pratinjau.
+
+### 11.7 Mobile Tab Navigation (Home Dashboard)
+Pada layar seluler (`< lg` / `< 1024px`), konten dasbor utama dibagi menjadi 3 segmented pill/tab untuk mencegah scroll terlalu panjang dan meningkatkan kenyamanan satu tangan (thumb-friendly):
+1. **Tab "Ringkasan" (`ringkasan`):**
+   - Banner Hero Simulasi Wawancara AI (CTA Mulai Latihan)
+   - 3 Kartu Statistik (Skor Terakhir, Sesi Latihan, Sisa Kuota Harian)
+   - Menu Tindakan Cepat (shortcut fitur)
+   - Aktivitas Terakhir
+2. **Tab "Analisis CV" (`analisis`):**
+   - Kotak Analisis CV dengan AI (`KotakAnalisisCv`) inline lengkap dengan skor ATS/HR, evaluasi, chips rekomendasi posisi interaktif, dan rincian saran perbaikan (tambah, perbaiki, hapus).
+3. **Tab "Profil CV" (`profil`):**
+   - Skor kelengkapan profil (donut chart 0–100%)
+   - Akordion 6 checklist kelengkapan data diri (Informasi Kontak, Ringkasan, Pengalaman, Pendidikan, Keahlian, Proyek)
+
+**Perilaku Status Persisten:**
+- Status tab aktif disimpan di `localStorage` (`mentervu_home_tab_mobile`) dan disinkronkan ke URL search parameter `?tab=...`.
+- Saat pengguna berpindah halaman lalu kembali ke Home, tab yang terakhir aktif akan tetap terbuka.
+- Pada layar desktop (`≥ 1024px`), tab pill disembunyikan otomatis dan antarmuka beralih ke tata letak 2 kolom standar (kolom kiri: ringkasan & kartu analisis CV inline; kolom kanan: kelengkapan profil CV).
 
 ---
 

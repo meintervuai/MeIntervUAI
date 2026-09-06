@@ -75,6 +75,7 @@ MeIntervUAI/                          # ROOT
 │  │  ├─ controllers/                 # (C) REST routes FastAPI
 │  │  │  ├─ __init__.py
 │  │  │  ├─ otentikasi.py
+│  │  │  ├─ keluar.py
 │  │  │  ├─ home.py
 │  │  │  ├─ profil.py
 │  │  │  ├─ cv.py
@@ -146,7 +147,12 @@ MeIntervUAI/                          # ROOT
       │  ├─ KartuSkorCv.jsx
       │  ├─ DaftarPosisi.jsx
       │  ├─ BagianPerbaikanCv.jsx
-      │  └─ SkeletonAnalisis.jsx
+      │  ├─ SkeletonAnalisis.jsx
+      │  └─ cv/                       # komponen fitur CV & analisis
+      │     ├─ KotakAnalisisCv.jsx    # kartu analisis AI inline persisten di Home
+      │     ├─ ModalAnalisisCv.jsx    # re-export backward-compat
+      │     ├─ IkonMediaSosial.jsx    # SVG kustom untuk 6 platform media sosial
+      │     └─ PratinjauCv.jsx        # render lembar A4 CV 5 template
       ├─ components/icons/            # SVG kustom (dilarang font icon/emoji)
       │  ├─ IkonLogo.jsx
       │  ├─ IkonHome.jsx
@@ -218,9 +224,13 @@ MeIntervUAI/                          # ROOT
 | `design/tokens.js` | Semua variabel desain dari `prd.md` §11 (warna, tipografi, radius, spacing, breakpoints) |
 | `design/globals.css` | Reset, kelas utilitas dasar, `color-scheme`, focus ring oranye |
 | `pages/Masuk.jsx` | Tombol "Masuk dengan Google" via `supabase.auth.signInWithOAuth`, redirect |
-| `pages/Home.jsx` | FR-19: KartuKuota, ringkasan skor CV, aksi cepat, **bagian Analisis CV** |
+| `pages/Home.jsx` | FR-19: Dashboard utama dengan **Mobile Tab Navigation** (Ringkasan, Analisis CV, Profil CV) persisten (`localStorage` + `?tab=`), KartuKuota, dan kotak inline `KotakAnalisisCv` |
+| `pages/PembuatCv.jsx` | Form interaktif CV builder bertahap + **sidebar pratinjau A4 sticky** pada desktop & toggle mode pada mobile |
 | `pages/EditorCv.jsx` | Form bertahap + autosave 30 dtk (debounce) ke `POST /api/cv` |
 | `pages/AnalisisCv.jsx` | Detail hasil: KartuSkorCv + DaftarPosisi + BagianPerbaikanCv (render dari DB) |
+| `components/cv/KotakAnalisisCv.jsx` | Kotak inline persisten Analisis CV AI di Home (skor ATS/HR, evaluasi, interactive chips konfirmasi posisi, saran perbaikan) |
+| `components/cv/IkonMediaSosial.jsx` | Komponen SVG kustom untuk 6 platform media sosial (LinkedIn, GitHub, Website/Portofolio, Twitter/X, Instagram, Facebook) |
+| `components/cv/PratinjauCv.jsx` | Render lembar A4 CV langsung di browser untuk 5 template (ATS Friendly, Kronologis, Fungsional, Kombinasi, Kreatif) |
 | `components/PelindungRute.jsx` | Cek `KonteksOtentikasi`; belum login → redirect `/masuk` |
 | `components/icons/*` | SVG inline kustom (`aria-label` wajib) — lihat `prd.md` §11.4 |
 | `contexts/KonteksKuota.jsx` | Menyimpan sisa kuota; diperbarui setelah panggilan AI |
@@ -252,7 +262,7 @@ MeIntervUAI/                          # ROOT
 | Metode | Endpoint | Controller → Service | Fungsi | Kuota AI | M |
 |---|---|---|---|---|---|
 | POST | `/api/otentikasi/sesi` | `otentikasi.py` → verifikasi JWT | Validasi token Google + pastikan `profil` ada; balas data profil | — | M1 |
-| POST | `/api/otentikasi/keluar` | `otentikasi.py` | Bersihkan sesi (opsional) | — | M1 |
+| POST | `/api/logout` | `keluar.py` → `supabase.auth.signOut(token)` | **Batalkan JWT di sisi server** (server-side revocation); klien lanjut bersihkan sesi lokal | — | M1 |
 | GET | `/api/otentikasi/sesi` | `otentikasi.py` | Cek sesi aktif | — | M1 |
 | GET | `/api/home/ringkasan` | `home.py` → `layanan_kuota`, `layanan_analisis_cv` | Kuota sisa (x/20), analisis terakhir, aksi cepat | — | M1 |
 | GET | `/api/kuota` | `kuota.py` → `layanan_kuota` | Sisa kuota hari ini | — | M1 |
@@ -276,7 +286,8 @@ MeIntervUAI/                          # ROOT
 | Rute | Halaman | Proteksi | M |
 |---|---|---|---|
 | `/` | `Beranda.jsx` (landing publik) | publik | M1 |
-| `/masuk` | `Masuk.jsx` | publik (redirect ke `/home` bila sudah login) | M1 |
+| `/masuk` | `Masuk.jsx` (login split-screen) | publik (redirect ke `/home` bila sudah login) | M1 |
+| `/daftar` | `Daftar.jsx` (pendaftaran split-screen) | publik (redirect ke `/home` bila sudah login) | M1 |
 | `/home` | `Home.jsx` (dashboard + analisis CV) | **login** | M1 |
 | `/pembuat-cv` | `PembuatCv.jsx` (daftar CV + template) | **login** | M1 |
 | `/cv/:id` | `EditorCv.jsx` (editor bertahap) | **login** | M1 |

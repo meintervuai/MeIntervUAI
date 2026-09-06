@@ -11,6 +11,23 @@ export async function masukDenganGoogle() {
   });
 }
 
+/** Daftar dengan email & kata sandi. */
+export async function daftarDenganEmail(email, password, nama) {
+  return supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { full_name: nama },
+      emailRedirectTo: `${window.location.origin}/home`,
+    },
+  });
+}
+
+/** Masuk dengan email & kata sandi. */
+export async function masukDenganEmail(email, password) {
+  return supabase.auth.signInWithPassword({ email, password });
+}
+
 /** Keluar dari sesi. */
 export async function keluar() {
   return supabase.auth.signOut();

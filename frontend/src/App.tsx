@@ -4,9 +4,11 @@ import { KonteksBahasa } from './contexts/KonteksBahasa';
 import { KonteksKuota } from './contexts/KonteksKuota';
 import Beranda from './pages/Beranda';
 import Masuk from './pages/Masuk';
+import Daftar from './pages/Daftar';
 import Home from './pages/Home';
 import Profil from './pages/Profil';
 import Segera from './pages/Segera';
+import PembuatCv from './pages/PembuatCv';
 import TataLetak from './components/TataLetak';
 import PelindungRute from './components/PelindungRute';
 
@@ -19,15 +21,16 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Beranda />} />
             <Route path="/masuk" element={<Masuk />} />
+            <Route path="/daftar" element={<Daftar />} />
 
             <Route element={<PelindungRute />}>
               <Route element={<TataLetak />}>
                 <Route path="/home" element={<Home />} />
                 <Route path="/profil" element={<Profil />} />
-                {/* Rute M1 lanjutan — sementara "Segera Hadir" */}
-                <Route path="/pembuat-cv" element={<Segera judul="Pembuat CV" />} />
-                <Route path="/cv/:id" element={<Segera judul="Editor CV" />} />
+                <Route path="/pembuat-cv" element={<PembuatCv />} />
+                <Route path="/cv/:id" element={<PembuatCv />} />
                 <Route path="/analisis-cv" element={<Segera judul="Analisis CV" />} />
+
                 <Route path="/analisis-cv/:id" element={<Segera judul="Analisis CV" />} />
                 <Route path="/simulasi" element={<Segera judul="Simulasi Wawancara" />} />
                 <Route path="/lowongan" element={<Segera judul="Lowongan Kerja" />} />
