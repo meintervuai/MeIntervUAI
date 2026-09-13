@@ -195,7 +195,8 @@ MeIntervUAI/                          # ROOT
       │  ├─ api_cv.js
       │  ├─ api_analisis_cv.js
       │  ├─ api_simulasi.js           # persistensi sesi, pertanyaan, jawaban, & riwayat evaluasi (ambilRiwayatSimulasi)
-      │  └─ api_lowongan.js           # engine Smart Matching AI, kurasi lowongan, kalkulasi skor kecocokan CV
+      │  ├─ api_lowongan.js           # engine Smart Matching AI, kurasi lowongan, kalkulasi skor kecocokan CV
+      │  └─ layanan_mediapipe.js      # vision pipeline MediaPipe FaceLandmarker + blendshapes (kontak mata, orientasi postur tubuh, skor percaya diri, privasi 100% client-side)
       ├─ contexts/                    # state global React
       │  ├─ KonteksOtentikasi.jsx
       │  ├─ KonteksKuota.jsx

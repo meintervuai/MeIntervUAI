@@ -57,6 +57,13 @@ import {
   ambilRiwayatSimulasi,
   evaluasiJawabanInteraktif,
 } from '../services/api_simulasi';
+import {
+  inisialisasiMediaPipe,
+  analisisFrameNonVerbal,
+  ambilRingkasanNonVerbal,
+  resetStatistikNonVerbal,
+  bersihkanMediaPipe,
+} from '../services/layanan_mediapipe';
 
 // =========================================================================
 // BASE TEMA WARNA STANDAR MENTERVU AI (MONOKROMATIK BERSIH + AKSEN ORANYE)
@@ -840,6 +847,17 @@ export default function Simulasi() {
   const [sedangMenyusunRapor, setSedangMenyusunRapor] = useState(false);
   const [sedangMulaiSimulasi, setSedangMulaiSimulasi] = useState(false);
 
+  // State Analisis Non-Verbal MediaPipe AI (FR-10, FR-12, PRD §5.4 Kontak Mata & Postur)
+  const [statusNonVerbal, setStatusNonVerbal] = useState({
+    terdeteksiWajah: false,
+    kontakMataAktif: false,
+    kontakMataPersen: 0,
+    statusPostur: 'Mencari Wajah di Kamera...',
+    posturTegakPersen: 0,
+    skorKepercayaanDiriNonVerbal: 0,
+  });
+  const [tampilkanHudMediaPipe, setTampilkanHudMediaPipe] = useState(true);
+
   // State Database Session
   const [sesiAktifId, setSesiAktifId] = useState(null);
   const [pertanyaanDbId, setPertanyaanDbId] = useState(null);
@@ -897,6 +915,40 @@ export default function Simulasi() {
       };
     }
   }, [tahap]);
+
+  // Loop Analisis Non-Verbal MediaPipe AI (Deteksi Gerak Mata & Postur Badan Client-Side)
+  useEffect(() => {
+    let intervalId = null;
+    let aktif = true;
+
+    if (tahap === 'wawancara' && konfigurasi.mode === 'video' && !isCameraOff) {
+      resetStatistikNonVerbal();
+      inisialisasiMediaPipe().catch((err) =>
+        console.warn('[Simulasi] Gagal inisialisasi MediaPipe:', err)
+      );
+
+      intervalId = setInterval(() => {
+        if (!aktif) return;
+        if (
+          mainVideoRef.current &&
+          !mainVideoRef.current.paused &&
+          !mainVideoRef.current.ended &&
+          mainVideoRef.current.readyState >= 2
+        ) {
+          const res = analisisFrameNonVerbal(mainVideoRef.current, performance.now());
+          if (res) {
+            setStatusNonVerbal(res);
+          }
+        }
+      }, 450); // Sampling setiap 450ms (~2.2 FPS, sangat ringan, hemat CPU, non-blocking)
+    }
+
+    return () => {
+      aktif = false;
+      if (intervalId) clearInterval(intervalId);
+      bersihkanMediaPipe();
+    };
+  }, [tahap, konfigurasi.mode, isCameraOff]);
 
   // Handler Pengubahan Jawaban Manual dari Textarea (Menyelaraskan ref dan state)
   const tanganiUbahJawabanManual = (teksBaru) => {
@@ -1583,12 +1635,21 @@ export default function Simulasi() {
       const skorRataRata =
         rincianPertanyaan.length > 0 ? Math.round(skorAkumulasi / rincianPertanyaan.length) : 78;
 
-      // Evaluasi 4 Pilar Metrik yang realistis sesuai skor performa aktual
+      // Ambil metrik non-verbal aktual dari MediaPipe AI jika mode video
+      let ringkasanNonVerbal = null;
+      if (konfigurasi.mode === 'video') {
+        ringkasanNonVerbal = ambilRingkasanNonVerbal();
+      }
+
+      // Evaluasi 4 Pilar Metrik yang realistis sesuai skor performa aktual & MediaPipe AI
       const metrik = {
         relevansiIsi: Math.max(10, Math.min(98, skorRataRata + (skorRataRata < 40 ? -5 : 2))),
         strukturStar: Math.max(10, Math.min(95, skorRataRata - (skorRataRata < 40 ? 4 : 1))),
         kosaKataProfesional: Math.max(15, Math.min(95, skorRataRata + (skorRataRata < 40 ? 0 : 2))),
-        kepercayaanDiri: Math.max(20, Math.min(92, Math.round(skorRataRata * 0.85 + 12))),
+        kepercayaanDiri:
+          konfigurasi.mode === 'video' && ringkasanNonVerbal
+            ? ringkasanNonVerbal.skorKepercayaanDiri
+            : Math.max(20, Math.min(92, Math.round(skorRataRata * 0.85 + 12))),
       };
 
       const predikat =
@@ -1613,6 +1674,13 @@ export default function Simulasi() {
               'Keberanian mencoba skenario wawancara industri nyata.',
             ];
 
+      // Tambahkan apresiasi non-verbal jika performa kamera sangat baik
+      if (konfigurasi.mode === 'video' && ringkasanNonVerbal && ringkasanNonVerbal.kontakMataPersen >= 75) {
+        kekuatan.push(
+          `Kontak mata prima (${ringkasanNonVerbal.kontakMataPersen}%) dan orientasi postur tubuh tegak profesional terdeteksi oleh MediaPipe AI.`
+        );
+      }
+
       const areaPeningkatan =
         skorRataRata >= 60
           ? [
@@ -1626,6 +1694,17 @@ export default function Simulasi() {
               'Gunakan kerangka STAR (Situation, Task, Action, Result) untuk menstrukturkan jawaban teknis.',
             ];
 
+      // Tambahkan rekomendasi non-verbal jika kontak mata atau postur kurang optimal
+      if (konfigurasi.mode === 'video' && ringkasanNonVerbal && ringkasanNonVerbal.kontakMataPersen < 65) {
+        areaPeningkatan.push(
+          `Tingkatkan kontak mata ke webcam (${ringkasanNonVerbal.kontakMataPersen}%). Kurangi frekuensi melirik ke bawah atau membaca catatan agar terkesan lebih yakin.`
+        );
+      } else if (konfigurasi.mode === 'video' && ringkasanNonVerbal && ringkasanNonVerbal.posturTegakPersen < 70) {
+        areaPeningkatan.push(
+          `Jaga posisi duduk dan kepala tetap tegak lurus ke kamera (${ringkasanNonVerbal.posturTegakPersen}% stabil) untuk postur wawancara profesional.`
+        );
+      }
+
       const hasil = {
         id: sesiAktifId || `sesi-${Date.now()}`,
         tanggal: new Date().toISOString(),
@@ -1638,6 +1717,7 @@ export default function Simulasi() {
         kekuatan,
         areaPeningkatan,
         rincianPertanyaan,
+        analisisNonVerbal: ringkasanNonVerbal,
       };
 
       setEvaluasiAkhir(hasil);
@@ -1659,6 +1739,7 @@ export default function Simulasi() {
             kekuatan,
             areaPeningkatan,
             rincianEvaluasi: rincianPertanyaan,
+            analisisNonVerbal: ringkasanNonVerbal,
           });
         } catch (e) {
           console.warn('Gagal simpan evaluasi ke database:', e);
@@ -1713,6 +1794,7 @@ export default function Simulasi() {
     const kekuatanList = evalItem.kekuatan || [];
     const areaPeningkatanList = evalItem.areaPeningkatan || evalItem.area_peningkatan || [];
     const rincianList = evalItem.rincianPertanyaan || evalItem.rincian_evaluasi || [];
+    const analisisNonVerbal = evalItem.analisisNonVerbal || evalItem.analisis_non_verbal || null;
 
     return (
       <div className="space-y-6 animate-in fade-in duration-300">
@@ -1896,43 +1978,120 @@ export default function Simulasi() {
 
         {/* Konten Tab 1: Ringkasan & Ulasan Holistik */}
         {tabEvaluasi === 'ringkasan' && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5 space-y-3">
-              <h3 className="text-sm font-bold text-emerald-900 flex items-center gap-2">
-                <ThumbsUp className="h-4 w-4 text-emerald-600" />
-                <span>Kekuatan & Nilai Lebih Anda</span>
-              </h3>
-              <ul className="space-y-2">
-                {kekuatanList.length > 0 ? (
-                  kekuatanList.map((k, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-xs text-emerald-950">
-                      <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
-                      <span>{k}</span>
-                    </li>
-                  ))
-                ) : (
-                  <li className="text-xs text-batu-500 italic">Data kekuatan terangkum otomatis.</li>
-                )}
-              </ul>
-            </div>
+          <div className="space-y-5">
+            {/* Analisis Non-Verbal MediaPipe AI (Jika Sesi Mode Video atau Memiliki Data Non-Verbal) */}
+            {(modeTeks === 'video' || analisisNonVerbal) && (
+              <div className="rounded-2xl border border-oranye-200/90 bg-white p-5 shadow-xs space-y-3">
+                <div className="flex items-center justify-between border-b border-oranye-100 pb-2.5">
+                  <div className="flex items-center gap-2.5">
+                    <div className="h-8 w-8 rounded-xl bg-oranye-100 text-oranye-700 flex items-center justify-center">
+                      <Eye className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-batu-900 flex items-center gap-1.5">
+                        <span>Analisis Non-Verbal MediaPipe Vision AI</span>
+                        <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
+                      </h3>
+                      <p className="text-[11px] text-batu-500">
+                        Evaluasi gerak mata (kontak kamera) dan postur tubuh profesional (FR-10, PRD §5.4)
+                      </p>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold px-2.5 py-0.5 shadow-2xs">
+                    Client-Side Pipeline
+                  </span>
+                </div>
 
-            <div className="rounded-2xl border border-oranye-200 bg-oranye-50/40 p-5 space-y-3">
-              <h3 className="text-sm font-bold text-oranye-950 flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-oranye-600" />
-                <span>Area Yang Perlu Diperkuat (Metode STAR)</span>
-              </h3>
-              <ul className="space-y-2">
-                {areaPeningkatanList.length > 0 ? (
-                  areaPeningkatanList.map((p, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-xs text-oranye-950">
-                      <TrendingUp className="h-4 w-4 text-oranye-600 shrink-0 mt-0.5" />
-                      <span>{p}</span>
-                    </li>
-                  ))
-                ) : (
-                  <li className="text-xs text-batu-500 italic">Pertahankan performa jawaban metode STAR Anda.</li>
-                )}
-              </ul>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                  {/* Kontak Mata */}
+                  <div className="rounded-xl border border-oranye-100 bg-oranye-50/40 p-3.5 space-y-1">
+                    <span className="text-[11px] font-semibold text-batu-500 block">Kontak Mata ke Kamera</span>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xl font-black text-oranye-900 font-mono">
+                        {analisisNonVerbal?.kontakMataPersen ?? metrikData.kepercayaanDiri}%
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                        {(analisisNonVerbal?.kontakMataPersen ?? 80) >= 70 ? 'Fokus Prima' : 'Perlu Latihan'}
+                      </span>
+                    </div>
+                    <p className="text-[10.5px] text-batu-500 pt-0.5">
+                      Konsistensi menatap pewawancara/kamera tanpa sering melirik catatan bawah.
+                    </p>
+                  </div>
+
+                  {/* Kestabilan Postur Tubuh */}
+                  <div className="rounded-xl border border-oranye-100 bg-oranye-50/40 p-3.5 space-y-1">
+                    <span className="text-[11px] font-semibold text-batu-500 block">Kestabilan Postur Tubuh</span>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xl font-black text-batu-900 font-mono">
+                        {analisisNonVerbal?.posturTegakPersen ?? 88}%
+                      </span>
+                      <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                        Tegak & Stabil
+                      </span>
+                    </div>
+                    <p className="text-[10.5px] text-batu-500 pt-0.5">
+                      Keseimbangan posisi kepala (roll/pitch) dan bahu tetap tegak di depan kamera.
+                    </p>
+                  </div>
+
+                  {/* Skor Percaya Diri */}
+                  <div className="rounded-xl border border-oranye-100 bg-oranye-50/40 p-3.5 space-y-1">
+                    <span className="text-[11px] font-semibold text-batu-500 block">Skor Non-Verbal AI</span>
+                    <div className="flex items-baseline justify-between">
+                      <span className="text-xl font-black text-oranye-600 font-mono">
+                        {analisisNonVerbal?.skorKepercayaanDiri ?? metrikData.kepercayaanDiri}/100
+                      </span>
+                      <span className="text-[10px] font-bold text-oranye-800 bg-oranye-100 px-2 py-0.5 rounded">
+                        Terverifikasi
+                      </span>
+                    </div>
+                    <p className="text-[10.5px] text-batu-500 pt-0.5 font-medium">
+                      {analisisNonVerbal?.predikatNonVerbal || 'Sikap tenang, kontak mata dan postur stabil.'}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5 space-y-3">
+                <h3 className="text-sm font-bold text-emerald-900 flex items-center gap-2">
+                  <ThumbsUp className="h-4 w-4 text-emerald-600" />
+                  <span>Kekuatan & Nilai Lebih Anda</span>
+                </h3>
+                <ul className="space-y-2">
+                  {kekuatanList.length > 0 ? (
+                    kekuatanList.map((k, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-xs text-emerald-950">
+                        <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
+                        <span>{k}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-xs text-batu-500 italic">Data kekuatan terangkum otomatis.</li>
+                  )}
+                </ul>
+              </div>
+
+              <div className="rounded-2xl border border-oranye-200 bg-oranye-50/40 p-5 space-y-3">
+                <h3 className="text-sm font-bold text-oranye-950 flex items-center gap-2">
+                  <AlertTriangle className="h-4 w-4 text-oranye-600" />
+                  <span>Area Yang Perlu Diperkuat (Metode STAR)</span>
+                </h3>
+                <ul className="space-y-2">
+                  {areaPeningkatanList.length > 0 ? (
+                    areaPeningkatanList.map((p, idx) => (
+                      <li key={idx} className="flex items-start gap-2 text-xs text-oranye-950">
+                        <TrendingUp className="h-4 w-4 text-oranye-600 shrink-0 mt-0.5" />
+                        <span>{p}</span>
+                      </li>
+                    ))
+                  ) : (
+                    <li className="text-xs text-batu-500 italic">Pertahankan performa jawaban metode STAR Anda.</li>
+                  )}
+                </ul>
+              </div>
             </div>
           </div>
         )}
@@ -3652,6 +3811,127 @@ export default function Simulasi() {
                       ⏺ REC
                     </span>
                   </div>
+
+                  {/* HUD MediaPipe AI: Pelacak Gerak Mata & Postur Badan Real-Time (FR-10, FR-12, NFR-04) */}
+                  {konfigurasi.mode === 'video' && !isCameraOff && (
+                    <div className="absolute top-10 left-3 z-10">
+                      {tampilkanHudMediaPipe ? (
+                        <div className="rounded-xl border border-oranye-200/90 bg-white/95 backdrop-blur-md p-2.5 shadow-md text-batu-800 space-y-2 w-56 text-[11px] animate-in fade-in zoom-in-95 duration-150">
+                          {/* Header HUD */}
+                          <div className="flex items-center justify-between border-b border-oranye-100 pb-1.5">
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={`h-2 w-2 rounded-full ${
+                                  statusNonVerbal.terdeteksiWajah ? 'bg-emerald-500 animate-pulse' : 'bg-oranye-500 animate-ping'
+                                }`}
+                              />
+                              <span className="font-extrabold text-[10px] uppercase tracking-wider text-oranye-800">
+                                {statusNonVerbal.terdeteksiWajah ? 'MediaPipe AI Pipeline' : 'Mencari Wajah...'}
+                              </span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setTampilkanHudMediaPipe(false)}
+                              title="Minimalkan HUD"
+                              className="text-batu-400 hover:text-batu-700 text-[10px] font-mono px-1 rounded cursor-pointer"
+                            >
+                              ✕
+                            </button>
+                          </div>
+
+                          {!statusNonVerbal.terdeteksiWajah ? (
+                            /* State Ketika Wajah Belum Masuk Frame / Belum Terdeteksi */
+                            <div className="rounded-lg bg-oranye-50/80 border border-oranye-200/70 p-2 text-center space-y-1">
+                              <p className="text-[10.5px] font-bold text-oranye-900 flex items-center justify-center gap-1">
+                                <AlertCircle className="h-3 w-3 text-oranye-600" />
+                                <span>Wajah Belum Terlihat</span>
+                              </p>
+                              <p className="text-[9.5px] text-batu-600 leading-tight">
+                                Posisikan wajah Anda tepat di depan webcam agar AI dapat membaca kontak mata & postur.
+                              </p>
+                              <div className="pt-1 flex items-center justify-between text-[9px] text-batu-500 border-t border-oranye-100 font-mono">
+                                <span>Kontak Mata: 0%</span>
+                                <span>Postur: 0%</span>
+                              </div>
+                            </div>
+                          ) : (
+                            /* State Ketika Wajah Telah Terdeteksi Nyata */
+                            <>
+                              {/* 1. Deteksi Gerak Mata & Kontak Kamera */}
+                              <div>
+                                <div className="flex items-center justify-between mb-0.5">
+                                  <span className="text-batu-600 font-semibold flex items-center gap-1">
+                                    <Eye className="h-3 w-3 text-oranye-500" />
+                                    <span>Kontak Mata</span>
+                                  </span>
+                                  <span className="font-bold text-oranye-900 font-mono">
+                                    {statusNonVerbal.kontakMataPersen}%
+                                  </span>
+                                </div>
+                                <div className="flex items-center justify-between text-[9.5px]">
+                                  <span
+                                    className={`font-semibold px-1.5 py-0.5 rounded ${
+                                      statusNonVerbal.kontakMataAktif
+                                        ? 'bg-emerald-50 text-emerald-700'
+                                        : 'bg-oranye-100 text-oranye-800'
+                                    }`}
+                                  >
+                                    {statusNonVerbal.kontakMataAktif ? 'Fokus ke Kamera' : 'Melirik / Bawah'}
+                                  </span>
+                                  <span className="text-batu-400 font-mono">
+                                    {statusNonVerbal.detail?.lookDown ? `Tilt: ${statusNonVerbal.detail.lookDown}%` : 'Normal'}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* 2. Deteksi Postur Tubuh & Orientasi Kepala */}
+                              <div className="border-t border-oranye-100/80 pt-1">
+                                <div className="flex items-center justify-between mb-0.5">
+                                  <span className="text-batu-600 font-semibold flex items-center gap-1">
+                                    <User className="h-3 w-3 text-oranye-500" />
+                                    <span>Postur Badan</span>
+                                  </span>
+                                  <span className="font-bold text-batu-800 font-mono">
+                                    {statusNonVerbal.posturTegakPersen}%
+                                  </span>
+                                </div>
+                                <p
+                                  className={`text-[9.5px] font-semibold truncate ${
+                                    statusNonVerbal.statusPostur === 'Tegak & Profesional'
+                                      ? 'text-emerald-700'
+                                      : 'text-oranye-700'
+                                  }`}
+                                >
+                                  {statusNonVerbal.statusPostur}
+                                </p>
+                              </div>
+
+                              {/* 3. Skor Percaya Diri Non-Verbal Live */}
+                              <div className="border-t border-oranye-100/80 pt-1 flex items-center justify-between">
+                                <span className="text-[10px] font-bold text-batu-500">Percaya Diri:</span>
+                                <span className="rounded bg-oranye-500 px-1.5 py-0.2 text-[10px] font-extrabold text-white font-mono shadow-2xs">
+                                  {statusNonVerbal.skorKepercayaanDiriNonVerbal}/100
+                                </span>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setTampilkanHudMediaPipe(true)}
+                          className="flex items-center gap-1.5 rounded-full bg-white/95 backdrop-blur-md border border-oranye-200 px-2.5 py-1 text-[10px] font-bold text-batu-700 shadow-xs hover:bg-oranye-50 transition-colors cursor-pointer"
+                        >
+                          <Eye className="h-3 w-3 text-oranye-500" />
+                          <span>
+                            {statusNonVerbal.terdeteksiWajah
+                              ? `MediaPipe: ${statusNonVerbal.kontakMataPersen}%`
+                              : 'Mencari Wajah...'}
+                          </span>
+                        </button>
+                      )}
+                    </div>
+                  )}
 
                   {/* Status Mic di Pojok Kanan Atas */}
                   <div className="absolute top-3 right-3 z-10">

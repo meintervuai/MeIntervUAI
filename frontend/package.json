@@ -10,6 +10,7 @@
     "lint": "tsc -b --noEmit"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "^1.0.1",
     "@supabase/supabase-js": "^2.47.10",
     "framer-motion": "^13.2.0",
     "html2pdf.js": "^0.14.0",

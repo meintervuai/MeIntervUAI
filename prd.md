@@ -142,7 +142,7 @@ Produk dibangun di atas 5 pilar utama:
 
 ### 5.4 Evaluasi Komprehensif
 - **Verbal** (via LLM): isi jawaban, struktur (metode STAR), relevansi dengan CV, kelengkapan — dengan **normalisasi skor antar model**.
-- **Non-verbal** (MediaPipe, berjalan di browser): kontak mata (%), postur (tegak vs membungkuk), durasi jawaban per pertanyaan → **Skor Kepercayaan Diri** (bukan deteksi emosi).
+- **Non-verbal** (MediaPipe Face Landmarker + Blendshapes ARKit & 3D Head Pose, berjalan murni di memori browser pengguna): mendeteksi kontak mata (% tatap kamera vs melirik bawah/catatan), kestabilan postur tubuh (tegak vs membungkuk/miring), serta skor kepercayaan diri non-verbal secara real-time via live HUD overlay dan tersinkronisasi ke laporan evaluasi akhir (Pilar 4: Kepercayaan Diri). Deteksi bersifat responsif dan jujur (0% / indikator mencari wajah bila wajah belum masuk frame) dan 100% menjaga privasi tanpa pernah mengirim rekaman video ke server (NFR-04).
 - **Skor total 0–100** dengan rincian per aspek + **AI explainable** (setiap skor disertai penjelasan dan referensi rubrik).
 - Evaluasi per pertanyaan: perbandingan jawaban ideal vs jawaban pengguna.
 - **Umpan balik pengguna**: pengguna dapat menandai jika penilaian AI dirasa tidak akurat (entitas `umpan_balik_akurasi`).
