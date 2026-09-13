@@ -63,12 +63,12 @@ import {
 // =========================================================================
 export const TEMA_SIMULASI = {
   // Latar Belakang & Kartu
-  bgHalaman: 'min-h-screen bg-batu-50 text-batu-800',
-  bgKartu: 'bg-white border border-batu-200/80 rounded-2xl shadow-xs',
-  bgKartuPilihan: 'bg-white border-2 border-batu-200 hover:border-oranye-300 rounded-2xl transition-all cursor-pointer shadow-xs',
-  bgKartuAktif: 'bg-oranye-50/50 border-2 border-oranye-500 rounded-2xl shadow-sm transition-all cursor-pointer',
-  bgAksenOranye: 'bg-oranye-50/60 border border-oranye-200/80',
-  bgBannerHero: 'relative overflow-hidden rounded-2xl bg-gradient-to-br from-batu-950 via-batu-900 to-batu-950 border border-oranye-500/25 p-6 sm:p-7 text-white shadow-xl',
+  bgHalaman: 'min-h-screen bg-[#FFFDF9] text-batu-800',
+  bgKartu: 'bg-white border border-oranye-200/80 rounded-2xl shadow-xs',
+  bgKartuPilihan: 'bg-white border-2 border-oranye-100 hover:border-oranye-300 rounded-2xl transition-all cursor-pointer shadow-xs',
+  bgKartuAktif: 'bg-oranye-50/70 border-2 border-oranye-500 rounded-2xl shadow-sm transition-all cursor-pointer',
+  bgAksenOranye: 'bg-oranye-50/80 border border-oranye-200',
+  bgBannerHero: 'relative overflow-hidden rounded-2xl bg-gradient-to-br from-oranye-500 via-oranye-600 to-oranye-700 border border-oranye-400 p-6 sm:p-7 text-white shadow-xl',
 
   // Tipografi
   teksJudul: 'text-batu-900 font-bold font-display',
@@ -78,24 +78,24 @@ export const TEMA_SIMULASI = {
 
   // Tombol & Kontrol
   tombolPrimer: 'inline-flex items-center justify-center gap-2 rounded-xl bg-oranye-500 hover:bg-oranye-600 active:bg-oranye-700 text-white font-bold text-xs sm:text-sm px-5 py-3 shadow-md shadow-oranye-500/25 transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed',
-  tombolSekunder: 'inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-batu-100 text-batu-700 border border-batu-200 font-bold text-xs sm:text-sm px-4 py-2.5 shadow-2xs transition-all cursor-pointer',
-  tombolAksenLembut: 'inline-flex items-center justify-center gap-1.5 rounded-xl bg-oranye-500/10 hover:bg-oranye-500/20 text-oranye-600 border border-oranye-500/30 text-xs font-bold px-3 py-1.5 transition-all cursor-pointer',
+  tombolSekunder: 'inline-flex items-center justify-center gap-2 rounded-xl bg-white hover:bg-oranye-50 text-batu-700 border border-oranye-200 font-bold text-xs sm:text-sm px-4 py-2.5 shadow-2xs transition-all cursor-pointer',
+  tombolAksenLembut: 'inline-flex items-center justify-center gap-1.5 rounded-xl bg-oranye-50 hover:bg-oranye-100 text-oranye-600 border border-oranye-200 text-xs font-bold px-3 py-1.5 transition-all cursor-pointer',
 
   // Badge & Chip
-  badgeOranye: 'inline-flex items-center gap-1 rounded-full bg-oranye-100/80 text-oranye-700 border border-oranye-200 px-2.5 py-0.5 text-[11px] font-bold',
+  badgeOranye: 'inline-flex items-center gap-1 rounded-full bg-oranye-100/90 text-oranye-700 border border-oranye-200 px-2.5 py-0.5 text-[11px] font-bold',
   badgeNetral: 'inline-flex items-center gap-1 rounded-full bg-batu-100 text-batu-700 border border-batu-200 px-2.5 py-0.5 text-[11px] font-semibold',
   badgeSukses: 'inline-flex items-center gap-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-0.5 text-[11px] font-bold',
 
-  // Ruang Simulasi (Dark Focus Mode)
-  ruangViewport: 'fixed inset-0 z-50 h-[100dvh] w-screen overflow-hidden bg-batu-950 flex flex-col',
-  ruangHeader: 'h-13 sm:h-14 px-3 sm:px-6 bg-batu-900/95 border-b border-batu-800 flex items-center justify-between shrink-0 backdrop-blur-md',
+  // Ruang Simulasi (Mode Normal Terang & Oranye Bersih - Tanpa Hitam)
+  ruangViewport: 'fixed inset-0 z-50 h-[100dvh] w-screen overflow-hidden bg-[#FFFDF9] flex flex-col',
+  ruangHeader: 'h-13 sm:h-14 px-3 sm:px-6 bg-white/95 border-b border-oranye-100 flex items-center justify-between shrink-0 backdrop-blur-md shadow-2xs',
   ruangMain: 'flex-1 min-h-0 w-full p-2 sm:p-4 flex flex-col overflow-hidden',
-  ruangFooter: 'h-14 sm:h-16 px-3 sm:px-6 bg-batu-900/95 border-t border-batu-800 flex items-center justify-between shrink-0 backdrop-blur-md',
+  ruangFooter: 'h-14 sm:h-16 px-3 sm:px-6 bg-white/95 border-t border-oranye-100 flex items-center justify-between shrink-0 backdrop-blur-md shadow-2xs',
   ruangChatFeed: 'flex-1 min-h-0 p-3 sm:p-5 overflow-y-auto space-y-3.5',
-  ruangInputBar: 'p-2.5 sm:p-3 bg-batu-950/95 border-t border-batu-800 shrink-0',
-  ruangPesanAi: 'max-w-[85%] sm:max-w-[70%] rounded-2xl rounded-tl-none px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed bg-batu-800 text-batu-100 border border-batu-700/70 shadow-md',
+  ruangInputBar: 'p-2.5 sm:p-3 bg-white/95 border-t border-oranye-100 shrink-0',
+  ruangPesanAi: 'max-w-[85%] sm:max-w-[70%] rounded-2xl rounded-tl-none px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed bg-white text-batu-800 border border-oranye-200 shadow-xs',
   ruangPesanUser: 'max-w-[85%] sm:max-w-[70%] rounded-2xl rounded-tr-none px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed bg-oranye-500 text-white shadow-md',
-  ruangPesanTanggapan: 'max-w-[85%] sm:max-w-[70%] rounded-2xl rounded-tl-none px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed bg-amber-950/30 text-amber-100 border border-amber-500/40 shadow-md',
+  ruangPesanTanggapan: 'max-w-[85%] sm:max-w-[70%] rounded-2xl rounded-tl-none px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed bg-oranye-50/80 text-oranye-950 border border-oranye-200 shadow-xs',
 };
 
 // Daftar Posisi Populer
@@ -117,61 +117,61 @@ const BANK_PERTANYAAN_HRD = {
       kategori: 'Arsitektur & Teknis',
       pertanyaan: 'Ceritakan arsitektur teknis paling kompleks yang pernah Anda rancang atau kembangkan. Mengapa memilih pendekatan tersebut?',
       petunjuk: 'Jelaskan stack teknologi, trade-off, skalabilitas, dan keputusan desain arsitektur yang Anda ambil.',
-      jawabanIdeal: 'Bahas masalah bisnis yang diselesaikan, alasan memilih teknologi tertentu dibanding alternatifnya, serta metrik performa/reliability yang dicapai.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Pada proyek e-commerce sebelumnya, kami menghadapi lonjakan traffic hingga 50.000 req/menit saat flash sale yang menyebabkan database locking. Saya merancang ulang arsitektur monolitik menjadi event-driven menggunakan RabbitMQ dan Redis Caching bertingkat. Hasilnya, response time API turun drastis dari 850ms menjadi 95ms dan sistem berhasil mencapai 99.98% uptime tanpa downtime selama event besar."',
     },
     {
       kategori: 'Code Quality & Debugging',
       pertanyaan: 'Bagaimana pendekatan Anda dalam memastikan kualitas kode, automated testing, serta penanganan bug kritis di lingkungan produksi?',
       petunjuk: 'Sebutkan praktik testing (unit/integration), code review, logging terstruktur, dan pipeline CI/CD.',
-      jawabanIdeal: 'Tekankan keseimbangan antara kecepatan delivery dan keandalan sistem, automated testing, logging, dan post-mortem analisis pasca insiden.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Saya menerapkan standar quality gate di pipeline GitHub Actions dengan target unit test coverage minimal 80% menggunakan Jest/Pytest serta static analysis ESLint. Ketika ada bug kritis di produksi, langkah pertama saya adalah menganalisis sentry log terpusat, mengisolasi bug di staging environment, merilis hotfix bersama regression test baru, dan ditutup dengan sesi blameless post-mortem agar celah serupa tidak berulang."',
     },
     {
       kategori: 'Optimasi & Performa',
       pertanyaan: 'Ceritakan pengalaman nyata ketika Anda harus mendiagnosis dan mengoptimalkan performa aplikasi yang mengalami bottleneck.',
       petunjuk: 'Jelaskan profiling tools yang dipakai, hipotesis perbaikan, dan hasil peningkatan kecepatan terukur.',
-      jawabanIdeal: 'Gunakan metrik kuantitatif, misalnya: "Latency API berkurang 65% dan query execution time turun dari 1.2 detik ke 140ms".',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Saat halaman dashboard analitik klien membutuhkan waktu render lebih dari 4.5 detik, saya menggunakan Chrome Performance Profiler dan EXPLAIN ANALYZE pada query PostgreSQL. Saya menemukan masalah N+1 query dan bundle size yang membengkak. Saya mengimplementasikan eager loading, database indexing pada foreign key, serta code splitting komponen. Hasilnya, First Contentful Paint (FCP) turun menjadi 1.1 detik dan latency query berkurang 70%."',
     },
     {
       kategori: 'Metode STAR (Konflik Tim)',
       pertanyaan: 'Ceritakan situasi ketika terjadi perbedaan pendapat teknis tajam di dalam tim Anda, dan bagaimana cara Anda mencapai mufakat?',
       petunjuk: 'Uraikan dengan metode STAR: Situation, Task, Action, dan Result yang berdampak positif bagi kekompakan tim.',
-      jawabanIdeal: 'Tunjukkan komunikasi objektif berdasarkan data benchmark/bukti teknis daripada ego, dan prioritaskan tujuan produk.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Ketika tim terbagi antara memilih migrasi ke GraphQL atau tetap memakai REST API, diskusi sempat alot. Sebagai inisiatif, saya mengusulkan pembuatan Proof of Concept (POC) kecil selama 3 hari dengan matriks evaluasi terukur: kemudahan integrasi, network payload, dan learning curve tim. Berdasarkan data objektif dari POC tersebut, tim sepakat mengadopsi REST dengan standar OpenAPI. Keputusan berbasis data ini menjaga kekompakan tim dan proyek selesai tepat waktu."',
     },
     {
       kategori: 'Prioritas & Tekanan',
       pertanyaan: 'Bagaimana strategi Anda saat menghadapi sprint dengan deadline yang sangat ketat dan terjadi perubahan requirement mendadak?',
       petunjuk: 'Jelaskan manajemen risiko, komunikasi dengan stakeholder/PM, dan trade-off teknis yang sehat.',
-      jawabanIdeal: 'Jelaskan scoping ulang, pemisahan must-have vs nice-to-have, serta mitigasi technical debt dengan transparansi.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Menjelang rilis akhir kuartal, ada penambahan fitur regulasi baru yang mendesak. Saya segera mengadakan sync darurat dengan Product Manager untuk memetakan scope dengan prinsip MoSCoW. Kami memprioritaskan fitur regulasi sebagai Must-Have dan menunda dua fitur kosmetik ke sprint berikutnya. Melalui transparansi ini, delivery tetap tercapai tepat hari H dengan zero critical defect."',
     },
     {
       kategori: 'Penyelidikan Masalah (Root Cause)',
       pertanyaan: 'Ketika sistem tiba-tiba mengalami downtime di luar jam kerja, ceritakan langkah metodologis pertama yang Anda ambil untuk investigasi.',
       petunjuk: 'Jelaskan triage insiden: pengecekan log, metrik, isolasi komponen, rollback vs hotfix, dan komunikasi.',
-      jawabanIdeal: 'Uraikan penanganan darurat tanpa panik: amati log error, rollback versi jika diperlukan, baru telusuri root cause dan buat dokumentasi insiden.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Saat sistem alert pager berbunyi karena HTTP 500 melonjak di produksi pukul 22.00, langkah pertama saya adalah membuka status dashboard Datadog dan error log terbaru. Mengetahui penyebabnya adalah deployment 30 menit lalu yang gagal mengolah skema migrasi baru, saya segera mengeksekusi rollback ke stable container image dalam 3 menit untuk memulihkan layanan pengguna terlebih dahulu, baru kemudian menelusuri data migrasi di local staging."',
     },
     {
       kategori: 'Pembaruan Teknologi',
       pertanyaan: 'Bagaimana cara Anda menimbang keputusan apakah perlu mengadopsi library/framework baru atau tetap mempertahankan teknologi yang ada?',
       petunjuk: 'Sebutkan faktor evaluasi: kematangan ekosistem, kurva belajar tim, maintainability, dan cost.',
-      jawabanIdeal: 'Jelaskan POC (Proof of Concept) terukur, audit lisensi, dan dampak jangka panjang pada kecepatan pengembangan tim.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Saya mengevaluasi teknologi baru berdasarkan 4 pilar: kematangan komunitas/lisensi, dampak performa nyata, maintainability jangka panjang, dan kapasitas adopsi tim. Contohnya saat mengevaluasi migrasi Tailwind CSS v4, saya menguji kompatibilitasnya pada modul kecil terlebih dahulu. Karena terbukti mempercepat waktu build CSS hingga 4x lipat tanpa breaking changes berat, baru kami terapkan bertahap ke seluruh repositori."',
     },
     {
       kategori: 'Komunikasi Non-Teknis',
       pertanyaan: 'Bagaimana cara Anda menjelaskan kendala arsitektur atau technical debt kepada tim bisnis/manajemen yang non-teknis?',
       petunjuk: 'Gunakan analogi sederhana, fokus pada dampak finansial, kecepatan rilis fitur, atau keamanan data.',
-      jawabanIdeal: 'Hindari jargon rumit, komunikasikan risiko bisnis jika dibiarkan dan return of investment (ROI) dari refactoring.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Alih-alih menjelaskan refactoring database dengan istilah teknis rumit, saya menggunakan analogi pondasi bangunan: jika kita terus membangun lantai baru tanpa memperkuat pondasi, risiko roboh dan biaya renovasi di masa depan akan berlipat ganda. Saya menunjukkan data bahwa 35% waktu developer habis untuk memperbaiki bug lama. Manajemen memahami urgensi tersebut dan menyetujui alokasi 20% kapasitas sprint untuk pembersihan technical debt."',
     },
     {
       kategori: 'Visi & Pengembangan Diri',
       pertanyaan: 'Bidang teknologi atau spesialisasi apa yang sedang giat Anda eksplorasi secara mandiri dalam 6 bulan terakhir?',
       petunjuk: 'Tunjukkan inisiatif belajar berkelanjutan (continuous learning) dan passion di dunia rekayasa perangkat lunak.',
-      jawabanIdeal: 'Ceritakan teknologi baru yang dipelajari, implementasi mini project, dan bagaimana itu membuat Anda lebih produktif.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Dalam 6 bulan terakhir, saya mendalami integrasi LLM application engineering dan streaming API (FastAPI & LangChain/Gemini SDK). Saya membuat proyek open-source latihan untuk document summarizer berbasis RAG. Pembelajaran ini membantu saya memahami cara kerja caching vector embeddings, token cost optimization, dan error handling pada model kecerdasan buatan."',
     },
     {
       kategori: 'Pertanyaan Penutup (Exit Question)',
       pertanyaan: 'Apakah ada pertanyaan yang ingin Anda ajukan kepada kami mengenai roadmap rekayasa sistem, budaya tim, atau tantangan perusahaan?',
       petunjuk: 'Wawancara profesional adalah dialog dua arah. Ajukan pertanyaan yang berbobot mengenai pertumbuhan dan teknologi.',
-      jawabanIdeal: 'Tanyakan mengenai ekspektasi keberhasilan dalam 90 hari pertama atau tantangan skalabilitas terbesar tim saat ini.',
+      jawabanIdeal: 'Contoh Pertanyaan Berbobot: "Terima kasih atas diskusinya. Saya ingin menanyakan: dalam roadmap 6 hingga 12 bulan ke depan, apa tantangan skalabilitas atau target produk terbesar yang sedang difokuskan oleh tim engineering ini? Dan bagaimana metrik keberhasilan utama untuk kandidat yang menempati posisi ini dalam 90 hari pertama?"',
     },
   ],
   umum: [
@@ -179,61 +179,61 @@ const BANK_PERTANYAAN_HRD = {
       kategori: 'Perkenalan Profesional',
       pertanyaan: 'Ceritakan latar belakang profesional Anda dan apa pencapaian terbesar yang paling mendefinisikan etos kerja Anda?',
       petunjuk: 'Struktur: Background ringkas -> Pencapaian utama dengan angka -> Nilai tambah untuk posisi ini.',
-      jawabanIdeal: 'Fokuskan pada perjalanan karier atau keahlian utama, highlight 1-2 pencapaian terbesar, dan sambungkan mengapa visi peran ini selaras.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Saya adalah profesional dengan latar belakang kuat di bidang pengembangan perangkat lunak selama lebih dari 2 tahun. Pencapaian terbesar saya adalah memimpin peremajaan sistem otomasi workflow internal di tempat sebelumnya yang memangkas waktu proses manual dari 3 hari menjadi 2 jam per batch, menghemat lebih dari 120 jam kerja per bulan. Saya melamar ke sini karena ingin membawa efisiensi dan komitmen kualitas serupa untuk mendorong pertumbuhan produk perusahaan Anda."',
     },
     {
       kategori: 'Metode STAR (Tantangan Kerja)',
       pertanyaan: 'Ceritakan situasi ketika Anda menghadapi target kerja yang tampak hampir mustahil tercapai. Langkah konkrit apa yang Anda lakukan?',
       petunjuk: 'Gunakan metode STAR (Situation, Task, Action, Result) dengan penekanan pada ketahanan mental dan kreativitas solusi.',
-      jawabanIdeal: 'Sebutkan konteks masalah secara ringkas, peran spesifik Anda, tindakan terukur yang diambil, serta hasil positif yang dicapai.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Situasi: Tim kami ditugaskan merilis modul integrasi klien penting dalam waktu hanya 2 minggu, separuh dari estimasi normal. Tindakan: Saya memecah deliverables menjadi milestone harian, mengotomasi pengujian mock data, dan mengkoordinasikan daily standup 15 menit untuk memangkas blocker seketika. Hasil: Modul berhasil live tepat waktu tanpa bug fatal dan klien memberikan rating kepuasan 9.5/10."',
     },
     {
       kategori: 'Kolaborasi Lintas Divisi',
       pertanyaan: 'Bagaimana cara Anda membangun hubungan kerja yang produktif dengan rekan kerja atau klien yang memiliki gaya komunikasi berbeda?',
       petunjuk: 'Jelaskan empati komunikasi, mendengarkan aktif, dan fleksibilitas dalam menyelesaikan hambatan komunikasi.',
-      jawabanIdeal: 'Tunjukkan empati, klarifikasi ekspektasi secara tertulis, dan fokus pada tujuan bersama.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Saya mengedepankan active listening dan adaptabilitas gaya komunikasi. Saat berhadapan dengan stakeholder yang menyukai ringkasan cepat, saya menyajikan executive summary 3 poin utama dan dampak finansial. Sedangkan untuk tim operasional, saya menyusun dokumen langkah teknis yang detail. Pendekatan ini terbukti meminimalkan salah paham dan mempercepat persetujuan approval proyek."',
     },
     {
       kategori: 'Manajemen Waktu & Prioritas',
       pertanyaan: 'Bagaimana Anda mengatur prioritas ketika beberapa proyek mendesak datang dari atasan yang berbeda secara serentak?',
       petunjuk: 'Jelaskan framework prioritas (Eisenhower Matrix, impact vs urgency) dan komunikasi proaktif.',
-      jawabanIdeal: 'Jelaskan cara Anda mengidentifikasi urgensi dan dampak, lalu berkomunikasi proaktif dengan manajer untuk penyelarasan ekspektasi.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Saya mengklasifikasikan tugas menggunakan matriks dampak bisnis versus urgensi waktu. Ketika dua atasan memberikan prioritas tinggi secara bersamaan, saya segera mengkomunikasikan beban kapasitas kerja secara transparan disertai estimasi waktu masing-masing pekerjaan. Dengan begitu, para pengambil keputusan dapat menyepakati urutan prioritas yang paling menguntungkan organisasi."',
     },
     {
       kategori: 'Respon terhadap Umpan Balik',
       pertanyaan: 'Ceritakan momen ketika Anda menerima kritik atau umpan balik negatif yang cukup keras terhadap hasil kerja Anda. Bagaimana Anda meresponnya?',
       petunjuk: 'Tunjukkan kematangan emosi, keterbukaan untuk berkembang, dan aksi perbaikan nyata.',
-      jawabanIdeal: 'Sambut kritik sebagai masukan objektif, evaluasi kekurangan, dan buktikan dengan perbaikan terukur pada pekerjaan berikutnya.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Pada presentasi proyek awal, desain arsitektur saya dikritik keras karena dinilai kurang fleksibel untuk ekspansi multi-tenant. Saya menahan ego dan mendengarkan poin keberatan mereka secara utuh. Saya meminta waktu 48 jam untuk meriset pola arsitektur modular yang disarankan, lalu mempresentasikan revisi yang mengakomodasi seluruh masukan tersebut. Sikap terbuka ini justru diapresiasi oleh tim pimpinan."',
     },
     {
       kategori: 'Kepemimpinan & Inisiatif',
       pertanyaan: 'Bisa ceritakan contoh ketika Anda mengambil inisiatif di luar lingkup tanggung jawab resmi Anda untuk memajukan tim atau proyek?',
       petunjuk: 'Tunjukkan kepemilikan (ownership mindset) dan proaktivitas dalam menyelesaikan masalah operasional.',
-      jawabanIdeal: 'Jelaskan peluang perbaikan yang Anda identifikasi, inisiatif yang diambil, dan dampak efisiensi yang dirasakan tim.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Melihat proses onboarding anggota baru sering memakan waktu 2 minggu karena minimnya dokumentasi, secara mandiri saya menyusun Starter Kit dan dokumentasi walkthrough interaktif di wiki internal. Inisiatif ini berhasil memangkas waktu adaptasi tim baru menjadi hanya 4 hari dan diadopsi menjadi standar resmi departemen."',
     },
     {
       kategori: 'Integritas & Etika',
       pertanyaan: 'Pernahkah Anda berada dalam situasi di mana integritas kerja diuji, dan keputusan sulit apa yang Anda ambil?',
       petunjuk: 'Fokus pada kejujuran profesional, kepatuhan prosedur, dan keberanian mempertahankan standar etika.',
-      jawabanIdeal: 'Jelaskan komitmen pada transparansi dan kepentingan jangka panjang organisasi di atas kenyamanan sesaat.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Saya pernah menemukan celah kalkulasi invoice pada data pelaporan yang menguntungkan target jangka pendek perusahaan namun merugikan mitra eksternal. Meskipun tidak ada yang menyadari, saya segera melaporkan anomali tersebut kepada manajer dan finance dengan data rekonsiliasi lengkap. Integritas ini diapresiasi oleh manajemen dan menyelamatkan reputasi perusahaan dari audit hukum di kemudian hari."',
     },
     {
       kategori: 'Adaptasi Terhadap Perubahan',
       pertanyaan: 'Bagaimana Anda beradaptasi ketika ada restrukturisasi tim, perubahan target bisnis drastis, atau pergeseran strategi perusahaan?',
       petunjuk: 'Tunjukkan kegesitan (agility), sikap optimis, dan kemampuan membantu rekan kerja beradaptasi.',
-      jawabanIdeal: 'Pahami alasan strategis di balik perubahan, susun rencana penyesuaian kerja harian, dan bantu menjaga moral tim.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Saat perusahaan mengubah strategi model bisnis dari B2C ke enterprise B2B secara mendadak, saya proaktif mempelajari standar kepatuhan enterprise (SLA & data privacy). Saya membantu menyelaraskan kembali roadmap sprint harian tim agar selaras dengan objektif baru, sehingga tim kami berhasil mengonversi 3 klien korporat pertama dalam kuartal yang sama."',
     },
     {
       kategori: 'Pengembangan Diri Mandiri',
       pertanyaan: 'Apa kelemahan utama yang saat ini sedang aktif Anda kembangkan, dan sistem apa yang Anda bangun untuk memperbaikinya?',
       petunjuk: 'Pilih kelemahan nyata yang dapat diperbaiki (misal: public speaking, delegasi), bukan klise perfeksionis.',
-      jawabanIdeal: 'Akui area pengembangan secara jujur, jelaskan pelatihan/metode yang diterapkan, dan tunjukkan progres nyata.',
+      jawabanIdeal: 'Contoh Jawaban Model STAR: "Dahulu saya cenderung sungkan mendelegasikan tugas teknis karena ingin memastikan semuanya sempurna sendiri, yang terkadang menimbulkan bottleneck. Untuk mengatasinya, saya membangun sistem SOP kerja tertulis, menyediakan checklist review, dan melatih rekan junior. Sekarang pekerjaan tim berjalan jauh lebih mandiri dan kapasitas output proyek kami meningkat 40%."',
     },
     {
       kategori: 'Pertanyaan Penutup (Exit Question)',
       pertanyaan: 'Apakah ada hal yang ingin Anda ketahui lebih dalam tentang ekspektasi keberhasilan peran ini atau budaya organisasi kami?',
       petunjuk: 'Ajukan pertanyaan yang mencerminkan ketertarikan mendalam Anda pada kesuksesan jangka panjang di organisasi.',
-      jawabanIdeal: 'Tanyakan mengenai ukuran kesuksesan 90 hari pertama atau kesempatan kolaborasi inovatif di perusahaan.',
+      jawabanIdeal: 'Contoh Pertanyaan Berbobot: "Terima kasih banyak atas waktu dan kesempatan wawancara hari ini. Boleh saya tanyakan: apa karakteristik atau pola kerja utama dari individu yang paling berprestasi dan berkembang pesat di perusahaan ini? Serta bagaimana program mentorship internal untuk mendukung peningkatan kompetensi tim?"',
     },
   ],
 };
@@ -618,8 +618,8 @@ export default function Simulasi() {
         ? `Uraikan secara runut dalam 1-2 menit: nama, latar belakang pengalaman terkini, 2-3 keahlian utama, dan mengapa nilai atau produk ${namaPt} menarik bagi Anda.`
         : 'Uraikan secara runut dalam 1-2 menit: nama, latar belakang pendidikan atau profesi terkini, 2-3 keahlian utama, dan mengapa posisi ini relevan dengan visi karier Anda.',
       jawabanIdeal: namaPt
-        ? `Format STAR intro: Latar belakang profesional -> Keahlian inti relevan posisi ${konfigurasi.posisiTarget} -> Alasan kuat memilih ${namaPt} dan nilai tambah yang siap Anda bawa.`
-        : `Format STAR intro: Latar belakang profesional -> Keahlian inti relevan posisi ${konfigurasi.posisiTarget} -> Alasan kuat bergabung dan nilai tambah yang siap Anda berikan.`,
+        ? `Contoh Jawaban Model STAR: "Nama saya [Nama Kandidat], lulusan Ilmu Komputer dengan fokus pada pengembangan antarmuka web modern. Selama lebih dari 2 tahun terakhir, saya terbiasa membangun web app yang cepat, responsif, dan mudah diakses menggunakan React, TypeScript, dan Tailwind CSS. Motivasi terbesar saya bergabung dengan ${namaPt} adalah rekam jejak inovasi produk dan komitmen ${namaPt} terhadap kepuasan pengguna. Saya yakin keahlian teknis serta perhatian saya pada detail UI/UX dapat langsung memberikan kontribusi nyata bagi tim engineering ${namaPt}."`
+        : `Contoh Jawaban Model STAR: "Nama saya [Nama Kandidat], profesional di bidang frontend development selama lebih dari 2 tahun. Saya terbiasa membangun single page application berbasis React dan arsitektur komponen modular yang mengutamakan kecepatan load serta aksesibilitas. Motivasi utama saya melamar posisi ${konfigurasi.posisiTarget} ini adalah ketertarikan saya pada skalabilitas produk yang sedang dikembangkan dan keinginan untuk berkontribusi menghadirkan antarmuka berkualitas tinggi bagi pengguna."`,
     };
 
     // =========================================================================
@@ -634,7 +634,7 @@ export default function Simulasi() {
         kategori: 'Cross-Check & Validasi Riwayat CV',
         pertanyaan: `Melanjutkan perkenalan Anda, di CV tercantum bahwa Anda berpengalaman sebagai ${expUtama.position || 'profesional'} di ${expUtama.company || 'perusahaan sebelumnya'}. Bisa ceritakan ruang lingkup tanggung jawab konkret Anda di sana dan bagaimana pengalaman tersebut membuktikan kesiapan Anda untuk posisi ${konfigurasi.posisiTarget}${namaPt ? ` dengan standar dan skala produk di ${namaPt}` : ''}?`,
         petunjuk: 'Kaitkan apa yang tertulis di CV dengan contoh nyata: peran spesifik, tools yang Anda pakai, dan pencapaian terukur yang Anda peroleh.',
-        jawabanIdeal: `Sebutkan tanggung jawab utama di ${expUtama.company || 'perusahaan tersebut'}, pencapaian nyata, dan jelaskan kesinambungan pengalaman tersebut dengan posisi ${konfigurasi.posisiTarget}${namaPt ? ` di ${namaPt}` : ''}.`,
+        jawabanIdeal: `Contoh Jawaban Model STAR: "Di ${expUtama.company || 'perusahaan sebelumnya'} sebagai ${expUtama.position || 'Frontend Developer'}, tanggung jawab utama saya adalah memimpin perombakan modul checkout dan integrasi payment gateway. Saya mengoptimalkan render cycle dan lazy-loading asset, yang berhasil mempercepat loading halaman hingga 45% dan menurunkan drop-off rate transaksi sebesar 18%. Pengalaman menghadapi traffic riil dan kolaborasi lintas fungsi tersebut membuat saya sangat siap mengemban tanggung jawab ${konfigurasi.posisiTarget}${namaPt ? ` di ${namaPt}` : ''}."`,
       };
     } else if (proyekUtama) {
       pertanyaan2 = {
@@ -644,7 +644,7 @@ export default function Simulasi() {
         kategori: 'Cross-Check & Validasi Proyek CV',
         pertanyaan: `Melanjutkan perkenalan diri Anda, pada CV Anda mencantumkan proyek unggulan "${proyekUtama.name}". Bisakah Anda jelaskan peranan spesifik, teknologi utama yang Anda gunakan, dan bagaimana hasil proyek tersebut membuktikan keahlian Anda untuk memecahkan tantangan posisi ${konfigurasi.posisiTarget}${namaPt ? ` di ${namaPt}` : ''}?`,
         petunjuk: 'Jelaskan peran Anda, tantangan arsitektur atau teknis yang dihadapi, serta hasil akhir terukur dari proyek portofolio tersebut.',
-        jawabanIdeal: `Jelaskan peran kepemilikan Anda dalam proyek ${proyekUtama.name}, arsitektur atau tools yang dipilih, serta dampak nyata yang dirasakan pengguna.`,
+        jawabanIdeal: `Contoh Jawaban Model STAR: "Dalam proyek ${proyekUtama.name}, saya berperan sebagai Lead Developer dari tahap wireframe hingga deployment. Saya memilih stack React dan Tailwind CSS untuk menjamin konsistensi design tokens serta Lighthouse Performance Score di atas 95. Proyek ini membuktikan kemampuan saya mengelola arsitektur frontend end-to-end yang siap diadopsi untuk standar produk ${konfigurasi.posisiTarget}${namaPt ? ` di ${namaPt}` : ''}."`,
       };
     } else if (eduUtama || allSkills.length > 0) {
       const topSkills = allSkills.slice(0, 3).join(', ') || 'keahlian teknis';
@@ -656,7 +656,7 @@ export default function Simulasi() {
         kategori: 'Cross-Check & Validasi Kompetensi CV',
         pertanyaan: `Melanjutkan perkenalan Anda, dalam CV Anda menonjolkan ${eduInfo} dan keahlian di bidang ${topSkills}. Bagaimana Anda menerapkan kompetensi tersebut untuk menjawab kebutuhan posisi ${konfigurasi.posisiTarget}${namaPt ? ` di ${namaPt}` : ''}?`,
         petunjuk: 'Berikan bukti implementasi konkret dari keahlian atau pendidikan yang Anda cantumkan di CV dalam menyelesaikan masalah nyata.',
-        jawabanIdeal: 'Korelasikan kompetensi teori dan keahlian di CV dengan studi kasus praktis dan efisiensi yang berhasil Anda ciptakan.',
+        jawabanIdeal: `Contoh Jawaban Model STAR: "Keahlian utama saya di bidang ${topSkills} saya buktikan melalui beberapa implementasi nyata, seperti migrasi komponen statis ke arsitektur reaktif dan pembuatan reusable component library. Hal tersebut memangkas waktu pengerjaan UI sprint berikutnya hingga 30%. Kompetensi praktis ini selaras dengan kebutuhan peran ${konfigurasi.posisiTarget}${namaPt ? ` di ${namaPt}` : ''}."`,
       };
     } else {
       pertanyaan2 = {
@@ -666,7 +666,7 @@ export default function Simulasi() {
         kategori: 'Cross-Check & Validasi Kompetensi CV',
         pertanyaan: `Melanjutkan perkenalan Anda, ceritakan satu pencapaian atau keahlian terbesar yang Anda tuliskan di CV, dan bagaimana Anda mengaplikasikannya dalam peran ${konfigurasi.posisiTarget}${namaPt ? ` di ${namaPt}` : ''} ini?`,
         petunjuk: 'Jelaskan keterkaitan antara klaim kemampuan di CV dengan bukti kerja nyata di lapangan.',
-        jawabanIdeal: 'Hubungkan klaim di CV dengan contoh kasus nyata yang memberikan dampak positif.',
+        jawabanIdeal: `Contoh Jawaban Model STAR: "Pencapaian terbesar yang saya cantumkan di CV adalah keberhasilan saya memimpin otomasi alur kerja digital yang menghemat lebih dari 15 jam kerja manual per minggu. Dalam peran ${konfigurasi.posisiTarget}${namaPt ? ` di ${namaPt}` : ''}, saya akan menerapkan pola pikir efisiensi dan ketelitian yang sama untuk memastikan setiap tugas terselesaikan dengan standar tertinggi."`,
       };
     }
 
@@ -746,8 +746,14 @@ export default function Simulasi() {
   };
 
   // Mesin Adaptive Follow-Up (Membuat pertanyaan lanjutan cerdas dari respon jawaban pengguna)
-  const buatAdaptiveFollowUp = (jawabanTeks, pertanyaanSebelumnya, urutan) => {
-    const teksLower = jawabanTeks.toLowerCase();
+  const buatAdaptiveFollowUp = (jawabanTeks, pertanyaanSebelumnya, urutan, kategoriKualitas) => {
+    // Jangan buat follow up teknikal jika jawaban pengguna terdeteksi ngawur / kosong
+    if (kategoriKualitas === 'ngawur' || kategoriKualitas === 'kosong') {
+      return null;
+    }
+
+    const teksLower = (jawabanTeks || '').toLowerCase();
+    if (teksLower.length < 15) return null;
 
     // Deteksi kata kunci menarik dari respon pengguna
     if (/lead|memimpin|manajer|koordinasi|arah|tim/i.test(teksLower)) {
@@ -758,7 +764,7 @@ export default function Simulasi() {
         pertanyaan: `Menarik bahwa Anda menyebutkan pengalaman memimpin tim dan koordinasi. Bagaimana cara Anda menjaga motivasi anggota tim saat proyek mengalami kendala teknis tak terduga?`,
         kategori: 'Follow-up: Kepemimpinan & Tim',
         petunjuk: 'Jelaskan gaya kepemimpinan situasional dan empati komunikasi dalam menjaga ritme tim.',
-        jawabanIdeal: 'Tekankan komunikasi transparan, pembagian beban kerja yang adil, serta apresiasi pencapaian berkala.',
+        jawabanIdeal: 'Contoh Jawaban Model STAR: "Saat tim kami tertahan oleh bug blocking di hari ketiga sprint, saya segera mengadakan sesi brainstorming 30 menit santai tanpa mencari kesalahan individu. Saya membagi beban debugging menjadi modul-modul kecil dan memesankan makanan ringan untuk mencairkan suasana tegang. Pendekatan solutif ini berhasil menjaga moral tim, dan bug terselesaikan 4 jam kemudian sehingga sprint rilis tepat waktu."',
       };
     }
 
@@ -770,7 +776,7 @@ export default function Simulasi() {
         pertanyaan: `Anda tadi menyinggung adanya kendala teknis yang sempat muncul. Jika ditarik ke belakang, mitigasi pencegahan apa yang sekarang Anda terapkan agar masalah serupa tidak terulang?`,
         kategori: 'Follow-up: Root Cause & Mitigasi',
         petunjuk: 'Jelaskan proses preventive action, automated testing, atau dokumentasi post-mortem.',
-        jawabanIdeal: 'Paparkan perbaikan sistemik: otomatisasi unit test, SOP rilis, dan pemantauan alert otomatis.',
+        jawabanIdeal: 'Contoh Jawaban Model STAR: "Sebagai mitigasi permanen, saya menambahkan automated integration test khusus untuk skenario edge case tersebut ke dalam CI/CD pipeline, serta mewajibkan pre-commit linter check. Selain itu, saya merancang alert ambang batas memori di Grafana agar tim mendapatkan notifikasi 10 menit sebelum server mengalami crash."',
       };
     }
 
@@ -782,7 +788,7 @@ export default function Simulasi() {
         pertanyaan: `Mengenai optimasi dan arsitektur yang Anda paparkan barusan, apa trade-off atau kompromi terbesar yang harus Anda ambil demi mencapai performa tersebut?`,
         kategori: 'Follow-up: Evaluasi Trade-off Teknis',
         petunjuk: 'Setiap keputusan teknis memiliki trade-off (misal: memori vs CPU, kompleksitas vs kecepatan).',
-        jawabanIdeal: 'Jelaskan trade-off secara jujur dan alasan mengapa trade-off tersebut layak diambil.',
+        jawabanIdeal: 'Contoh Jawaban Model STAR: "Trade-off terbesar yang kami ambil adalah trade-off memori dan eventual consistency dengan menerapkan in-memory Redis caching. Konsekuensinya, data analitik memiliki latency update sekitar 30 detik dibanding langsung query ke primary database. Namun kompromi ini sangat sepadan karena berhasil menghemat 80% beban read database utama."',
       };
     }
 
@@ -794,7 +800,7 @@ export default function Simulasi() {
         pertanyaan: `Terkait kolaborasi dengan stakeholder yang Anda sebutkan, bagaimana Anda menangani situasi jika mereka meminta perubahan mendadak di menit-menit akhir?`,
         kategori: 'Follow-up: Manajemen Stakeholder',
         petunjuk: 'Jelaskan negosiasi yang diplomatis dengan mengedepankan data dampak dan prioritas bisnis.',
-        jawabanIdeal: 'Tunjukkan sikap profesional, telaah urgensi permintaan, dan berikan opsi alternatif solutif.',
+        jawabanIdeal: 'Contoh Jawaban Model STAR: "Saya merespon permintaan tersebut dengan tenang dan mendengarkan tujuan bisnis di balik perubahan itu. Saya segera mempresentasikan matriks dampak: perubahan dapat diakomodasi jika tanggal rilis digeser 2 hari, atau fitur baru tersebut dimasukkan ke fase 1.1 minggu depan tanpa menunda rilis utama. Cara diplomatis berbasis opsi ini memudahkan stakeholder memilih solusi terbaik tanpa mengorbankan stabilitas sistem."',
       };
     }
 
@@ -818,6 +824,12 @@ export default function Simulasi() {
   const [isCameraOff, setIsCameraOff] = useState(false);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
 
+  // State Modal & Loading Animasi Baru (Anti-Lag, No Browser Native Popups)
+  const [modalPeringatanBelumBicara, setModalPeringatanBelumBicara] = useState(false);
+  const [notifikasiPeringatan, setNotifikasiPeringatan] = useState(null);
+  const [sedangMenyusunRapor, setSedangMenyusunRapor] = useState(false);
+  const [sedangMulaiSimulasi, setSedangMulaiSimulasi] = useState(false);
+
   // State Database Session
   const [sesiAktifId, setSesiAktifId] = useState(null);
   const [pertanyaanDbId, setPertanyaanDbId] = useState(null);
@@ -828,6 +840,42 @@ export default function Simulasi() {
   const finalTranscriptRef = useRef(''); // Buffer final terakumulasi murni (Mencegah Double Teks)
   const mediaRecorderRef = useRef(null);
   const chatScrollRef = useRef(null);
+
+  // Refs untuk sinkronisasi state di event callback browser (mencegah teardown berlebih)
+  const isAiBicaraRef = useRef(false);
+  const tahapRef = useRef(tahap);
+  const isJedaRef = useRef(false);
+
+  useEffect(() => {
+    isAiBicaraRef.current = isAiBicara;
+  }, [isAiBicara]);
+
+  useEffect(() => {
+    tahapRef.current = tahap;
+  }, [tahap]);
+
+  useEffect(() => {
+    isJedaRef.current = isJeda;
+  }, [isJeda]);
+
+  // Voice Cache & Listener voiceschanged (Penting untuk Chrome/Edge agar suara id-ID termuat)
+  const [daftarSuara, setDaftarSuara] = useState([]);
+  useEffect(() => {
+    if (!('speechSynthesis' in window)) return;
+    const muatDaftarSuara = () => {
+      const voices = window.speechSynthesis.getVoices();
+      if (voices && voices.length > 0) {
+        setDaftarSuara(voices);
+      }
+    };
+    muatDaftarSuara();
+    window.speechSynthesis.onvoiceschanged = muatDaftarSuara;
+    return () => {
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.onvoiceschanged = null;
+      }
+    };
+  }, []);
 
   // Kunci Scroll Body saat Masuk Tahap Wawancara (Strict Non-Scrollable 1 Screen)
   useEffect(() => {
@@ -854,7 +902,7 @@ export default function Simulasi() {
     }
   }, [chatLog, isAiBicara]);
 
-  // Speech Recognition Setup dengan Echo Loop Prevention & Dual Buffer Fix
+  // Speech Recognition Setup dengan Auto-Restart & Echo Loop Prevention
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRecognition && konfigurasi.mode !== 'teks') {
@@ -865,7 +913,7 @@ export default function Simulasi() {
 
       recognizer.onresult = (event) => {
         // Abaikan jika AI sedang berbicara untuk mencegah rekaman echo/feedback
-        if (isAiBicara) return;
+        if (isAiBicaraRef.current) return;
 
         let interim = '';
         for (let i = event.resultIndex; i < event.results.length; ++i) {
@@ -886,15 +934,29 @@ export default function Simulasi() {
         setJawabanSaatIni(combined);
       };
 
+      recognizer.onend = () => {
+        // Auto-restart jika masih dalam tahap wawancara dan tidak sedang jeda/AI bicara
+        if (tahapRef.current === 'wawancara' && !isAiBicaraRef.current && !isJedaRef.current && recognitionRef.current) {
+          try {
+            recognizer.start();
+          } catch (e) {}
+        }
+      };
+
       recognizer.onerror = (event) => {
         if (event.error !== 'no-speech') {
-          console.warn('Speech recognition warning:', event.error);
+          console.warn('Speech recognition status:', event.error);
         }
       };
 
       recognitionRef.current = recognizer;
+      return () => {
+        try {
+          recognizer.stop();
+        } catch (e) {}
+      };
     }
-  }, [konfigurasi.bahasa, konfigurasi.mode, isAiBicara]);
+  }, [konfigurasi.bahasa, konfigurasi.mode]);
 
   // Countdown timer per pertanyaan (120 detik)
   useEffect(() => {
@@ -913,7 +975,38 @@ export default function Simulasi() {
     return () => clearInterval(interval);
   }, [tahap, isJeda, indeksPertanyaan, jawabanSaatIni]);
 
-  // Speech Synthesis untuk Membacakan Pertanyaan AI (Dengan Echo Prevention)
+  // Helper mencari profil suara TTS terbaik (Prioritaskan suara Bahasa Indonesia alami yang tidak kaku)
+  const temukanSuaraTerbaik = (bahasa) => {
+    if (!('speechSynthesis' in window)) return null;
+    const semuaSuara = daftarSuara.length > 0 ? daftarSuara : (window.speechSynthesis.getVoices() || []);
+    if (!semuaSuara || semuaSuara.length === 0) return null;
+
+    if (bahasa === 'en') {
+      return (
+        semuaSuara.find((v) => v.lang.startsWith('en') && /natural|google|samantha|george|online/i.test(v.name)) ||
+        semuaSuara.find((v) => v.lang.startsWith('en-US')) ||
+        semuaSuara.find((v) => v.lang.startsWith('en')) ||
+        null
+      );
+    }
+
+    // Bahasa Indonesia: Urutan prioritas suara natural & artikulatif
+    return (
+      // 1. Google Bahasa Indonesia di Chrome
+      semuaSuara.find((v) => /google.*bahasa.*indonesia|google.*indonesia/i.test(v.name)) ||
+      // 2. Microsoft Gadis / Ardi Natural di Windows
+      semuaSuara.find((v) => /gadis|ardi/i.test(v.name) && /indonesia|id/i.test(v.lang || v.name)) ||
+      // 3. Suara dengan lang id-ID
+      semuaSuara.find((v) => (v.lang || '').replace('_', '-').toLowerCase() === 'id-id') ||
+      // 4. Suara dengan prefix id
+      semuaSuara.find((v) => (v.lang || '').toLowerCase().startsWith('id')) ||
+      // 5. Suara yang memuat kata indonesia
+      semuaSuara.find((v) => /indonesia/i.test(v.name)) ||
+      null
+    );
+  };
+
+  // Speech Synthesis untuk Membacakan Pertanyaan AI (Dengan Echo Prevention & Native Voice)
   const bacakanPertanyaan = (teks) => {
     if (!('speechSynthesis' in window) || konfigurasi.mode === 'teks') return;
 
@@ -926,8 +1019,15 @@ export default function Simulasi() {
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(teks);
-    utterance.lang = konfigurasi.bahasa === 'en' ? 'en-US' : 'id-ID';
-    utterance.rate = 0.96;
+    const targetLang = konfigurasi.bahasa === 'en' ? 'en-US' : 'id-ID';
+    utterance.lang = targetLang;
+    utterance.rate = 0.94; // Kecepatan pelafalan yang artikulatif dan tidak terburu-buru
+    utterance.pitch = 1.0;
+
+    const suaraTerpilih = temukanSuaraTerbaik(konfigurasi.bahasa);
+    if (suaraTerpilih) {
+      utterance.voice = suaraTerpilih;
+    }
 
     utterance.onstart = () => {
       setIsAiBicara(true);
@@ -958,16 +1058,17 @@ export default function Simulasi() {
   // Mulai Sesi Simulasi Wawancara dengan Layar Pemuatan (Loading State)
   const mulaiSimulasi = async () => {
     if (!statusPrasyarat.lengkap) {
-      alert('Harap lengkapi bagian Pengalaman Kerja dan Keahlian di CV Anda terlebih dahulu.');
+      setNotifikasiPeringatan('Harap lengkapi bagian Pengalaman Kerja dan Keahlian di CV Anda terlebih dahulu.');
       return;
     }
 
     const sisa = kuota?.sisa ?? 20;
     if (sisa <= 0) {
-      alert('Kuota harian AI Anda telah habis (20/20). Kuota akan otomatis direset besok.');
+      setNotifikasiPeringatan('Kuota harian AI Anda telah habis (20/20). Kuota akan otomatis direset besok.');
       return;
     }
 
+    setSedangMulaiSimulasi(true);
     hentikanTesPerangkat();
 
     const namaPt = konfigurasi.perusahaanTarget?.trim();
@@ -1019,6 +1120,7 @@ export default function Simulasi() {
 
     // 3. Fast Transition: Buka Ruang Wawancara Langsung (<100ms)
     setTahap('wawancara');
+    setSedangMulaiSimulasi(false);
 
     // 4. Inisialisasi Sesi & Simpan Pertanyaan Awal Asynchronous di Background
     const idSesiTemp = `sesi-${Date.now()}`;
@@ -1123,10 +1225,16 @@ export default function Simulasi() {
   };
 
   // Kirim Jawaban & Lanjut ke Pertanyaan Berikutnya (Dengan Evaluasi Semantik & Respons AI Alami)
-  const kirimJawabanOtomatis = async () => {
+  const kirimJawabanOtomatis = async (paksaLanjut = false) => {
+    // Jika dalam mode audio/video dan pengguna belum berbicara sama sekali (dan bukan paksa lanjut)
+    if (!paksaLanjut && konfigurasi.mode !== 'teks' && !jawabanSaatIni.trim()) {
+      setModalPeringatanBelumBicara(true);
+      return;
+    }
+
     window.speechSynthesis.cancel();
     const pertanyaanAktif = daftarPertanyaan[indeksPertanyaan];
-    const teksJawaban = jawabanSaatIni.trim() || '(Jawaban disampaikan secara verbal)';
+    const teksJawaban = jawabanSaatIni.trim() || (paksaLanjut ? '' : '(Jawaban disampaikan secara verbal)');
     const durasiDipakai = 120 - countdownDetik;
 
     // 1. Tampilkan pesan pengguna di chat log seketika jika mode teks
@@ -1135,7 +1243,7 @@ export default function Simulasi() {
         ...prev,
         {
           pengirim: 'user',
-          pesan: teksJawaban,
+          pesan: teksJawaban || '(Tidak memberikan jawaban)',
           waktu: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -1149,19 +1257,29 @@ export default function Simulasi() {
 
     // 2. Evaluasi semantik jawaban pengguna via backend FastAPI LLM / fallback cerdas
     let evaluasiHasil = null;
-    try {
-      evaluasiHasil = await evaluasiJawabanInteraktif({
-        sesiId: sesiAktifId,
-        pertanyaan: pertanyaanAktif.pertanyaan,
-        jawaban: teksJawaban,
-        posisiTarget: konfigurasi.posisiTarget,
-        perusahaanTarget: konfigurasi.perusahaanTarget,
-        kategori: pertanyaanAktif.kategori,
-        jawabanIdeal: pertanyaanAktif.jawabanIdeal,
-        urutan: indeksPertanyaan + 1,
-      });
-    } catch (e) {
-      console.warn('[Simulasi] Gagal evaluasi interaktif:', e);
+    if (!teksJawaban) {
+      evaluasiHasil = {
+        skor: 0,
+        kategori_kualitas: 'kosong',
+        reaksi_pewawancara: 'Pertanyaan ini dilewati tanpa jawaban. Mari kita lanjutkan ke topik berikutnya.',
+        evaluasi_singkat: 'Kandidat melewati pertanyaan tanpa memberikan tanggapan.',
+        rekomendasi_star: 'Upayakan selalu memberikan respon dasar menggunakan metode STAR meskipun belum menguasai topik secara mendalam.',
+      };
+    } else {
+      try {
+        evaluasiHasil = await evaluasiJawabanInteraktif({
+          sesiId: sesiAktifId,
+          pertanyaan: pertanyaanAktif.pertanyaan,
+          jawaban: teksJawaban,
+          posisiTarget: konfigurasi.posisiTarget,
+          perusahaanTarget: konfigurasi.perusahaanTarget,
+          kategori: pertanyaanAktif.kategori,
+          jawabanIdeal: pertanyaanAktif.jawabanIdeal,
+          urutan: indeksPertanyaan + 1,
+        });
+      } catch (e) {
+        console.warn('[Simulasi] Gagal evaluasi interaktif:', e);
+      }
     }
 
     const skorSoal = evaluasiHasil?.skor ?? 70;
@@ -1176,7 +1294,7 @@ export default function Simulasi() {
       idPertanyaan: pertanyaanAktif.id,
       pertanyaan: pertanyaanAktif.pertanyaan,
       kategori: pertanyaanAktif.kategori,
-      jawabanPengguna: teksJawaban,
+      jawabanPengguna: teksJawaban || '(Pertanyaan dilewati)',
       durasiTerpakai: durasiDipakai,
       skor: skorSoal,
       evaluasi: evaluasiSingkat,
@@ -1189,7 +1307,7 @@ export default function Simulasi() {
     if (pertanyaanDbId) {
       simpanJawabanSesi({
         pertanyaanSesiId: pertanyaanDbId,
-        teksMentah: teksJawaban,
+        teksMentah: teksJawaban || '(Pertanyaan dilewati)',
         durasiDetik: durasiDipakai,
         skorPertanyaan: skorSoal,
         evaluasiSingkat,
@@ -1205,9 +1323,34 @@ export default function Simulasi() {
 
     // 4. Periksa apakah sesi masih berlanjut atau selesai
     if (nextIdx < daftarPertanyaan.length) {
-      // Cek apakah jawaban pengguna memicu follow-up dinamis
-      const followUp = buatAdaptiveFollowUp(teksJawaban, pertanyaanAktif, nextIdx + 1);
+      // Prioritaskan pertanyaan_lanjutan dari AI evaluasi jika jawaban relevan & berbobot
       let pertanyaanBerikutnya = daftarPertanyaan[nextIdx];
+      let followUp = null;
+
+      if (
+        evaluasiHasil?.pertanyaan_lanjutan &&
+        evaluasiHasil.kategori_kualitas !== 'ngawur' &&
+        evaluasiHasil.kategori_kualitas !== 'kosong' &&
+        evaluasiHasil.kategori_kualitas !== 'kurang' &&
+        daftarPertanyaan.length < 15
+      ) {
+        followUp = {
+          id: nextIdx + 1,
+          tipe: 'lanjutan',
+          sumberKonteks: 'follow_up_ai_dialog',
+          pertanyaan: evaluasiHasil.pertanyaan_lanjutan,
+          kategori: 'Follow-up: Pendalaman Respon Anda',
+          petunjuk: 'Jelaskan lebih spesifik mengenai keputusan, kendala, atau hasil dari poin yang Anda ceritakan sebelumnya.',
+          jawabanIdeal: `Contoh Jawaban Model STAR: "Menindaklanjuti hal tersebut, pendekatan konkret yang saya ambil adalah merancang solusi... Hasil terukurnya adalah..."`,
+        };
+      } else {
+        followUp = buatAdaptiveFollowUp(
+          teksJawaban,
+          pertanyaanAktif,
+          nextIdx + 1,
+          evaluasiHasil?.kategori_kualitas
+        );
+      }
 
       if (followUp && daftarPertanyaan.length < 15) {
         const pertanyaanBaru = [...daftarPertanyaan];
@@ -1316,15 +1459,18 @@ export default function Simulasi() {
     }
   };
 
-  // Akhiri Simulasi Lebih Awal
-  const akhiriSesi = () => {
-    const konfirmasi = window.confirm(
-      'Apakah Anda yakin ingin mengakhiri simulasi sekarang? Jawaban yang sudah terkumpul akan langsung dievaluasi oleh AI.'
-    );
-    if (!konfirmasi) return;
+  // State Modal Konfirmasi In-App (Menghilangkan window.confirm native)
+  const [modalKonfirmasiAkhiriBuka, setModalKonfirmasiAkhiriBuka] = useState(false);
 
+  // Akhiri Simulasi Lebih Awal (Buka Modal Konfirmasi In-App Kustom)
+  const akhiriSesi = () => {
+    setModalKonfirmasiAkhiriBuka(true);
+  };
+
+  const eksekusiAkhiriSesi = () => {
+    setModalKonfirmasiAkhiriBuka(false);
     if (jawabanSaatIni.trim()) {
-      kirimJawabanOtomatis();
+      kirimJawabanOtomatis(true);
     } else {
       selesaikanWawancara(jawabanList);
     }
@@ -1355,102 +1501,107 @@ export default function Simulasi() {
 
   const selesaikanWawancara = async (semuaJawaban) => {
     stopMainMedia();
+    setSedangMenyusunRapor(true);
 
-    let skorAkumulasi = 0;
-    const rincianPertanyaan = semuaJawaban.map((j) => {
-      skorAkumulasi += j.skor;
-      return j;
-    });
+    try {
+      let skorAkumulasi = 0;
+      const rincianPertanyaan = semuaJawaban.map((j) => {
+        skorAkumulasi += j.skor;
+        return j;
+      });
 
-    const skorRataRata =
-      rincianPertanyaan.length > 0 ? Math.round(skorAkumulasi / rincianPertanyaan.length) : 78;
+      const skorRataRata =
+        rincianPertanyaan.length > 0 ? Math.round(skorAkumulasi / rincianPertanyaan.length) : 78;
 
-    // Evaluasi 4 Pilar Metrik yang realistis sesuai skor performa aktual
-    const metrik = {
-      relevansiIsi: Math.max(10, Math.min(98, skorRataRata + (skorRataRata < 40 ? -5 : 2))),
-      strukturStar: Math.max(10, Math.min(95, skorRataRata - (skorRataRata < 40 ? 4 : 1))),
-      kosaKataProfesional: Math.max(15, Math.min(95, skorRataRata + (skorRataRata < 40 ? 0 : 2))),
-      kepercayaanDiri: Math.max(20, Math.min(92, Math.round(skorRataRata * 0.85 + 12))),
-    };
+      // Evaluasi 4 Pilar Metrik yang realistis sesuai skor performa aktual
+      const metrik = {
+        relevansiIsi: Math.max(10, Math.min(98, skorRataRata + (skorRataRata < 40 ? -5 : 2))),
+        strukturStar: Math.max(10, Math.min(95, skorRataRata - (skorRataRata < 40 ? 4 : 1))),
+        kosaKataProfesional: Math.max(15, Math.min(95, skorRataRata + (skorRataRata < 40 ? 0 : 2))),
+        kepercayaanDiri: Math.max(20, Math.min(92, Math.round(skorRataRata * 0.85 + 12))),
+      };
 
-    const predikat =
-      skorRataRata >= 85
-        ? 'Sangat Siap Kerja (Job-Ready)'
-        : skorRataRata >= 75
-        ? 'Kualifikasi Baik (Promising)'
-        : skorRataRata >= 50
-        ? 'Cukup / Perlu Latihan'
-        : 'Perlu Banyak Latihan (Belum Memenuhi Kualifikasi)';
+      const predikat =
+        skorRataRata >= 85
+          ? 'Sangat Siap Kerja (Job-Ready)'
+          : skorRataRata >= 75
+          ? 'Kualifikasi Baik (Promising)'
+          : skorRataRata >= 50
+          ? 'Cukup / Perlu Latihan'
+          : 'Perlu Banyak Latihan (Belum Memenuhi Kualifikasi)';
 
-    const kekuatan =
-      skorRataRata >= 60
-        ? [
-            'Kemampuan membedah proyek nyata dan pengalaman secara runtut.',
-            'Penggunaan terminologi industri yang relevan dengan posisi sasaran.',
-            'Sikap tenang dan artikulatif dalam menanggapi pertanyaan lanjutan (follow-up).',
-          ]
-        : [
-            'Kejujuran dalam menyampaikan batasan pengetahuan saat ini.',
-            'Menyelesaikan seluruh rangkaian pertanyaan simulasi.',
-            'Keberanian mencoba skenario wawancara industri nyata.',
-          ];
+      const kekuatan =
+        skorRataRata >= 60
+          ? [
+              'Kemampuan membedah proyek nyata dan pengalaman secara runtut.',
+              'Penggunaan terminologi industri yang relevan dengan posisi sasaran.',
+              'Sikap tenang dan artikulatif dalam menanggapi pertanyaan lanjutan (follow-up).',
+            ]
+          : [
+              'Kejujuran dalam menyampaikan batasan pengetahuan saat ini.',
+              'Menyelesaikan seluruh rangkaian pertanyaan simulasi.',
+              'Keberanian mencoba skenario wawancara industri nyata.',
+            ];
 
-    const areaPeningkatan =
-      skorRataRata >= 60
-        ? [
-            'Perkuat formulasi hasil terukur (Result) pada metode STAR dengan persentase atau metrik kuantitatif.',
-            'Hindari penjelasan latar belakang yang terlalu panjang sebelum masuk ke aksi spesifik (Action).',
-            'Maksimalkan bobot pertanyaan penutup (exit question) mengenai ekspektasi tim dalam 90 hari pertama.',
-          ]
-        : [
-            'Hindari hanya menjawab "tidak tahu", berikan pemahaman dasar atau bagaimana strategi Anda mempelajari konsep tersebut.',
-            'Pelajari konsep arsitektur, testing, dan praktik terbaik untuk posisi kerja yang dilamar.',
-            'Gunakan kerangka STAR (Situation, Task, Action, Result) untuk menstrukturkan jawaban teknis.',
-          ];
+      const areaPeningkatan =
+        skorRataRata >= 60
+          ? [
+              'Perkuat formulasi hasil terukur (Result) pada metode STAR dengan persentase atau metrik kuantitatif.',
+              'Hindari penjelasan latar belakang yang terlalu panjang sebelum masuk ke aksi spesifik (Action).',
+              'Maksimalkan bobot pertanyaan penutup (exit question) mengenai ekspektasi tim dalam 90 hari pertama.',
+            ]
+          : [
+              'Hindari hanya menjawab "tidak tahu", berikan pemahaman dasar atau bagaimana strategi Anda mempelajari konsep tersebut.',
+              'Pelajari konsep arsitektur, testing, dan praktik terbaik untuk posisi kerja yang dilamar.',
+              'Gunakan kerangka STAR (Situation, Task, Action, Result) untuk menstrukturkan jawaban teknis.',
+            ];
 
-    const hasil = {
-      id: sesiAktifId || `sesi-${Date.now()}`,
-      tanggal: new Date().toISOString(),
-      posisi: konfigurasi.posisiTarget,
-      level: tingkatPengalamanAuto.level,
-      mode: konfigurasi.mode,
-      skorTotal: skorRataRata,
-      predikat,
-      metrik,
-      kekuatan,
-      areaPeningkatan,
-      rincianPertanyaan,
-    };
+      const hasil = {
+        id: sesiAktifId || `sesi-${Date.now()}`,
+        tanggal: new Date().toISOString(),
+        posisi: konfigurasi.posisiTarget,
+        level: tingkatPengalamanAuto.level,
+        mode: konfigurasi.mode,
+        skorTotal: skorRataRata,
+        predikat,
+        metrik,
+        kekuatan,
+        areaPeningkatan,
+        rincianPertanyaan,
+      };
 
-    setEvaluasiAkhir(hasil);
-    setSesiDipilihReview(hasil);
+      setEvaluasiAkhir(hasil);
+      setSesiDipilihReview(hasil);
 
-    // Simpan Evaluasi ke Supabase / localStorage dengan metadata lengkap
-    if (sesiAktifId) {
-      try {
-        await simpanEvaluasiSesi({
-          sesiId: sesiAktifId,
-          posisiTarget: konfigurasi.posisiTarget,
-          mode: konfigurasi.mode,
-          bahasa: konfigurasi.bahasa,
-          skorTotal: skorRataRata,
-          skorVerbal: metrik.kosaKataProfesional,
-          skorNonVerbal: metrik.kepercayaanDiri,
-          predikat,
-          metrik,
-          kekuatan,
-          areaPeningkatan,
-          rincianEvaluasi: rincianPertanyaan,
-        });
-      } catch (e) {
-        console.warn('Gagal simpan evaluasi ke database:', e);
+      // Simpan Evaluasi ke Supabase / localStorage dengan metadata lengkap
+      if (sesiAktifId) {
+        try {
+          await simpanEvaluasiSesi({
+            sesiId: sesiAktifId,
+            posisiTarget: konfigurasi.posisiTarget,
+            mode: konfigurasi.mode,
+            bahasa: konfigurasi.bahasa,
+            skorTotal: skorRataRata,
+            skorVerbal: metrik.kosaKataProfesional,
+            skorNonVerbal: metrik.kepercayaanDiri,
+            predikat,
+            metrik,
+            kekuatan,
+            areaPeningkatan,
+            rincianEvaluasi: rincianPertanyaan,
+          });
+        } catch (e) {
+          console.warn('Gagal simpan evaluasi ke database:', e);
+        }
       }
-    }
 
-    // Refresh daftar riwayat sesi & arahkan langsung ke Tab 2 (Hasil Review Sesi)
-    await muatRiwayat();
-    setTabMenuSimulasi('riwayat');
-    setTahap('persiapan');
+      // Refresh daftar riwayat sesi & arahkan langsung ke Tab 2 (Hasil Review Sesi)
+      await muatRiwayat();
+      setTabMenuSimulasi('riwayat');
+      setTahap('persiapan');
+    } finally {
+      setSedangMenyusunRapor(false);
+    }
   };
 
   // Format Countdown mm:ss
@@ -1522,36 +1673,36 @@ export default function Simulasi() {
           </div>
         )}
 
-        {/* Banner Skor Evaluasi (Tema Oranye Terang Konsisten) */}
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-batu-950 via-batu-900 to-batu-950 border border-oranye-500/25 p-6 sm:p-8 text-white shadow-xl">
+        {/* Banner Skor Evaluasi (Tema Oranye Terang Konsisten - Tanpa Hitam) */}
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-oranye-500 via-oranye-600 to-oranye-700 border border-oranye-400 p-6 sm:p-8 text-white shadow-xl">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
             <div className="space-y-2">
-              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-oranye-300 backdrop-blur-md">
-                <Award className="h-4 w-4 text-oranye-400" />
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white backdrop-blur-md">
+                <Award className="h-4 w-4 text-white" />
                 <span>Rapor Evaluasi Wawancara AI · Standar Industri</span>
               </div>
               <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white font-display">
                 {posisiTeks}
               </h1>
-              <p className="text-xs text-batu-300">
+              <p className="text-xs text-oranye-100">
                 Sesi pada {tanggalTeks} · Level {levelTeks} · Format Mode{' '}
-                <span className="capitalize font-bold text-oranye-400">{modeTeks}</span>
+                <span className="capitalize font-bold text-white bg-white/20 px-2 py-0.5 rounded-md">{modeTeks}</span>
               </p>
             </div>
 
             {/* Skor Donut Gauge Chart */}
-            <div className="flex items-center gap-4 bg-white/5 border border-white/10 p-4 rounded-2xl backdrop-blur-md">
+            <div className="flex items-center gap-4 bg-white/15 border border-white/25 p-4 rounded-2xl backdrop-blur-md">
               <div className="relative h-20 w-20 flex items-center justify-center">
                 <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
                   <path
-                    className="text-white/10"
+                    className="text-white/25"
                     strokeWidth="3.5"
                     stroke="currentColor"
                     fill="none"
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                   <path
-                    className="text-oranye-500"
+                    className="text-white"
                     strokeDasharray={`${skorNum}, 100`}
                     strokeWidth="3.5"
                     strokeLinecap="round"
@@ -1562,14 +1713,14 @@ export default function Simulasi() {
                 </svg>
                 <div className="absolute text-center">
                   <span className="text-xl font-black text-white">{skorNum}</span>
-                  <span className="block text-[8px] font-bold text-batu-400">/100</span>
+                  <span className="block text-[8px] font-bold text-oranye-100">/100</span>
                 </div>
               </div>
               <div>
-                <span className="text-xs font-bold text-batu-300 uppercase tracking-wider block">
+                <span className="text-xs font-bold text-oranye-100 uppercase tracking-wider block">
                   Predikat Akhir
                 </span>
-                <span className="text-base font-extrabold text-oranye-400">
+                <span className="text-base font-extrabold text-white">
                   {predikatTeks}
                 </span>
               </div>
@@ -1720,46 +1871,58 @@ export default function Simulasi() {
         {tabEvaluasi === 'rincian' && (
           <div className="space-y-4">
             {rincianList.length > 0 ? (
-              rincianList.map((item, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-2xl border border-batu-200 bg-white p-5 shadow-xs space-y-3"
-                >
-                  <div className="flex items-center justify-between border-b border-batu-100 pb-2">
-                    <span className="text-xs font-bold text-batu-500">
-                      Pertanyaan {idx + 1} · {item.kategori}
-                    </span>
-                    <span
-                      className={`rounded-md px-2 py-0.5 text-xs font-bold ${
-                        item.skor >= 80
-                          ? 'bg-emerald-100 text-emerald-700'
-                          : 'bg-oranye-100 text-oranye-700'
-                      }`}
-                    >
-                      Skor: {item.skor}/100
-                    </span>
-                  </div>
+              rincianList.map((item, idx) => {
+                // Pastikan teks contoh jawaban benar berupa role-play jawaban riil (bukan kisi-kisi/instruksi abstrak)
+                let contohJawaban = item.jawabanIdeal || '';
+                if (contohJawaban.toLowerCase().startsWith('format star intro') || contohJawaban.toLowerCase().startsWith('sebutkan tanggung jawab')) {
+                  if (idx === 0) {
+                    contohJawaban = `Contoh Jawaban Model STAR: "Nama saya [Nama Anda], seorang profesional di bidang pengembangan perangkat lunak selama lebih dari 2 tahun. Keahlian inti saya berfokus pada arsitektur web modern, React, dan integrasi API yang terukur. Motivasi utama saya melamar ke posisi ${posisiTeks} adalah keinginan berkontribusi langsung pada produk yang berdampak luas dan siap membawa etos kerja solutif untuk kemajuan tim."`;
+                  } else {
+                    contohJawaban = `Contoh Jawaban Model STAR: "Di perusahaan sebelumnya sebagai Frontend Developer, tanggung jawab utama saya adalah memimpin perombakan modul checkout dan optimasi render antarmuka. Saya menerapkan lazy-loading aset dan arsitektur komponen modular yang berhasil mempercepat loading halaman sebesar 40% serta meningkatkan kepuasan pengguna. Pengalaman ini membuktikan kesiapan teknis saya untuk posisi ${posisiTeks}."`;
+                  }
+                }
 
-                  <p className="text-sm font-bold text-batu-900">&ldquo;{item.pertanyaan}&rdquo;</p>
-
-                  <div className="rounded-xl bg-batu-50 p-3 text-xs text-batu-700">
-                    <strong className="text-batu-900 block mb-1">Jawaban Anda:</strong>
-                    <p className="leading-relaxed whitespace-pre-line">{item.jawabanPengguna}</p>
-                  </div>
-
-                  {item.jawabanIdeal && (
-                    <div className="rounded-xl bg-oranye-50/70 border border-oranye-200/70 p-3 text-xs text-oranye-950">
-                      <strong className="text-oranye-950 flex items-center gap-1.5 mb-1">
-                        <Sparkles className="h-3.5 w-3.5 text-oranye-600" />
-                        <span>Rekomendasi Jawaban Ideal:</span>
-                      </strong>
-                      <p className="leading-relaxed text-oranye-950/80">{item.jawabanIdeal}</p>
+                return (
+                  <div
+                    key={idx}
+                    className="rounded-2xl border border-oranye-200/90 bg-white p-5 shadow-xs space-y-3"
+                  >
+                    <div className="flex items-center justify-between border-b border-oranye-100 pb-2">
+                      <span className="text-xs font-bold text-oranye-800">
+                        Pertanyaan {idx + 1} · {item.kategori}
+                      </span>
+                      <span
+                        className={`rounded-md px-2 py-0.5 text-xs font-bold ${
+                          item.skor >= 80
+                            ? 'bg-emerald-100 text-emerald-700'
+                            : 'bg-oranye-100 text-oranye-700'
+                        }`}
+                      >
+                        Skor: {item.skor}/100
+                      </span>
                     </div>
-                  )}
-                </div>
-              ))
+
+                    <p className="text-sm font-bold text-batu-900">&ldquo;{item.pertanyaan}&rdquo;</p>
+
+                    <div className="rounded-xl bg-oranye-50/40 border border-oranye-100 p-3 text-xs text-batu-700">
+                      <strong className="text-batu-900 block mb-1">Jawaban Anda:</strong>
+                      <p className="leading-relaxed whitespace-pre-line">{item.jawabanPengguna}</p>
+                    </div>
+
+                    {contohJawaban && (
+                      <div className="rounded-xl bg-oranye-50/80 border border-oranye-200 p-3.5 text-xs text-oranye-950 shadow-2xs">
+                        <strong className="text-oranye-950 flex items-center gap-1.5 mb-1.5 font-bold">
+                          <Sparkles className="h-3.5 w-3.5 text-oranye-600 shrink-0" />
+                          <span>Contoh Cara Menjawab yang Benar (Model STAR):</span>
+                        </strong>
+                        <p className="leading-relaxed text-oranye-950/90">{contohJawaban}</p>
+                      </div>
+                    )}
+                  </div>
+                );
+              })
             ) : (
-              <div className="rounded-2xl border border-batu-200 bg-white p-8 text-center text-batu-500 text-xs">
+              <div className="rounded-2xl border border-oranye-200 bg-white p-8 text-center text-batu-500 text-xs">
                 Tidak ada data rincian tanya jawab yang tersimpan untuk sesi ini.
               </div>
             )}
@@ -2270,7 +2433,7 @@ export default function Simulasi() {
                         type="button"
                         onClick={() => {
                           if (!konfigurasi.posisiTarget?.trim()) {
-                            alert('Harap tentukan posisi pekerjaan target terlebih dahulu.');
+                            setNotifikasiPeringatan('Harap tentukan posisi pekerjaan target terlebih dahulu.');
                             return;
                           }
                           setLangkahKonfigurasi(2);
@@ -2472,7 +2635,7 @@ export default function Simulasi() {
                             </span>
                           </div>
 
-                          <div className="relative aspect-video w-full rounded-xl bg-batu-950 overflow-hidden flex items-center justify-center border border-batu-800">
+                          <div className="relative aspect-video w-full rounded-xl bg-oranye-50/60 overflow-hidden flex items-center justify-center border border-oranye-200">
                             <video
                               ref={previewDeviceVideoRef}
                               autoPlay
@@ -2483,9 +2646,9 @@ export default function Simulasi() {
                               }`}
                             />
                             {!isCameraAllowed && (
-                              <div className="text-center text-batu-400 p-4">
-                                <Camera className="h-8 w-8 mx-auto mb-1.5 opacity-40" />
-                                <p className="text-[11px]">Kamera belum diuji</p>
+                              <div className="text-center text-oranye-600/70 p-4">
+                                <Camera className="h-8 w-8 mx-auto mb-1.5 opacity-60 text-oranye-500" />
+                                <p className="text-[11px] font-semibold text-batu-600">Kamera belum diuji</p>
                               </div>
                             )}
                           </div>
@@ -2537,7 +2700,7 @@ export default function Simulasi() {
                           <div className="flex items-center justify-between text-xs">
                             <span className="font-bold text-batu-700 flex items-center gap-1.5">
                               <Volume2 className="h-3.5 w-3.5 text-batu-600" />
-                              <span>Speaker / Output Suara</span>
+                              <span>Speaker / Suara AI Recruiter</span>
                             </span>
                             <button
                               type="button"
@@ -2548,6 +2711,17 @@ export default function Simulasi() {
                               {isTestingSpeaker ? 'Memutar Suara...' : 'Putar Suara Tes'}
                             </button>
                           </div>
+                          {(() => {
+                            const v = temukanSuaraTerbaik(konfigurasi.bahasa);
+                            return (
+                              <p className="text-[10.5px] text-oranye-800 font-medium">
+                                Profil Suara Terdeteksi:{' '}
+                                <strong className="text-oranye-900 font-bold">
+                                  {v ? `${v.name} (${v.lang})` : 'Suara Alami Sistem Browser'}
+                                </strong>
+                              </p>
+                            );
+                          })()}
                         </div>
                       )}
 
@@ -2559,8 +2733,8 @@ export default function Simulasi() {
                             onClick={isMicAllowed ? hentikanTesPerangkat : jalankanTesPerangkat}
                             className={`w-full py-2.5 px-4 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer ${
                               isMicAllowed
-                                ? 'border border-batu-300 bg-batu-50 text-batu-700 hover:bg-batu-100'
-                                : 'bg-batu-900 text-white hover:bg-batu-800'
+                                ? 'border border-oranye-300 bg-oranye-50 text-oranye-800 hover:bg-oranye-100'
+                                : 'bg-oranye-500 text-white hover:bg-oranye-600 shadow-sm shadow-oranye-500/20'
                             }`}
                           >
                             {isMicAllowed ? (
@@ -2601,7 +2775,7 @@ export default function Simulasi() {
                       </div>
 
                       {/* Jaminan Privasi */}
-                      <div className="rounded-2xl border border-batu-200 bg-white p-4 text-xs text-batu-600 space-y-2">
+                      <div className="rounded-2xl border border-oranye-200 bg-white p-4 text-xs text-batu-600 space-y-2">
                         <div className="flex items-center gap-2 font-bold text-batu-900">
                           <ShieldCheck className="h-4 w-4 text-emerald-600" />
                           <span>Privasi 100% Terjaga</span>
@@ -2618,7 +2792,7 @@ export default function Simulasi() {
                     <button
                       type="button"
                       onClick={() => setLangkahKonfigurasi(1)}
-                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-batu-300 bg-white hover:bg-batu-50 text-batu-700 font-bold py-3.5 px-6 transition-all cursor-pointer text-sm"
+                      className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-oranye-200 bg-white hover:bg-oranye-50 text-batu-700 font-bold py-3.5 px-6 transition-all cursor-pointer text-sm"
                     >
                       <ArrowLeft className="h-4 w-4" />
                       <span>Kembali ke Target Pekerjaan</span>
@@ -2627,10 +2801,15 @@ export default function Simulasi() {
                     <button
                       type="button"
                       onClick={mulaiSimulasi}
-                      disabled={!statusPrasyarat.lengkap || (kuota?.sisa ?? 20) <= 0}
+                      disabled={!statusPrasyarat.lengkap || (kuota?.sisa ?? 20) <= 0 || sedangMulaiSimulasi}
                       className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-oranye-500 hover:bg-oranye-400 active:bg-oranye-600 text-white font-extrabold py-3.5 px-8 shadow-lg shadow-oranye-500/25 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-sm"
                     >
-                      {!statusPrasyarat.lengkap ? (
+                      {sedangMulaiSimulasi ? (
+                        <>
+                          <Sparkles className="h-4 w-4 animate-spin" />
+                          <span>MENYIAPKAN RUANG SIMULASI...</span>
+                        </>
+                      ) : !statusPrasyarat.lengkap ? (
                         <>
                           <Lock className="h-4 w-4" />
                           <span>LENGKAPI CV UNTUK MEMULAI SIMULASI</span>
@@ -2884,19 +3063,19 @@ export default function Simulasi() {
       {/* 3. TAHAP: LAYAR SIMULASI REAL-TIME STRICT 1 LAYAR (ZERO SCROLLING)        */}
       {/* ========================================================================= */}
       {tahap === 'wawancara' && daftarPertanyaan.length > 0 && (
-        <div className="fixed inset-0 z-50 flex flex-col h-screen h-[100dvh] w-screen bg-batu-950 text-white overflow-hidden select-none">
-          {/* HEADER BAR RUANG SIMULASI (KOMPAK, ZERO OVERFLOW) */}
-          <header className="h-12 sm:h-14 px-3 sm:px-6 bg-batu-900/95 border-b border-batu-800 flex items-center justify-between shrink-0 backdrop-blur-md">
+        <div className="fixed inset-0 z-50 flex flex-col h-screen h-[100dvh] w-screen bg-[#FFFDF9] text-batu-900 overflow-hidden select-none">
+          {/* HEADER BAR RUANG SIMULASI (KOMPAK, ZERO OVERFLOW - TEMA ORANYE TERANG) */}
+          <header className="h-12 sm:h-14 px-3 sm:px-6 bg-white/95 border-b border-oranye-100 flex items-center justify-between shrink-0 backdrop-blur-md shadow-2xs">
             {/* Sisi Kiri: Branding & Status Mode */}
             <div className="flex items-center gap-2.5">
               <div className="h-7 w-7 sm:h-8 sm:w-8 rounded-lg bg-oranye-500 flex items-center justify-center text-white font-black text-xs shadow-xs">
                 M.
               </div>
               <div className="hidden sm:block leading-tight">
-                <span className="font-display text-xs sm:text-sm font-extrabold tracking-tight text-white">
+                <span className="font-display text-xs sm:text-sm font-extrabold tracking-tight text-batu-900">
                   MENTERVU AI
                 </span>
-                <span className="block text-[10px] text-oranye-400 font-semibold uppercase tracking-wider">
+                <span className="block text-[10px] text-oranye-600 font-semibold uppercase tracking-wider">
                   Mode {konfigurasi.mode} {konfigurasi.perusahaanTarget ? `· ${konfigurasi.perusahaanTarget}` : ''}
                 </span>
               </div>
@@ -2904,10 +3083,10 @@ export default function Simulasi() {
 
             {/* Sisi Tengah: Nomor Pertanyaan & Kategori */}
             <div className="flex items-center gap-2">
-              <span className="rounded-full bg-oranye-500/20 text-oranye-400 border border-oranye-500/40 px-3 py-1 text-xs font-extrabold tracking-wide">
+              <span className="rounded-full bg-oranye-100 text-oranye-700 border border-oranye-200 px-3 py-1 text-xs font-extrabold tracking-wide">
                 Pertanyaan {indeksPertanyaan + 1} / {daftarPertanyaan.length}
               </span>
-              <span className="hidden md:inline-block text-xs font-semibold text-batu-300 max-w-[280px] truncate">
+              <span className="hidden md:inline-block text-xs font-semibold text-batu-600 max-w-[280px] truncate">
                 {daftarPertanyaan[indeksPertanyaan].kategori}
               </span>
             </div>
@@ -2917,11 +3096,11 @@ export default function Simulasi() {
               <div
                 className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-mono font-bold border transition-colors ${
                   countdownDetik < 30
-                    ? 'border-oranye-500/60 bg-oranye-500/20 text-oranye-300 animate-pulse'
-                    : 'border-batu-700 bg-batu-800 text-batu-200'
+                    ? 'border-red-300 bg-red-50 text-red-600 animate-pulse'
+                    : 'border-oranye-200 bg-oranye-50/70 text-oranye-800'
                 }`}
               >
-                <Clock className="h-3.5 w-3.5 text-oranye-400" />
+                <Clock className="h-3.5 w-3.5 text-oranye-600" />
                 <span>{formatCountdown(countdownDetik)}</span>
               </div>
 
@@ -2929,7 +3108,7 @@ export default function Simulasi() {
                 type="button"
                 onClick={akhiriSesi}
                 title="Akhiri wawancara dan langsung lihat hasil evaluasi"
-                className="inline-flex items-center gap-1.5 rounded-lg border border-batu-700 bg-batu-800 hover:bg-batu-700 text-batu-300 hover:text-white px-2.5 sm:px-3 py-1 text-xs font-bold transition-all cursor-pointer"
+                className="inline-flex items-center gap-1.5 rounded-lg border border-oranye-200 bg-white hover:bg-oranye-50 text-batu-600 hover:text-oranye-600 px-2.5 sm:px-3 py-1 text-xs font-bold transition-all cursor-pointer shadow-2xs"
               >
                 <Square className="h-3 w-3 fill-current" />
                 <span className="hidden sm:inline">Akhiri</span>
@@ -2943,11 +3122,11 @@ export default function Simulasi() {
             {/* A. UI MODE TEKS (WHATSAPP/TELEGRAM CHAT INTERACTION)                */}
             {/* =================================================================== */}
             {konfigurasi.mode === 'teks' && (
-              <div className="flex-1 min-h-0 flex flex-col justify-between bg-batu-900/90 border border-batu-800 rounded-2xl overflow-hidden backdrop-blur-md">
+              <div className="flex-1 min-h-0 flex flex-col justify-between bg-white border border-oranye-100 rounded-2xl overflow-hidden shadow-xs">
                 {/* Chat Messages Feed dengan internal scrolling */}
                 <div
                   ref={chatScrollRef}
-                  className="flex-1 min-h-0 p-3 sm:p-5 overflow-y-auto space-y-3.5"
+                  className="flex-1 min-h-0 p-3 sm:p-5 overflow-y-auto space-y-3.5 bg-gradient-to-b from-oranye-50/30 via-white to-oranye-50/20"
                 >
                   {chatLog.map((chat, idx) => (
                     <div
@@ -2959,7 +3138,7 @@ export default function Simulasi() {
                       {chat.pengirim === 'ai' && (
                         <div
                           className={`h-7 w-7 rounded-full flex items-center justify-center text-white shrink-0 mt-1 shadow-xs ${
-                            chat.tipe === 'reaksi' ? 'bg-amber-600' : 'bg-oranye-500'
+                            chat.tipe === 'reaksi' ? 'bg-oranye-600' : 'bg-oranye-500'
                           }`}
                         >
                           <Bot className="h-3.5 w-3.5" />
@@ -2967,18 +3146,22 @@ export default function Simulasi() {
                       )}
 
                       <div
-                        className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm shadow-md leading-relaxed ${
+                        className={`max-w-[85%] sm:max-w-[70%] rounded-2xl px-3.5 py-2.5 text-xs sm:text-sm leading-relaxed ${
                           chat.pengirim === 'user'
-                            ? 'bg-oranye-500 text-white rounded-tr-none'
+                            ? 'bg-oranye-500 text-white rounded-tr-none shadow-md'
                             : chat.tipe === 'reaksi'
-                            ? 'bg-amber-950/30 border border-amber-500/40 text-amber-100 rounded-tl-none'
-                            : 'bg-batu-800 text-batu-100 rounded-tl-none border border-batu-700/70'
+                            ? 'bg-oranye-50/90 border border-oranye-200 text-oranye-950 rounded-tl-none shadow-xs'
+                            : 'bg-white text-batu-800 rounded-tl-none border border-oranye-200/90 shadow-xs'
                         }`}
                       >
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <span
                             className={`text-[10px] font-bold ${
-                              chat.tipe === 'reaksi' ? 'text-amber-400' : 'opacity-75'
+                              chat.pengirim === 'user'
+                                ? 'text-white/90'
+                                : chat.tipe === 'reaksi'
+                                ? 'text-oranye-700'
+                                : 'text-batu-500'
                             }`}
                           >
                             {chat.pengirim === 'user'
@@ -2995,14 +3178,14 @@ export default function Simulasi() {
                         <p className="whitespace-pre-line">{chat.pesan}</p>
 
                         {chat.petunjuk && (
-                          <div className="mt-2 pt-1.5 border-t border-batu-700/80 text-[11px] text-oranye-300">
+                          <div className="mt-2 pt-1.5 border-t border-oranye-200/70 text-[11px] text-oranye-800">
                             <strong>Petunjuk STAR:</strong> {chat.petunjuk}
                           </div>
                         )}
                       </div>
 
                       {chat.pengirim === 'user' && (
-                        <div className="h-7 w-7 rounded-full bg-batu-700 flex items-center justify-center text-batu-200 shrink-0 mt-1">
+                        <div className="h-7 w-7 rounded-full bg-oranye-100 flex items-center justify-center text-oranye-700 shrink-0 mt-1 font-bold text-xs border border-oranye-200">
                           <User className="h-3.5 w-3.5" />
                         </div>
                       )}
@@ -3015,14 +3198,14 @@ export default function Simulasi() {
                       <div className="h-7 w-7 rounded-full bg-oranye-500 flex items-center justify-center text-white shrink-0 mt-1 shadow-xs animate-pulse">
                         <Bot className="h-3.5 w-3.5" />
                       </div>
-                      <div className="bg-batu-800 text-batu-200 rounded-2xl rounded-tl-none border border-batu-700/70 px-4 py-2.5 text-xs flex items-center gap-2 shadow-sm">
+                      <div className="bg-white text-batu-700 rounded-2xl rounded-tl-none border border-oranye-200 px-4 py-2.5 text-xs flex items-center gap-2 shadow-xs">
                         <div className="flex items-center gap-1">
-                          <span className="h-1.5 w-1.5 rounded-full bg-oranye-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-                          <span className="h-1.5 w-1.5 rounded-full bg-oranye-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                          <span className="h-1.5 w-1.5 rounded-full bg-oranye-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+                          <span className="h-1.5 w-1.5 rounded-full bg-oranye-500 animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="h-1.5 w-1.5 rounded-full bg-oranye-500 animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="h-1.5 w-1.5 rounded-full bg-oranye-500 animate-bounce" style={{ animationDelay: '300ms' }} />
                         </div>
-                        <span className="text-[11px] text-batu-300 italic">
-                          AI Recruiter sedang mengevaluasi jawaban Anda...
+                        <span className="text-[11px] text-oranye-800 italic font-medium">
+                          AI Recruiter sedang mengevaluasi respon Anda...
                         </span>
                       </div>
                     </div>
@@ -3030,7 +3213,7 @@ export default function Simulasi() {
                 </div>
 
                 {/* Input Bar Chat */}
-                <div className="p-2.5 sm:p-3 bg-batu-950/90 border-t border-batu-800 shrink-0">
+                <div className="p-2.5 sm:p-3 bg-white border-t border-oranye-100 shrink-0">
                   <form
                     onSubmit={(e) => {
                       e.preventDefault();
@@ -3051,15 +3234,15 @@ export default function Simulasi() {
                       }}
                       placeholder={
                         sedangMenganalisisAi
-                          ? 'AI Recruiter sedang mengevaluasi jawaban Anda...'
+                          ? 'AI Recruiter sedang mengevaluasi respon Anda...'
                           : 'Ketik jawaban Anda di sini (Tekan Enter untuk kirim)...'
                       }
-                      className="flex-1 rounded-xl border border-batu-700 bg-batu-900 px-3 py-2 text-xs sm:text-sm text-white focus:outline-none focus:border-oranye-500 transition-all resize-none disabled:opacity-50"
+                      className="flex-1 rounded-xl border border-oranye-200 bg-[#FFFDF9] px-3 py-2 text-xs sm:text-sm text-batu-900 focus:outline-none focus:border-oranye-500 transition-all resize-none disabled:opacity-50"
                     />
                     <button
                       type="submit"
                       disabled={!jawabanSaatIni.trim() || sedangMenganalisisAi}
-                      className="h-10 px-4 rounded-xl bg-oranye-500 hover:bg-oranye-400 disabled:opacity-40 text-white font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-md shadow-oranye-500/20"
+                      className="h-10 px-4 rounded-xl bg-oranye-500 hover:bg-oranye-600 disabled:opacity-40 text-white font-bold text-xs flex items-center gap-1.5 transition-all shrink-0 cursor-pointer shadow-md shadow-oranye-500/20"
                     >
                       <span>Kirim</span>
                       <Send className="h-3.5 w-3.5" />
@@ -3073,14 +3256,14 @@ export default function Simulasi() {
             {/* B. UI MODE AUDIO (VOICE-ONLY DENGAN GELOMBANG ORANYE DINAMIS)       */}
             {/* =================================================================== */}
             {konfigurasi.mode === 'audio' && (
-              <div className="flex-1 min-h-0 flex flex-col justify-between bg-batu-900/85 border border-batu-800 rounded-2xl p-4 sm:p-6 backdrop-blur-md overflow-hidden">
+              <div className="flex-1 min-h-0 flex flex-col justify-between bg-white border border-oranye-100 rounded-2xl p-4 sm:p-6 shadow-xs overflow-hidden">
                 {/* Kartu Pertanyaan Fokus di Bagian Atas */}
                 <div className="max-w-2xl mx-auto w-full text-center space-y-2.5 shrink-0">
-                  <span className="inline-block rounded-full bg-oranye-500/20 text-oranye-400 border border-oranye-500/30 px-3 py-0.5 text-xs font-bold uppercase tracking-wider">
+                  <span className="inline-block rounded-full bg-oranye-100 text-oranye-700 border border-oranye-200 px-3 py-0.5 text-xs font-bold uppercase tracking-wider">
                     {daftarPertanyaan[indeksPertanyaan].kategori}
                   </span>
 
-                  <h2 className="text-base sm:text-xl md:text-2xl font-black text-white leading-snug font-display line-clamp-3">
+                  <h2 className="text-base sm:text-xl md:text-2xl font-black text-batu-900 leading-snug font-display line-clamp-3">
                     &ldquo;{daftarPertanyaan[indeksPertanyaan].pertanyaan}&rdquo;
                   </h2>
 
@@ -3088,16 +3271,16 @@ export default function Simulasi() {
                   {(() => {
                     const cocokCv = crossCheckJawabanDenganCv(jawabanSaatIni);
                     return (
-                      <div className="rounded-xl border border-oranye-500/30 bg-oranye-500/10 px-3 py-1.5 text-xs max-w-xl mx-auto flex items-center justify-between gap-2">
-                        <div className="flex items-center gap-1.5 text-oranye-300 font-bold text-[11px] truncate">
-                          <ShieldCheck className="h-3.5 w-3.5 text-oranye-400 shrink-0" />
+                      <div className="rounded-xl border border-oranye-200 bg-oranye-50/60 px-3 py-1.5 text-xs max-w-xl mx-auto flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-1.5 text-oranye-800 font-bold text-[11px] truncate">
+                          <ShieldCheck className="h-3.5 w-3.5 text-oranye-600 shrink-0" />
                           <span>Cross-Check AI:</span>
                           {cocokCv.length > 0 ? (
-                            <span className="text-emerald-400 font-semibold truncate">
+                            <span className="text-emerald-700 font-semibold truncate">
                               ✓ Cocok dengan CV ({cocokCv.map((c) => c.label).join(', ')})
                             </span>
                           ) : (
-                            <span className="text-oranye-200/80 font-normal italic">
+                            <span className="text-batu-500 font-normal italic">
                               Mencocokkan ucapan perkenalan Anda dengan berkas CV...
                             </span>
                           )}
@@ -3105,7 +3288,7 @@ export default function Simulasi() {
                         <button
                           type="button"
                           onClick={() => bacakanPertanyaan(daftarPertanyaan[indeksPertanyaan].pertanyaan)}
-                          className="text-[10px] text-oranye-400 hover:text-oranye-300 font-bold flex items-center gap-1 shrink-0"
+                          className="text-[10px] text-oranye-600 hover:text-oranye-700 font-bold flex items-center gap-1 shrink-0"
                           title="Ulangi Suara AI"
                         >
                           <Volume2 className="h-3 w-3" />
@@ -3118,61 +3301,82 @@ export default function Simulasi() {
 
                 {/* Avatar Pengguna & Waveform Animasi Oranye Dinamis di Tengah */}
                 <div className="flex-1 min-h-0 flex flex-col items-center justify-center my-2 space-y-3">
-                  <div className="relative">
-                    <div
-                      className={`absolute -inset-3 rounded-full bg-oranye-500/20 blur-md transition-all duration-150 ${
-                        !isMuted && !isAiBicara ? 'scale-125 opacity-100' : 'scale-95 opacity-20'
-                      }`}
-                    />
-                    <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-batu-800 border-2 border-oranye-500/60 flex items-center justify-center shadow-xl">
-                      <User className="h-10 w-10 sm:h-12 sm:w-12 text-batu-300" />
+                  {sedangMenganalisisAi ? (
+                    <div className="flex flex-col items-center justify-center py-4 space-y-3 animate-in fade-in duration-200">
+                      <div className="relative">
+                        <div className="absolute -inset-2 rounded-full bg-oranye-500/20 blur-md animate-pulse" />
+                        <div className="relative h-16 w-16 rounded-full bg-oranye-50 border-2 border-oranye-500 flex items-center justify-center shadow-md">
+                          <Sparkles className="h-8 w-8 text-oranye-500 animate-spin" />
+                        </div>
+                      </div>
+                      <div className="text-center space-y-1">
+                        <p className="text-xs font-bold text-oranye-900 font-display">
+                          AI Recruiter Menganalisis Jawaban Anda...
+                        </p>
+                        <p className="text-[11px] text-batu-600">
+                          Mengevaluasi kesesuaian STAR dan menyusun tanggapan berikutnya.
+                        </p>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <>
+                      <div className="relative">
+                        <div
+                          className={`absolute -inset-3 rounded-full bg-oranye-500/20 blur-md transition-all duration-150 ${
+                            !isMuted && !isAiBicara ? 'scale-125 opacity-100' : 'scale-95 opacity-20'
+                          }`}
+                        />
+                        <div className="relative h-20 w-20 sm:h-24 sm:w-24 rounded-full bg-oranye-50 border-2 border-oranye-400 flex items-center justify-center shadow-md">
+                          <User className="h-10 w-10 sm:h-12 sm:w-12 text-oranye-600" />
+                        </div>
+                      </div>
 
-                  {/* SVG Gelombang Suara (Voice Waveform) Oranye Terang */}
-                  <div className="flex items-center gap-1.5 h-7">
-                    {[20, 34, 16, 42, 24, 48, 28, 18, 38, 22, 14].map((h, i) => (
-                      <span
-                        key={i}
-                        className={`w-1.5 rounded-full transition-all duration-150 ${
-                          isMuted || isAiBicara
-                            ? 'h-1.5 bg-batu-700'
-                            : 'bg-oranye-500 animate-pulse'
-                        }`}
-                        style={{
-                          height: isMuted || isAiBicara ? '5px' : `${h * 0.7}px`,
-                          animationDelay: `${i * 80}ms`,
-                        }}
-                      />
-                    ))}
-                  </div>
+                      {/* SVG Gelombang Suara (Voice Waveform) Oranye Terang */}
+                      <div className="flex items-center gap-1.5 h-7">
+                        {[20, 34, 16, 42, 24, 48, 28, 18, 38, 22, 14].map((h, i) => (
+                          <span
+                            key={i}
+                            className={`w-1.5 rounded-full transition-all duration-150 ${
+                              isMuted || isAiBicara
+                                ? 'h-1.5 bg-oranye-200'
+                                : 'bg-oranye-500 animate-pulse'
+                            }`}
+                            style={{
+                              height: isMuted || isAiBicara ? '5px' : `${h * 0.7}px`,
+                              animationDelay: `${i * 80}ms`,
+                            }}
+                          />
+                        ))}
+                      </div>
 
-                  <p className="text-[11px] font-medium text-batu-400">
-                    {isAiBicara
-                      ? 'AI sedang membacakan pertanyaan...'
-                      : isMuted
-                      ? 'Mikrofon dalam posisi hening (Muted)'
-                      : 'Mikrofon aktif merekam suara Anda...'}
-                  </p>
+                      <p className="text-[11px] font-medium text-batu-600">
+                        {isAiBicara
+                          ? 'AI sedang membacakan pertanyaan...'
+                          : isMuted
+                          ? 'Mikrofon dalam posisi hening (Muted)'
+                          : 'Mikrofon aktif merekam suara Anda...'}
+                      </p>
+                    </>
+                  )}
                 </div>
 
                 {/* Live Speech Transcript Strip di Bawah */}
-                <div className="max-w-xl mx-auto w-full rounded-xl bg-black/60 border border-batu-800 p-2.5 text-xs text-batu-300 shrink-0 max-h-20 sm:max-h-24 overflow-y-auto font-mono">
-                  <div className="flex items-center justify-between text-[10px] font-bold text-oranye-400 uppercase tracking-wider mb-1">
+                <div className="max-w-xl mx-auto w-full rounded-xl bg-oranye-50/50 border border-oranye-200 p-2.5 text-xs text-batu-800 shrink-0 max-h-20 sm:max-h-24 overflow-y-auto font-mono">
+                  <div className="flex items-center justify-between text-[10px] font-bold text-oranye-700 uppercase tracking-wider mb-1">
                     <span className="flex items-center gap-1.5">
                       <span className="h-1.5 w-1.5 rounded-full bg-oranye-500 animate-pulse" />
                       Live Speech Transcript:
                     </span>
-                    {interimText && <span className="italic text-oranye-300/80">Mendengarkan...</span>}
+                    {interimText && <span className="italic text-oranye-600">Mendengarkan...</span>}
                   </div>
                   <p className="leading-relaxed">
                     {jawabanSaatIni ? (
                       <>
                         <span>{finalTranscriptRef.current}</span>
-                        {interimText && <span className="text-oranye-300 font-semibold italic"> {interimText}</span>}
+                        {interimText && <span className="text-oranye-600 font-semibold italic"> {interimText}</span>}
                       </>
                     ) : (
-                      <span className="italic text-batu-500">Bicaralah sekarang melalui mikrofon Anda...</span>
+                      <span className="italic text-batu-400">Bicaralah sekarang melalui mikrofon Anda...</span>
                     )}
                   </p>
                 </div>
@@ -3185,16 +3389,16 @@ export default function Simulasi() {
             {konfigurasi.mode === 'video' && (
               <div className="h-full flex-1 min-h-0 flex flex-col lg:grid lg:grid-cols-12 lg:gap-4 overflow-hidden">
                 {/* KOLOM KIRI (DESKTOP) / KARTU ATAS (MOBILE): PERTANYAAN & CV CROSS CHECK */}
-                <div className="lg:col-span-5 h-auto lg:h-full shrink-0 lg:shrink flex flex-col justify-between bg-batu-900/90 border border-batu-800 rounded-2xl p-3 sm:p-5 backdrop-blur-md mb-2 lg:mb-0 overflow-hidden">
+                <div className="lg:col-span-5 h-auto lg:h-full shrink-0 lg:shrink flex flex-col justify-between bg-white border border-oranye-100 rounded-2xl p-3 sm:p-5 shadow-xs mb-2 lg:mb-0 overflow-hidden">
                   <div className="space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold uppercase tracking-wider text-oranye-400 bg-oranye-500/10 border border-oranye-500/20 px-2 py-0.5 rounded-md truncate max-w-[200px]">
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-oranye-700 bg-oranye-100 border border-oranye-200 px-2 py-0.5 rounded-md truncate max-w-[200px]">
                         {daftarPertanyaan[indeksPertanyaan].kategori}
                       </span>
                       <button
                         type="button"
                         onClick={() => bacakanPertanyaan(daftarPertanyaan[indeksPertanyaan].pertanyaan)}
-                        className="p-1 rounded-lg bg-batu-800 hover:bg-batu-700 text-oranye-400 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold"
+                        className="p-1.5 rounded-lg bg-oranye-50 hover:bg-oranye-100 text-oranye-600 border border-oranye-200 transition-all cursor-pointer flex items-center gap-1 text-[10px] font-bold"
                         title="Ulangi Pertanyaan Suara"
                       >
                         <Volume2 className="h-3.5 w-3.5" />
@@ -3202,7 +3406,7 @@ export default function Simulasi() {
                       </button>
                     </div>
 
-                    <h2 className="text-sm sm:text-base lg:text-xl font-black text-white leading-snug font-display line-clamp-3 lg:line-clamp-4">
+                    <h2 className="text-sm sm:text-base lg:text-xl font-black text-batu-900 leading-snug font-display line-clamp-3 lg:line-clamp-4">
                       &ldquo;{daftarPertanyaan[indeksPertanyaan].pertanyaan}&rdquo;
                     </h2>
 
@@ -3210,32 +3414,32 @@ export default function Simulasi() {
                     {(() => {
                       const cocokCv = crossCheckJawabanDenganCv(jawabanSaatIni);
                       return (
-                        <div className="rounded-xl border border-oranye-500/30 bg-oranye-500/10 p-2.5 text-xs">
+                        <div className="rounded-xl border border-oranye-200 bg-oranye-50/50 p-2.5 text-xs">
                           <div className="flex items-center justify-between gap-1 mb-1">
-                            <span className="font-bold text-oranye-300 text-[11px] flex items-center gap-1.5">
-                              <ShieldCheck className="h-3.5 w-3.5 text-oranye-400 shrink-0" />
+                            <span className="font-bold text-oranye-800 text-[11px] flex items-center gap-1.5">
+                              <ShieldCheck className="h-3.5 w-3.5 text-oranye-600 shrink-0" />
                               <span>Cross-Check AI:</span>
                             </span>
-                            <span className="text-[10px] font-mono text-oranye-400">
+                            <span className="text-[10px] font-mono text-oranye-600 font-semibold">
                               {indeksPertanyaan < 2 ? 'Tahap Perkenalan' : 'Verifikasi'}
                             </span>
                           </div>
                           {cocokCv.length > 0 ? (
                             <div className="space-y-1">
-                              <p className="text-[10.5px] text-emerald-300 flex items-center gap-1 font-semibold">
-                                <Check className="h-3 w-3 text-emerald-400" />
+                              <p className="text-[10.5px] text-emerald-700 flex items-center gap-1 font-semibold">
+                                <Check className="h-3 w-3 text-emerald-600" />
                                 <span>Cocok dengan CV:</span>
                               </p>
                               <div className="flex flex-wrap gap-1 max-h-12 overflow-y-auto">
                                 {cocokCv.map((c, i) => (
-                                  <span key={i} className="rounded-md bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5 text-[9.5px] font-bold text-emerald-300">
+                                  <span key={i} className="rounded-md bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 text-[9.5px] font-bold text-emerald-700">
                                     {c.kategori}: {c.label}
                                   </span>
                                 ))}
                               </div>
                             </div>
                           ) : (
-                            <p className="text-[10.5px] text-oranye-200/80 italic leading-tight">
+                            <p className="text-[10.5px] text-batu-500 italic leading-tight">
                               {indeksPertanyaan < 2
                                 ? 'AI otomatis membandingkan ucapan perkenalan Anda dengan dokumen CV...'
                                 : 'Jawaban dievaluasi berdasarkan relevansi kompetensi industri.'}
@@ -3246,20 +3450,20 @@ export default function Simulasi() {
                     })()}
 
                     {/* Petunjuk STAR (Desktop) */}
-                    <div className="hidden lg:block rounded-xl border border-batu-800 bg-batu-950/60 p-3 text-xs text-batu-300 leading-relaxed">
-                      <strong className="text-oranye-400 block mb-1">Petunjuk STAR:</strong>
+                    <div className="hidden lg:block rounded-xl border border-oranye-100 bg-oranye-50/40 p-3 text-xs text-batu-700 leading-relaxed">
+                      <strong className="text-oranye-700 block mb-1">Petunjuk STAR:</strong>
                       <p className="line-clamp-2">{daftarPertanyaan[indeksPertanyaan].petunjuk}</p>
                     </div>
                   </div>
 
                   {/* Toggle Input Teks Cadangan */}
-                  <div className="pt-1.5 hidden lg:block border-t border-batu-800">
+                  <div className="pt-1.5 hidden lg:block border-t border-oranye-100">
                     <button
                       type="button"
                       onClick={() => setIsEditorOpen(!isEditorOpen)}
-                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-batu-400 hover:text-batu-200 transition-colors cursor-pointer"
+                      className="inline-flex items-center gap-1 text-[11px] font-semibold text-batu-500 hover:text-oranye-600 transition-colors cursor-pointer"
                     >
-                      <Edit3 className="h-3 w-3" />
+                      <Edit3 className="h-3 w-3 text-oranye-500" />
                       <span>{isEditorOpen ? 'Tutup Koreksi Teks' : 'Koreksi Transkrip Teks Manual'}</span>
                     </button>
                     {isEditorOpen && (
@@ -3269,15 +3473,15 @@ export default function Simulasi() {
                           value={jawabanSaatIni}
                           onChange={(e) => tanganiUbahJawabanManual(e.target.value)}
                           placeholder="Koreksi teks jawaban Anda di sini..."
-                          className="w-full rounded-lg border border-batu-700 bg-batu-800 p-2 text-xs text-batu-200 focus:outline-none focus:border-oranye-500 resize-none"
+                          className="w-full rounded-lg border border-oranye-200 bg-[#FFFDF9] p-2 text-xs text-batu-800 focus:outline-none focus:border-oranye-500 resize-none"
                         />
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* KOLOM KANAN: FRAME KAMERA VIDEO LIVE + LIVE TRANSCRIPT STRIP */}
-                <div className="lg:col-span-7 flex-1 min-h-0 flex flex-col relative rounded-2xl bg-black border border-batu-800 overflow-hidden shadow-2xl">
+                {/* KOLOM KANAN: FRAME KAMERA VIDEO LIVE + LIVE TRANSCRIPT STRIP (LIGHT THEME STRICT) */}
+                <div className="lg:col-span-7 flex-1 min-h-0 flex flex-col relative rounded-2xl bg-oranye-50/40 border border-oranye-200 overflow-hidden shadow-md">
                   <video
                     ref={mainVideoRef}
                     autoPlay
@@ -3287,18 +3491,34 @@ export default function Simulasi() {
                   />
 
                   {isCameraOff && (
-                    <div className="h-full flex-1 flex flex-col items-center justify-center text-center text-batu-400 p-4">
-                      <VideoOff className="h-10 w-10 mx-auto mb-2 opacity-50 text-batu-500" />
-                      <p className="text-xs font-semibold text-batu-300">Kamera Non-Aktif (Mode Audio Berjalan)</p>
+                    <div className="h-full flex-1 flex flex-col items-center justify-center text-center text-batu-600 bg-oranye-50/50 p-4">
+                      <VideoOff className="h-10 w-10 mx-auto mb-2 text-oranye-400" />
+                      <p className="text-xs font-bold text-batu-800">Kamera Non-Aktif (Mode Audio Berjalan)</p>
                       <p className="text-[11px] text-batu-500 mt-0.5">Mikrofon tetap aktif merekam jawaban Anda.</p>
                     </div>
                   )}
 
+                  {/* Loading Overlay Saat AI Menganalisis Jawaban (Anti-Freeze / Anti-Lag) */}
+                  {sedangMenganalisisAi && (
+                    <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-white/90 backdrop-blur-xs text-center p-4 animate-in fade-in duration-150">
+                      <div className="relative mb-3">
+                        <div className="h-12 w-12 rounded-full border-3 border-oranye-200 border-t-oranye-500 animate-spin" />
+                        <Sparkles className="absolute inset-0 m-auto h-5 w-5 text-oranye-500" />
+                      </div>
+                      <p className="text-sm font-bold text-oranye-900 font-display">
+                        AI Recruiter Sedang Mengevaluasi Jawaban Anda...
+                      </p>
+                      <p className="text-xs text-batu-600 mt-1 max-w-xs leading-relaxed">
+                        Menganalisis kecocokan respon dengan kriteria posisi dan menyiapkan tanggapan lanjutan.
+                      </p>
+                    </div>
+                  )}
+
                   {/* Recording Badge di Pojok Kiri Atas */}
-                  <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 rounded-full bg-black/70 backdrop-blur-md border border-white/10 px-2.5 py-0.5">
+                  <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-md border border-oranye-200 px-2.5 py-0.5 shadow-xs">
                     <span className="h-2 w-2 rounded-full bg-oranye-500 animate-ping" />
                     <span className="h-2 w-2 rounded-full bg-oranye-500 absolute" />
-                    <span className="text-[10px] font-bold text-white uppercase tracking-wider pl-2">
+                    <span className="text-[10px] font-bold text-oranye-700 uppercase tracking-wider pl-2">
                       ⏺ REC
                     </span>
                   </div>
@@ -3306,10 +3526,10 @@ export default function Simulasi() {
                   {/* Status Mic di Pojok Kanan Atas */}
                   <div className="absolute top-3 right-3 z-10">
                     <div
-                      className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold backdrop-blur-md border ${
+                      className={`flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-bold backdrop-blur-md border shadow-xs ${
                         isMuted
-                          ? 'bg-oranye-500/20 text-oranye-300 border-oranye-500/40'
-                          : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                          ? 'bg-red-50 text-red-600 border-red-200'
+                        : 'bg-emerald-50 text-emerald-700 border-emerald-200'
                       }`}
                     >
                       {isMuted ? <MicOff className="h-2.5 w-2.5" /> : <Mic className="h-2.5 w-2.5 animate-pulse" />}
@@ -3318,29 +3538,29 @@ export default function Simulasi() {
                   </div>
 
                   {/* Live Speech Transcript Strip (Kompak, Buffer Terkelola, Zero Overflow) */}
-                  <div className="absolute bottom-2.5 inset-x-2.5 sm:bottom-3 sm:inset-x-3 z-10 rounded-xl bg-black/85 backdrop-blur-md border border-white/15 p-2.5 max-h-20 sm:max-h-24 overflow-y-auto">
+                  <div className="absolute bottom-2.5 inset-x-2.5 sm:bottom-3 sm:inset-x-3 z-10 rounded-xl bg-white/95 backdrop-blur-md border border-oranye-200 p-2.5 max-h-20 sm:max-h-24 overflow-y-auto shadow-sm">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-1.5">
                         <span className="h-1.5 w-1.5 rounded-full bg-oranye-500 animate-pulse" />
-                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-oranye-400">
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-oranye-700">
                           Live Speech Transcript:
                         </span>
                       </div>
                       {interimText && (
-                        <span className="text-[9px] text-oranye-300/80 font-mono italic">Mendengarkan...</span>
+                        <span className="text-[9px] text-oranye-600 font-mono italic">Mendengarkan...</span>
                       )}
                     </div>
-                    <p className="text-xs text-white leading-relaxed font-mono">
+                    <p className="text-xs text-batu-800 leading-relaxed font-mono">
                       {jawabanSaatIni ? (
                         <>
                           <span>{finalTranscriptRef.current}</span>
                           {interimText && (
-                            <span className="text-oranye-300 font-semibold italic"> {interimText}</span>
+                            <span className="text-oranye-600 font-semibold italic"> {interimText}</span>
                           )}
                         </>
                       ) : (
                         <span className="text-batu-400 italic text-[11px]">
-                          Bicaralah sekarang melalui mikrofon, teks muncul otomatis tanpa penumpukan ganda...
+                          Bicaralah sekarang melalui mikrofon, teks muncul otomatis...
                         </span>
                       )}
                     </p>
@@ -3351,12 +3571,12 @@ export default function Simulasi() {
           </main>
 
           {/* ACTION BAR KONTROL DI BAWAH (FLOATING ACTION BAR TETAP, ZERO SCROLLING) */}
-          <footer className="h-14 sm:h-16 px-3 sm:px-6 bg-batu-900/95 border-t border-batu-800 shrink-0 backdrop-blur-md flex items-center justify-between gap-2 sm:gap-4">
+          <footer className="h-14 sm:h-16 px-3 sm:px-6 bg-white/95 border-t border-oranye-100 shrink-0 backdrop-blur-md flex items-center justify-between gap-2 sm:gap-4 shadow-2xs">
             {/* Sisi Kiri: Tombol Akhiri (Batu Netral) */}
             <button
               type="button"
               onClick={akhiriSesi}
-              className="inline-flex items-center gap-1.5 rounded-full bg-batu-800 border border-batu-700 px-3 py-2 text-xs font-bold text-batu-300 hover:bg-batu-700 hover:text-white transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 rounded-full bg-white border border-oranye-200 px-3 py-2 text-xs font-bold text-batu-600 hover:text-oranye-600 hover:bg-oranye-50 transition-all cursor-pointer shadow-2xs"
             >
               <Square className="h-3.5 w-3.5 fill-current" />
               <span className="hidden sm:inline">Akhiri</span>
@@ -3372,11 +3592,11 @@ export default function Simulasi() {
                   title={isMuted ? 'Nyalakan Mikrofon' : 'Matikan Mikrofon'}
                   className={`h-10 w-10 sm:h-11 sm:w-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
                     isMuted
-                      ? 'bg-batu-800 text-oranye-400 border border-oranye-500/50 shadow-md shadow-oranye-500/20 hover:bg-batu-700'
-                      : 'bg-batu-800 text-batu-200 hover:bg-batu-700 border border-batu-700'
+                      ? 'bg-red-50 text-red-600 border border-red-200 shadow-xs'
+                      : 'bg-white text-batu-700 hover:bg-oranye-50 border border-oranye-200 shadow-xs'
                   }`}
                 >
-                  {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4" />}
+                  {isMuted ? <MicOff className="h-4 w-4" /> : <Mic className="h-4 w-4 text-oranye-600" />}
                 </button>
               )}
 
@@ -3388,26 +3608,40 @@ export default function Simulasi() {
                   title={isCameraOff ? 'Nyalakan Kamera' : 'Matikan Kamera (Beralih ke Audio)'}
                   className={`h-10 w-10 sm:h-11 sm:w-11 rounded-full flex items-center justify-center transition-all cursor-pointer ${
                     isCameraOff
-                      ? 'bg-batu-800 text-oranye-400 border border-oranye-500/50 shadow-md shadow-oranye-500/20 hover:bg-batu-700'
-                      : 'bg-batu-800 text-batu-200 hover:bg-batu-700 border border-batu-700'
+                      ? 'bg-oranye-100 text-oranye-700 border border-oranye-300 shadow-xs'
+                      : 'bg-white text-batu-700 hover:bg-oranye-50 border border-oranye-200 shadow-xs'
                   }`}
                 >
-                  {isCameraOff ? <VideoOff className="h-4 w-4" /> : <Video className="h-4 w-4" />}
+                  {isCameraOff ? <VideoOff className="h-4 w-4" /> : <Video className="h-4 w-4 text-oranye-600" />}
                 </button>
               )}
 
-              {/* Tombol Selesai Menjawab / Lanjut (AKSEN ORANYE TERANG KONSISTEN) */}
+              {/* Tombol Selesai Menjawab / Lanjut (AKSEN ORANYE TERANG KONSISTEN & LOADING STATE) */}
               <button
                 type="button"
-                onClick={kirimJawabanOtomatis}
-                className="inline-flex items-center gap-2 rounded-full bg-oranye-500 hover:bg-oranye-400 active:bg-oranye-600 text-white px-5 sm:px-7 py-2.5 sm:py-3 text-xs sm:text-sm font-extrabold shadow-lg shadow-oranye-500/30 transition-all cursor-pointer"
+                onClick={() => kirimJawabanOtomatis()}
+                disabled={sedangMenganalisisAi}
+                className={`inline-flex items-center gap-2 rounded-full px-5 sm:px-7 py-2.5 sm:py-3 text-xs sm:text-sm font-extrabold shadow-lg transition-all cursor-pointer ${
+                  sedangMenganalisisAi
+                    ? 'bg-oranye-300 text-white cursor-not-allowed shadow-none'
+                    : 'bg-oranye-500 hover:bg-oranye-600 active:bg-oranye-700 text-white shadow-oranye-500/25'
+                }`}
               >
-                <span>
-                  {indeksPertanyaan + 1 === daftarPertanyaan.length
-                    ? 'Selesai & Lihat Rapor'
-                    : 'Selesai Menjawab (Lanjut)'}
-                </span>
-                <ChevronRight className="h-4 w-4" />
+                {sedangMenganalisisAi ? (
+                  <>
+                    <Sparkles className="h-4 w-4 animate-spin" />
+                    <span>Menganalisis Jawaban...</span>
+                  </>
+                ) : (
+                  <>
+                    <span>
+                      {indeksPertanyaan + 1 === daftarPertanyaan.length
+                        ? 'Selesai & Lihat Rapor'
+                        : 'Selesai Menjawab (Lanjut)'}
+                    </span>
+                    <ChevronRight className="h-4 w-4" />
+                  </>
+                )}
               </button>
             </div>
 
@@ -3415,12 +3649,156 @@ export default function Simulasi() {
             <button
               type="button"
               onClick={() => setIsJeda(!isJeda)}
-              className="inline-flex items-center gap-1.5 rounded-full border border-batu-700 bg-batu-800/90 px-3 py-2 text-xs font-semibold text-batu-300 hover:bg-batu-700 cursor-pointer transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-full border border-oranye-200 bg-white px-3 py-2 text-xs font-semibold text-batu-600 hover:text-oranye-600 hover:bg-oranye-50 cursor-pointer transition-colors shadow-2xs"
             >
-              {isJeda ? <Play className="h-3.5 w-3.5 fill-current" /> : <Pause className="h-3.5 w-3.5" />}
+              {isJeda ? <Play className="h-3.5 w-3.5 fill-current text-oranye-600" /> : <Pause className="h-3.5 w-3.5 text-batu-600" />}
               <span className="hidden sm:inline">{isJeda ? 'Lanjut' : 'Jeda'}</span>
             </button>
           </footer>
+
+          {/* ========================================================================= */}
+          {/* MODAL KONFIRMASI IN-APP KUSTOM (PENGGANTI WINDOW.CONFIRM POPUP NATIVE)    */}
+          {/* ========================================================================= */}
+          {modalKonfirmasiAkhiriBuka && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-batu-950/40 backdrop-blur-xs animate-in fade-in duration-150">
+              <div className="w-full max-w-sm rounded-2xl bg-white border border-oranye-200 p-6 shadow-2xl space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-oranye-100 flex items-center justify-center text-oranye-600 shrink-0">
+                    <AlertTriangle className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-batu-900 font-display">
+                      Akhiri Simulasi Sekarang?
+                    </h3>
+                    <p className="text-xs text-batu-500 mt-0.5">
+                      Pertanyaan yang sudah Anda jawab akan langsung dievaluasi oleh AI.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-oranye-100">
+                  <button
+                    type="button"
+                    onClick={() => setModalKonfirmasiAkhiriBuka(false)}
+                    className="px-4 py-2 rounded-xl border border-oranye-200 bg-white hover:bg-oranye-50 text-xs font-bold text-batu-700 transition-colors cursor-pointer"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={eksekusiAkhiriSesi}
+                    className="px-4 py-2 rounded-xl bg-oranye-500 hover:bg-oranye-600 text-xs font-bold text-white shadow-sm shadow-oranye-500/25 transition-all cursor-pointer"
+                  >
+                    Ya, Akhiri & Nilai
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* MODAL PERINGATAN BELUM BICARA (MODE SUARA/VIDEO)                         */}
+          {/* ========================================================================= */}
+          {modalPeringatanBelumBicara && (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-batu-950/40 backdrop-blur-xs animate-in fade-in duration-150">
+              <div className="w-full max-w-sm rounded-2xl bg-white border border-oranye-200 p-6 shadow-2xl space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600 shrink-0">
+                    <Mic className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm sm:text-base font-bold text-batu-900 font-display">
+                      Belum Ada Suara Terdeteksi
+                    </h3>
+                    <p className="text-xs text-batu-600 mt-1 leading-relaxed">
+                      Mikrofon belum menangkap ucapan Anda atau transkrip masih kosong. Bicaralah terlebih dahulu atau klik &ldquo;Lewati Pertanyaan&rdquo; jika ingin lanjut tanpa menjawab.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-2 border-t border-oranye-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setModalPeringatanBelumBicara(false);
+                      kirimJawabanOtomatis(true);
+                    }}
+                    className="px-3.5 py-2 rounded-xl border border-oranye-200 bg-white hover:bg-oranye-50 text-xs font-bold text-batu-600 transition-colors cursor-pointer"
+                  >
+                    Lewati Pertanyaan
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModalPeringatanBelumBicara(false)}
+                    className="px-4 py-2 rounded-xl bg-oranye-500 hover:bg-oranye-600 text-xs font-bold text-white shadow-sm shadow-oranye-500/25 transition-all cursor-pointer"
+                  >
+                    Bicara Sekarang
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* MODAL NOTIFIKASI PERINGATAN KUSTOM (PRASYARAT CV & KUOTA HABIS)           */}
+          {/* ========================================================================= */}
+          {notifikasiPeringatan && (
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-batu-950/40 backdrop-blur-xs animate-in fade-in duration-150">
+              <div className="w-full max-w-md rounded-2xl bg-white border border-oranye-200 p-6 shadow-2xl space-y-4">
+                <div className="flex items-start gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-oranye-100 flex items-center justify-center text-oranye-600 shrink-0 mt-0.5">
+                    <AlertCircle className="h-5 w-5" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-sm sm:text-base font-bold text-batu-900 font-display">
+                      {typeof notifikasiPeringatan === 'object' ? notifikasiPeringatan?.judul || 'Perhatian' : 'Perhatian'}
+                    </h3>
+                    <p className="text-xs text-batu-600 mt-1 leading-relaxed whitespace-pre-line">
+                      {typeof notifikasiPeringatan === 'string' ? notifikasiPeringatan : notifikasiPeringatan?.pesan}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-oranye-100">
+                  <button
+                    type="button"
+                    onClick={() => setNotifikasiPeringatan(null)}
+                    className="px-5 py-2 rounded-xl bg-oranye-500 hover:bg-oranye-600 text-xs font-bold text-white shadow-sm shadow-oranye-500/25 transition-all cursor-pointer"
+                  >
+                    Mengerti
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================================= */}
+          {/* OVERLAY LOADING: AI SEDANG MENYUSUN RAPOR EVALUASI (ANTI-FREEZE / LAG)    */}
+          {/* ========================================================================= */}
+          {sedangMenyusunRapor && (
+            <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-white/95 backdrop-blur-sm animate-in fade-in duration-200 text-center">
+              <div className="max-w-md w-full bg-white border border-oranye-200 rounded-3xl p-8 shadow-2xl space-y-5">
+                <div className="relative mx-auto h-20 w-20 flex items-center justify-center">
+                  <div className="absolute inset-0 rounded-full border-4 border-oranye-100 animate-ping opacity-50" />
+                  <div className="h-16 w-16 rounded-full border-4 border-oranye-500 border-t-transparent animate-spin" />
+                  <Sparkles className="absolute h-7 w-7 text-oranye-500" />
+                </div>
+
+                <div className="space-y-1.5">
+                  <h3 className="text-lg font-black text-batu-900 font-display">
+                    AI Sedang Menyusun Rapor Evaluasi Wawancara
+                  </h3>
+                  <p className="text-xs text-batu-600 max-w-sm mx-auto leading-relaxed">
+                    Menganalisis kesesuaian jawaban STAR, keakuratan kompetensi dengan CV, kosa kata profesional, dan merekapitulasi rekomendasi perbaikan...
+                  </p>
+                </div>
+
+                <div className="w-full bg-oranye-100 rounded-full h-2 overflow-hidden">
+                  <div className="bg-oranye-500 h-2 rounded-full animate-pulse w-3/4" />
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

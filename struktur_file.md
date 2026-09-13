@@ -304,7 +304,7 @@ MeIntervUAI/                          # ROOT
 | POST | `/api/analisis-cv` | `analisis_cv.py` → `layanan_analisis_cv` | Jalankan analisis ATS (body: `riwayat_cv_id`, `bahasa`) | ✅ **1 panggilan** | M1 |
 | GET | `/api/analisis-cv/terbaru` | `analisis_cv.py` | Ambil analisis terbaru user (dari DB, bukan LLM) | — | M1 |
 | GET | `/api/analisis-cv/{id}` | `analisis_cv.py` | Ambil 1 hasil analisis | — | M1 |
-| POST | `/api/simulasi/evaluasi-interaktif` | `simulasi.py` → `layanan_wawancara` | Evaluasi semantik jawaban, skoring STAR realistis, dan reaksi percakapan AI | ✅ **1 panggilan** | M3 |
+| POST | `/api/simulasi/evaluasi-interaktif` | `simulasi.py` → `layanan_wawancara` | Evaluasi semantik jawaban, skoring STAR realistis, deteksi spam/ngawur keyboard-smash, reaksi percakapan AI, dan generator `pertanyaan_lanjutan` | ✅ **1 panggilan** | M3 |
 | POST | `/api/lowongan/analisis-kecocokan` | `lowongan.py` → `layanan_lowongan` | Analisis AI profil CV nyata (skills 40%, exp 30%, industri 20%, lokasi 10%) & kurasi peluang kerja | ✅ **1 panggilan** | M5 |
 | GET | `/api/lowongan` | `lowongan.py` → `layanan_lowongan` | Katalog lowongan adaptif ditenagai AI Smart Matching | — | M5 |
 
@@ -322,7 +322,7 @@ MeIntervUAI/                          # ROOT
 | `/cv/:id` | `EditorCv.jsx` (editor bertahap) | **login** | M1 |
 | `/analisis-cv/:id` | `AnalisisCv.jsx` (hasil) | **login** | M1 |
 | `/profil` | `Profil.jsx` | **login** | M1 |
-| `/simulasi` | `Simulasi.jsx` (ruang simulasi + loading state + tab ganda) | **login** | M3 |
+| `/simulasi` | `Simulasi.jsx` (ruang simulasi oranye terang, indikator loading anti-freeze, modal in-app, filter ngawur & role-play STAR) | **login** | M3 |
 | `/lowongan` | `Lowongan.jsx` (rekomendasi lowongan adaptif AI + custom input) | **login** | M5 |
 
 - Rute selain di atas (notifikasi) → halaman `Segera.html`/komponen "Segera Hadir" sampai M1 selesai.

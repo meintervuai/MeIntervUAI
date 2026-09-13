@@ -108,8 +108,23 @@ Produk dibangun di atas 5 pilar utama:
 - **Tata Letak Strict 1 Layar Penuh (Zero Scrolling / `h-[100dvh]` Non-Scrollable)**:
   - Ruang simulasi aktif mengunci scroll halaman (`fixed inset-0 z-50 h-[100dvh] w-screen overflow-hidden` dan `document.body.style.overflow = 'hidden'`).
   - Header bar kompak (`h-12 sm:h-14`), viewport utama fleksibel (`flex-1 min-h-0`), floating transcript strip internal scroll (`max-h-20 sm:max-h-24`), dan control action bar bawah terfiksasi (`h-14 sm:h-16`) sehingga bebas dari window scrolling vertikal.
-- **Konsistensi Tema Oranye Terang (`oranye-*`)**:
-  - Seluruh aksen interaktif (tombol "Masuk Ruang Simulasi", tombol "Selesai Menjawab (Lanjut)", audio waveform, recording pulse, dan badge skor evaluasi) menggunakan palet oranye terang seragam (`#FF6B00`, `bg-oranye-500`, `text-oranye-400`, `border-oranye-500/30`) berpadu netral hangat `batu-*`.
+- **Konsistensi Tema Oranye Terang (`oranye-*`) & Strict Anti-Black**:
+  - Seluruh antarmuka simulasi menggunakan mode normal bertema oranye terang (`#FF6B00`, `#EA580C`, `#FFFDF9`, `#FFFFFF`).
+  - **Dilarang menggunakan warna hitam/gelap** pada latar belakang ruang wawancara, kartu preview video/kamera, banner rapor evaluasi, maupun dialog/modal. Satu-satunya warna non-oranye yang diperkenankan adalah hijau/emerald (jawaban tepat / mic aktif) dan merah (peringatan / mic senyap).
+- **Indikator Loading Animasi Komprehensif (Anti-Lag / Anti-Freeze)**:
+  - Setiap transisi yang memiliki latensi jaringan atau pemrosesan AI wajib dilengkapi animasi visual berputar (spinner) oranye dan pesan status deskriptif: saat menyiapkan ruang simulasi, saat AI menganalisis jawaban di mode teks/audio/video, pada tombol aksi bawah "Selesai Menjawab (Lanjut)", serta overlay layar penuh saat AI menyusun rapor evaluasi holistik di akhir sesi.
+- **Evaluasi AI Semantik Ketat Terhadap Jawaban Ngawur / Spam**:
+  - Algoritma AI mendeteksi secara presisi jawaban keyboard smashing (seperti `skdaldsalda`), pengulangan konsonan/vokal tak wajar, atau klik lanjut tanpa berbicara.
+  - Jawaban ngawur/spam langsung diganjar skor rendah (0–15) dan direspon dengan teguran profesional yang sopan tanpa pujian palsu.
+  - Untuk jawaban yang relevan, AI mengekstraksi poin utama dan menyusun pertanyaan pendalaman dialog (`pertanyaan_lanjutan`) secara dinamis sehingga tercipta obrolan dua arah yang hidup (real conversation).
+- **Penghapusan Total Dialog Native Browser (No Native Alert/Confirm Popups)**:
+  - Seluruh panggilan `window.alert` dan `window.confirm` ditiadakan. Digantikan oleh komponen modal kustom in-app (`modalKonfirmasiAkhiriBuka`, `modalPeringatanBelumBicara`, `notifikasiPeringatan`) bertema oranye-putih modern dengan transisi animasi halus.
+- **Rekomendasi Jawaban Berupa Contoh Nyata Role-Play (Bukan Kisi-Kisi Teoritis)**:
+  - Bagian "Contoh Cara Menjawab yang Benar (Model STAR)" pada rapor review menyajikan skrip jawaban orang pertama yang realistis dan siap dipelajari, bukan sekadar instruksi skematis (seperti "Format STAR: Latar Belakang -> Keahlian").
+- **Pengenalan Suara & Text-to-Speech (TTS) Alami Bahasa Indonesia**:
+  - Menggunakan Web Speech API dengan listener `onvoiceschanged` untuk memuat suara peramban secara asinkron.
+  - Memprioritaskan profil suara alami Bahasa Indonesia (`id-ID`, Google Bahasa Indonesia, Microsoft Gadis, Microsoft Ardi) agar artikulasi pertanyaan terdengar luwes, natural, dan tidak terbaca kaku dengan logat Inggris.
+  - Lifecycle `SpeechRecognition` diperkuat dengan auto-restart pada event `onend` dan sinkronisasi status via `isAiBicaraRef` untuk menjamin transkripsi terus menyala tanpa lag.
 - **Sistem Tab Ganda Menu Simulasi (Pilih Mode vs. Hasil Review Sesi)**:
   - **Tab 1 ("Pilih Mode Simulasi" - Wizard 2 Langkah Terstruktur)**:
     - **Langkah 1 (Target Pekerjaan & Perusahaan)**: Validasi access gate CV, kurasi lowongan adaptif AI (Smart Matching CV), input posisi target (dengan saran chip populer), input nama perusahaan target (dengan saran perusahaan populer & penjelasan penyelarasan konteks AI), deteksi otomatis tingkat pengalaman AI, serta pemilihan bahasa pengantar (ID/EN). Tombol navigasi *"Lanjut ke Pilih Mode & Perangkat"* terkunci sampai posisi terisi.

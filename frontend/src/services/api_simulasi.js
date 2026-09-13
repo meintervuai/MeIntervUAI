@@ -367,7 +367,42 @@ export async function evaluasiJawabanInteraktif({
     'belum pernah',
   ];
   const isTidakTahu = kataKunciTidakTahu.some((k) => lower.includes(k)) && kataCount <= 12;
-  const isSpam = kataCount <= 3 && /(.)\1{4,}/.test(lower);
+  const kataList = lower.split(/\s+/).filter(Boolean);
+
+  // Cek transkrip verbal kosong
+  if (
+    lower === '(jawaban disampaikan secara verbal)' ||
+    lower === 'jawaban disampaikan secara verbal' ||
+    lower === '(jawaban verbal)' ||
+    lower === 'verbal'
+  ) {
+    return {
+      skor: 0,
+      kategori_kualitas: 'kosong',
+      reaksi_pewawancara:
+        'Suara Anda belum tertangkap oleh mikrofon. Pastikan mikrofon aktif atau gunakan opsi ketik jawaban.',
+      evaluasi_singkat: 'Kandidat belum memberikan jawaban suara atau teks nyata.',
+      rekomendasi_star: 'Sampaikan jawaban secara verbal dengan artikulasi jelas atau gunakan koreksi teks.',
+    };
+  }
+
+  // Deteksi keyboard smash / spam kata
+  const apakahNgawur = (kata) => {
+    if (kata.length < 4) return false;
+    if (/(.)\1{3,}/.test(kata)) return true;
+    if (kata.length >= 6 && /^[asdfghjkl]+$/.test(kata)) return true;
+    if (kata.length >= 6 && /^[qwertyuiop]+$/.test(kata)) return true;
+    if (kata.length >= 6 && /^[zxcvbnm]+$/.test(kata)) return true;
+    if (/[bcdfghjklmnpqrstvwxyz]{5,}/.test(kata)) return true;
+    if (kata.length >= 8) {
+      const vokal = (kata.match(/[aiueo]/g) || []).length;
+      if (vokal / kata.length < 0.22) return true;
+    }
+    if (kata.length > 7 && new Set(kata).size <= 4) return true;
+    return false;
+  };
+
+  const isSpam = kataList.some(apakahNgawur);
 
   if (kataCount === 0) {
     return {
@@ -396,9 +431,9 @@ export async function evaluasiJawabanInteraktif({
       skor: 5,
       kategori_kualitas: 'ngawur',
       reaksi_pewawancara:
-        'Jawaban yang diberikan belum relevan dengan konteks pertanyaan wawancara. Mari kita fokus kembali ke pembahasan.',
-      evaluasi_singkat: 'Jawaban berupa teks acak atau tidak bermakna.',
-      rekomendasi_star: 'Fokus pada substansi pertanyaan posisi kerja yang dilamar.',
+        'Mohon maaf, tanggapan Anda tidak tampak seperti jawaban profesional yang relevan. Mari kita fokus kembali ke pertanyaan wawancara ini.',
+      evaluasi_singkat: 'Jawaban terdeteksi berupa ketikan acak/keyboard smash (spam) tanpa substansi percakapan.',
+      rekomendasi_star: 'Hindari mengetik karakter sembarangan. Sampaikan jawaban profesional sesuai pengalaman riil Anda.',
     };
   }
 
@@ -430,8 +465,14 @@ export async function evaluasiJawabanInteraktif({
   let reaksi = `Terima kasih atas penjelasannya. Poin yang Anda sampaikan cukup memberikan gambaran awal mengenai pendekatan Anda.`;
   let evaluasi = 'Penyampaian cukup jelas, disarankan memperkuat dampak kuantitatif (Result).';
   let kategoriKualitas = 'cukup';
+  let pertanyaanLanjutan = '';
 
-  if (kataCount < 10) {
+  if (kataCount < 4) {
+    skor = 20;
+    reaksi = `Jawaban Anda sangat singkat dan belum memberikan gambaran memadai mengenai kompetensi Anda untuk posisi ${posisiTarget || 'ini'}. Mari kita gali lebih dalam.`;
+    evaluasi = 'Jawaban terlalu minim (kurang dari 4 kata), belum memuat metode STAR ataupun bukti kerja nyata.';
+    kategoriKualitas = 'kurang';
+  } else if (kataCount < 10) {
     skor = 35;
     reaksi = `Jawaban Anda cukup ringkas. Untuk posisi ${posisiTarget || 'ini'} di ${namaPt}, kami ingin mendengar contoh tindakan yang lebih mendalam.`;
     evaluasi = 'Jawaban terlalu singkat dan belum memaparkan tindakan konkrit.';
@@ -441,6 +482,9 @@ export async function evaluasiJawabanInteraktif({
     reaksi = `Penjelasan yang sangat terstruktur dan runut! Contoh kasus yang Anda uraikan relevan dengan kebutuhan peran ${posisiTarget || 'ini'}.`;
     evaluasi = 'Struktur jawaban komprehensif, mencerminkan pemahaman alur kerja yang baik.';
     kategoriKualitas = 'baik';
+    if (/arsitektur|optimasi|kinerja|skala|database/i.test(teksBersih)) {
+      pertanyaanLanjutan = `Terkait optimasi teknis yang Anda uraikan barusan, apa pertimbangan atau trade-off utama yang Anda ambil dalam keputusan tersebut?`;
+    }
   }
 
   return {
@@ -449,6 +493,7 @@ export async function evaluasiJawabanInteraktif({
     reaksi_pewawancara: reaksi,
     evaluasi_singkat: evaluasi,
     rekomendasi_star: 'Gunakan metode STAR untuk menegaskan peran pribadi dan dampak hasil kerja nyata.',
+    pertanyaan_lanjutan: pertanyaanLanjutan,
   };
 }
 
