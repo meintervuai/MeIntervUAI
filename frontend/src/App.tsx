@@ -10,6 +10,7 @@ import Profil from './pages/Profil';
 import Segera from './pages/Segera';
 import PembuatCv from './pages/PembuatCv';
 import Simulasi from './pages/Simulasi';
+import Lowongan from './pages/Lowongan';
 import TataLetak from './components/TataLetak';
 import PelindungRute from './components/PelindungRute';
 
@@ -34,7 +35,7 @@ export default function App() {
 
                 <Route path="/analisis-cv/:id" element={<Segera judul="Analisis CV" />} />
                 <Route path="/simulasi" element={<Simulasi />} />
-                <Route path="/lowongan" element={<Segera judul="Lowongan Kerja" />} />
+                <Route path="/lowongan" element={<Lowongan />} />
               </Route>
             </Route>
 

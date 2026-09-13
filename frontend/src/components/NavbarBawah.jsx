@@ -17,7 +17,7 @@ export default function NavbarBawah() {
     { ke: '/home', label: t.navigasi.beranda, Ikon: IkonHome, segera: false },
     { ke: '/pembuat-cv', label: t.navigasi.cv, Ikon: IkonCv, segera: false },
     { ke: '/simulasi', label: t.navigasi.simulasi, Ikon: IkonSimulasi, segera: false },
-    { ke: '/lowongan', label: t.navigasi.lowongan, Ikon: IkonLowongan, segera: true },
+    { ke: '/lowongan', label: t.navigasi.lowongan, Ikon: IkonLowongan, segera: false },
     { ke: '/profil', label: t.navigasi.profil, Ikon: IkonProfil, segera: false },
   ];
 

@@ -17,6 +17,7 @@ export default {
           700: '#C2410C',
           800: '#9A3412',
           900: '#7C2D12',
+          950: '#431407',
         },
         // Netral hangat (batu/stone)
         batu: {
@@ -30,6 +31,7 @@ export default {
           700: '#44403C',
           800: '#292524',
           900: '#1C1917',
+          950: '#0C0A09',
         },
         latar: '#FAFAF7',
         kartu: '#FFFFFF',

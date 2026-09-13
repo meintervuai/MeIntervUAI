@@ -28,3 +28,18 @@ async def pengguna_aktif(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Token tidak valid"
         )
     return respons.user
+
+
+async def pengguna_aktif_opsional(
+    kredensial: HTTPAuthorizationCredentials | None = Depends(pengaman),
+):
+    """Dependency: validasi `Authorization: Bearer <JWT>` secara opsional (tidak melempar 401 bila tidak ada token)."""
+    if kredensial is None:
+        return None
+    try:
+        respons = klien.auth.get_user(kredensial.credentials)
+        if respons and respons.user:
+            return respons.user
+    except Exception:  # noqa: BLE001
+        return None
+    return None

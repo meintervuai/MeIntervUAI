@@ -39,6 +39,17 @@
 
 ```
 MeIntervUAI/                          # ROOT
+├─ .agents/                           # Workspace Agent Rules & Skills (Prioritas Utama)
+│  ├─ rules/
+│  │  ├─ antislop.md                  # Aturan wajib Anti-Slop (Hard Gate R-01 s/d R-38)
+│  │  └─ antislop.mdc
+│  └─ skills/
+│     ├─ antislop/                    # Core Anti-Slop Filter (SKILL.md)
+│     ├─ antislop-ui/                 # Filter Desain & Visual UI
+│     ├─ antislop-copywriting/        # Filter Penulisan Copy/Teks
+│     ├─ antislop-human/              # Filter Karakter & Persona Manusia
+│     ├─ antislop-layoutmobile/       # Ergonomi & Tata Letak Mobile-First
+│     └─ antislop-code/               # Komentar & Kerapian Kode Bersih
 ├─ .env                               # kredensial (JANGAN commit)
 ├─ .env.example                       # contoh kredensial
 ├─ README.md                          # ringkasan proyek
@@ -53,7 +64,8 @@ MeIntervUAI/                          # ROOT
 │     ├─ 003_entitas_milestone_1.sql
 │     ├─ 004_penyimpanan_foto.sql
 │     ├─ 005_perbaikan_status_akun.sql
-│     └─ 006_sesi_wawancara_m3.sql
+│     ├─ 006_sesi_wawancara_m3.sql
+│     └─ 007_rekomendasi_lowongan.sql
 ├─ backend/                           # Python FastAPI (Controller + Model + Service)
 │  ├─ .env.example
 │  ├─ requirements.txt
@@ -81,7 +93,9 @@ MeIntervUAI/                          # ROOT
 │  │  │  ├─ profil.py
 │  │  │  ├─ cv.py
 │  │  │  ├─ analisis_cv.py
-│  │  │  └─ kuota.py
+│  │  │  ├─ kuota.py
+│  │  │  ├─ lowongan.py
+│  │  │  └─ simulasi.py
 │  │  ├─ services/                    # logika bisnis (dipanggil controllers)
 │  │  │  ├─ __init__.py
 │  │  │  ├─ layanan_profil.py
@@ -90,6 +104,8 @@ MeIntervUAI/                          # ROOT
 │  │  │  ├─ layanan_kuota.py
 │  │  │  └─ ai/                       # gateway LLM
 │  │  │     ├─ __init__.py
+│  │  │     ├─ layanan_wawancara.py   # gateway LLM interaktif & evaluator semantik
+│  │  │     ├─ layanan_lowongan.py    # gateway AI Smart Matching lowongan kerja berbasis CV nyata
 │  │  │     ├─ pengarah_rute_llm.py   # fallback: gemini1 → gemini2 → openrouter
 │  │  │     ├─ penyedia_google_1.py
 │  │  │     ├─ penyedia_google_2.py
@@ -117,7 +133,7 @@ MeIntervUAI/                          # ROOT
 └─ frontend/                          # React + Vite + TS (View)
    ├─ .env.example
    ├─ index.html
-   ├─ package.json
+   ├─ package.json                 # dependensi utama: framer-motion, lucide-react, supabase-js, html2pdf.js
    ├─ vite.config.ts
    ├─ tsconfig.json
    ├─ tailwind.config.js
@@ -138,6 +154,7 @@ MeIntervUAI/                          # ROOT
       │  ├─ EditorCv.jsx              # editor CV bertahap (autosave 30 dtk)
       │  ├─ AnalisisCv.jsx            # detail hasil analisis (atau diatas Home)
       │  ├─ Simulasi.jsx              # ruang simulasi multi-mode (Teks/Audio/Video) + Sistem Tab Ganda (Mode & Hasil Review)
+      │  ├─ Lowongan.jsx              # rekomendasi lowongan kerja adaptif berbasis analisis CV & smart matching
       │  ├─ Profil.jsx
       │  └─ Segera.jsx                # halaman "Segera Hadir" (modul non-M1)
       ├─ components/                  # komponen UI reuse
@@ -177,7 +194,8 @@ MeIntervUAI/                          # ROOT
       │  ├─ api_kuota.js
       │  ├─ api_cv.js
       │  ├─ api_analisis_cv.js
-      │  └─ api_simulasi.js           # persistensi sesi, pertanyaan, jawaban, & riwayat evaluasi (ambilRiwayatSimulasi)
+      │  ├─ api_simulasi.js           # persistensi sesi, pertanyaan, jawaban, & riwayat evaluasi (ambilRiwayatSimulasi)
+      │  └─ api_lowongan.js           # engine Smart Matching AI, kurasi lowongan, kalkulasi skor kecocokan CV
       ├─ contexts/                    # state global React
       │  ├─ KonteksOtentikasi.jsx
       │  ├─ KonteksKuota.jsx
@@ -213,11 +231,15 @@ MeIntervUAI/                          # ROOT
 | `controllers/cv.py` | CRUD `riwayat_cv`, pilih template, autosave | M1 |
 | `controllers/analisis_cv.py` | Jalankan analisis, ambil hasil terkini | M1 + kuota |
 | `controllers/kuota.py` | Sisa kuota hari ini | M1 |
+| `controllers/lowongan.py` | Endpoint pencarian lowongan live & analisis kecocokan AI | M5 |
+| `controllers/simulasi.py` | Endpoint evaluasi interaktif jawaban & skoring semantik AI | M3 |
 | `services/layanan_kuota.py` | Lazy reset harian, cek & tambah pemakaian | Memakai `pengawas_kuota.py` |
 | `services/ai/pengarah_rute_llm.py` | Orkestrasi: cek kuota → coba gemini1 → gemini2 → openrouter | Satu antarmuka `kirim_prompt(...)` |
 | `services/ai/pengawas_kuota.py` | Blokir jika ≥ batas; catat `pemakaian_ai` | HTTP 429 saat habis |
 | `services/ai/normalisasi_skor.py` | Paksa skor 0–100, rata-ratakan antar model bila perlu | |
-| `services/layanan_analisis_cv.py` | Bangun konteks (buang base64), muat prompt, kirim, simpan `analisis_cv` | Cache bila CV tak berubah |
+| `services/ai/layanan_analisis_cv.py` | Bangun konteks (buang base64), muat prompt, kirim, simpan `analisis_cv` | Cache bila CV tak berubah |
+| `services/ai/layanan_lowongan.py` | Integrasi live JSearch API & Job Aggregators riil + smart matching CV | M5 |
+| `services/ai/layanan_wawancara.py` | Evaluasi jawaban interaktif via Gemini 1/2/OpenRouter & fallback heuristik | M3 |
 | `utils/validasi_json.py` | Ekstrak JSON dari respons LLM (buang ```json ...```), reparsing dasar | |
 
 ## 5. Frontend — Detail Modul (React, View)
@@ -282,6 +304,9 @@ MeIntervUAI/                          # ROOT
 | POST | `/api/analisis-cv` | `analisis_cv.py` → `layanan_analisis_cv` | Jalankan analisis ATS (body: `riwayat_cv_id`, `bahasa`) | ✅ **1 panggilan** | M1 |
 | GET | `/api/analisis-cv/terbaru` | `analisis_cv.py` | Ambil analisis terbaru user (dari DB, bukan LLM) | — | M1 |
 | GET | `/api/analisis-cv/{id}` | `analisis_cv.py` | Ambil 1 hasil analisis | — | M1 |
+| POST | `/api/simulasi/evaluasi-interaktif` | `simulasi.py` → `layanan_wawancara` | Evaluasi semantik jawaban, skoring STAR realistis, dan reaksi percakapan AI | ✅ **1 panggilan** | M3 |
+| POST | `/api/lowongan/analisis-kecocokan` | `lowongan.py` → `layanan_lowongan` | Analisis AI profil CV nyata (skills 40%, exp 30%, industri 20%, lokasi 10%) & kurasi peluang kerja | ✅ **1 panggilan** | M5 |
+| GET | `/api/lowongan` | `lowongan.py` → `layanan_lowongan` | Katalog lowongan adaptif ditenagai AI Smart Matching | — | M5 |
 
 > Endpoint fase berikut (M3–M5): `/api/sesi-wawancara`, `/api/pertanyaan-sesi`, `/api/evaluasi-sesi`, `/api/lowongan`, `/api/rekomendasi-lowongan`, `/api/notifikasi` — ditambahkan ke tabel ini saat implementasi, sesuai `database.md`.
 
@@ -297,9 +322,11 @@ MeIntervUAI/                          # ROOT
 | `/cv/:id` | `EditorCv.jsx` (editor bertahap) | **login** | M1 |
 | `/analisis-cv/:id` | `AnalisisCv.jsx` (hasil) | **login** | M1 |
 | `/profil` | `Profil.jsx` | **login** | M1 |
+| `/simulasi` | `Simulasi.jsx` (ruang simulasi + loading state + tab ganda) | **login** | M3 |
+| `/lowongan` | `Lowongan.jsx` (rekomendasi lowongan adaptif AI + custom input) | **login** | M5 |
 
-- Rute selain di atas (simulasi, lowongan, notifikasi) → halaman `Segera.html`/komponen "Segera Hadir" sampai M1 selesai.
-- Skeleton saat navigasi antar halaman; bottom nav hanya di halaman yang butuh navigasi utama (Home, CV, Profil).
+- Rute selain di atas (notifikasi) → halaman `Segera.html`/komponen "Segera Hadir" sampai M1 selesai.
+- Skeleton saat navigasi antar halaman; bottom nav di halaman yang butuh navigasi utama (Home, CV, Simulasi, Lowongan, Profil).
 
 ---
 

@@ -111,10 +111,16 @@ Produk dibangun di atas 5 pilar utama:
 - **Konsistensi Tema Oranye Terang (`oranye-*`)**:
   - Seluruh aksen interaktif (tombol "Masuk Ruang Simulasi", tombol "Selesai Menjawab (Lanjut)", audio waveform, recording pulse, dan badge skor evaluasi) menggunakan palet oranye terang seragam (`#FF6B00`, `bg-oranye-500`, `text-oranye-400`, `border-oranye-500/30`) berpadu netral hangat `batu-*`.
 - **Sistem Tab Ganda Menu Simulasi (Pilih Mode vs. Hasil Review Sesi)**:
-  - **Tab 1 ("Pilih Mode Simulasi")**: Akses gate validasi kelengkapan CV, seleksi 3 format simulasi (Teks, Suara, Video), konfigurasi posisi pekerjaan & bahasa, serta panel uji kesiapan perangkat (kamera, mic berfilter echo, dan speaker audio).
+  - **Tab 1 ("Pilih Mode Simulasi" - Wizard 2 Langkah Terstruktur)**:
+    - **Langkah 1 (Target Pekerjaan & Perusahaan)**: Validasi access gate CV, kurasi lowongan adaptif AI (Smart Matching CV), input posisi target (dengan saran chip populer), input nama perusahaan target (dengan saran perusahaan populer & penjelasan penyelarasan konteks AI), deteksi otomatis tingkat pengalaman AI, serta pemilihan bahasa pengantar (ID/EN). Tombol navigasi *"Lanjut ke Pilih Mode & Perangkat"* terkunci sampai posisi terisi.
+    - **Langkah 2 (Format & Perangkat)**: Kartu ringkasan target terpilih dengan tombol *"Ubah Target"*, seleksi 3 format wawancara (Teks, Audio, Video), panel pengecekan perangkat keras adaptif (webcam, mic berfilter echo, uji suara speaker), jaminan privasi 100% lokal browser, tips STAR, tombol *"Kembali ke Target Pekerjaan"*, dan tombol utama *"Masuk Ruang Simulasi"*.
   - **Tab 2 ("Hasil Review Sesi")**: Rekapitulasi riwayat ulasan sesi yang diselesaikan, skor total numerik, predikat kompetensi, 4 metrik pilar (Kesesuaian Isi, Struktur STAR, Kosa Kata Profesional, Kejelasan Artikulasi), catatan kekuatan & perbaikan, serta navigasi interaktif membuka rapor detail per sesi atau melatih ulang posisi target.
 - **Penyimpanan & Navigasi Otomatis Pasca-Sesi**:
   - Ketika sesi diselesaikan (mencapai 10+ pertanyaan atau tombol Akhiri Sesi ditekan), hasil evaluasi langsung disimpan secara persisten ke basis data Supabase (`evaluasi_wawancara`, `sesi_wawancara`) dan cadangan `localStorage` (`mentervu_riwayat_simulasi`), kemudian pengguna otomatis diarahkan membuka tampilan rincian review pada Tab 2.
+- **AI Recruiter Dinamis & Evaluasi Semantik Real-Time (Human-Like Interviewer)**:
+  - **Inisiasi Percakapan oleh AI**: Di mode teks (chat), AI recruiter membuka sesi wawancara terlebih dahulu dengan salam pembuka profesional personal (menyebutkan nama posisi dan perusahaan target), disusul lontaran pertanyaan pertama (Q1). Pengguna bertindak sebagai responden kandidat.
+  - **Evaluasi Semantik & Anti-Ngawur Realistis**: Setiap jawaban kandidat dievaluasi secara semantik menggunakan LLM Gateway backend (`/api/simulasi/evaluasi-interaktif`) atau fallback cerdas lokal. Menghilangkan sistem skor acak berbasis hitung kata (`kataCount > 35`). Jawaban berupa ketidaktahuan ("gak tau", "tidak tahu", "idk"), penyerahan, atau teks acak/spam secara ketat dinilai rendah (skor 0–25). Jawaban berbobot yang memenuhi metode STAR dinilai objektif (75–95).
+  - **Umpan Balik Percakapan Alami (Conversational Feedback Loop)**: Sebelum melompat ke pertanyaan berikutnya, AI memberikan tanggapan lisan/chat langsung (*reaksi_pewawancara*) yang mengapresiasi atau mengomentari poin kandidat seperti pewawancara manusia nyata. Pada mode teks ditampilkan sebagai bubble chat tanggapan terpisah dengan animasi *typing indicator*, dan pada mode suara/video dibacakan via *speech synthesis* sebelum pertanyaan selanjutnya diajukan.
 - **Hybrid input**: textarea ketik / tombol koreksi manual + speech-to-text.
 - **Kontrol darurat**: jeda, akhiri sesi, mute mic, dan toggle kamera (dengan auto-downgrade cerdas Video → Audio).
 - **Jaminan Privasi**: Video & audio diproses lokal di browser, tidak ada rekaman video/suara yang diunggah ke server mana pun.
@@ -128,11 +134,18 @@ Produk dibangun di atas 5 pilar utama:
 - **Halaman hasil ber-tab**: Evaluasi | Rekomendasi Posisi (2–3) | Lowongan (3–5).
 - **Batch evaluation** di akhir sesi: auto-correct + normalisasi + umpan balik holistik digabung dalam 1 panggilan API (optimasi token).
 
-### 5.5 Pencocokan Lowongan Kerja
-- Integrasi **JSearch API** untuk akses ribuan lowongan.
-- **Skor kecocokan AI (0–100)** dengan bobot: Skill **40%**, Pengalaman **30%**, Gaji **20%**, Lokasi **10%**.
-- Rekomendasi otomatis pasca-wawancara + pencarian manual dengan filter (kata kunci, gaji, tipe pekerjaan, lokasi, skor kecocokan).
-- Tombol "Lamar" mengarahkan ke **URL lamaran eksternal** (tidak memproses lamaran otomatis).
+### 5.5 Pencocokan Lowongan Kerja & Integrasi Adaptif Simulasi
+- **Menu Lowongan Kerja AI (`/lowongan`)**:
+  - **Pencocokan Lowongan Nyata (JSearch API & Platform Resmi)**: Sistem terhubung langsung ke backend (`POST /api/lowongan/analisis-kecocokan`) yang menarik lowongan aktif nyata via **JSearch API (RapidAPI)** dari platform bursa kerja terkemuka (**LinkedIn, Jobstreet, Glints, Indeed, Glassdoor**). Jika API key belum disetel, sistem mengagregasi tautan pencarian lowongan aktif terfilter langsung ke portal resmi platform tersebut.
+  - **Skor Kecocokan AI (0–100%)**: Setiap lowongan nyata dianalisis keselarasan profilnya terhadap CV pengguna dengan pembobotan: Keahlian **40%**, Pengalaman **30%**, Kesesuaian Posisi & Industri **20%**, Sistem Kerja / Lokasi **10%**. Dilengkapi rincian *skills cocok* vs *skills gap*, wawasan kultur perusahaan, dan estimasi rentang gaji pasar.
+  - **Lamar Langsung di Platform Resmi (FR-18)**: Setiap kartu lowongan menyediakan tombol *"Lamar di Platform"* yang langsung membuka tautan postingan lowongan kerja asli di LinkedIn/Jobstreet/Glints/Indeed.
+  - **Sinkronisasi Langsung ke Sesi Simulasi**: Setiap lowongan nyata dapat langsung diklik *"Simulasi Wawancara"*, otomatis mentransfer judul posisi dan perusahaan target ke ruang persiapan simulasi ([Simulasi.jsx](file:///c:/Users/r/Documents/Project/MeIntervUAI/frontend/src/pages/Simulasi.jsx)) dan membuka Langkah 2 secara instan.
+- **Integrasi Lowongan Adaptif pada Menu Simulasi (`/simulasi`)**:
+  - Pada tab konfigurasi simulasi, tersedia panel rekomendasi lowongan AI hasil matching CV. Pengguna bebas memilih rekomendasi atau mengetikkan target perusahaan mandiri.
+  - **Penyelarasan Konteks Wawancara**: AI menyusun pertanyaan pembuka dan studi kasus teknis/situasional yang disesuaikan secara spesifik dengan kultur, tantangan teknologi, dan standar bisnis perusahaan target tersebut.
+- **Layar Pemuatan (Loading State) Sesi Simulasi**:
+  - Saat tombol "Mulai Simulasi" ditekan, transisi dialihkan ke layar pemuatan transisional dengan animasi denyut oranye khas IntervU, indikator progres, dan teks status dinamis bertahap (menganalisis CV -> menyiapkan skenario spesifik perusahaan -> menyusun pertanyaan -> verifikasi kesiapan ruang).
+  - Berjalan minimal 2.8–3 detik untuk memastikan sesi dan butir pertanyaan pertama berhasil dibuat dan disimpan di database sehingga ruang simulasi terbuka dengan pertanyaan pertama siap tampil utuh tanpa jeda kosong.
 
 ---
 
@@ -290,18 +303,20 @@ Gunakan bahasa yang profesional, objektif, dan konstruktif sesuai bahasa yang ak
 
 > Bagian ini **mengikat** untuk semua halaman (Milestone 1 dan seterusnya). Perubahan desain → perbarui bagian ini **dan** `struktur_file.md` §5 (design tokens) agar sinkron.
 
-### 11.1 Prinsip Anti "AI Slop"
-| ❌ Dilarang | ✅ Yang diterapkan |
+### 11.1 Prinsip Anti "AI Slop" (Prioritas Utama — Berbasis Ruleset anti-slop)
+Seluruh antarmuka, copywriting, dan implementasi kode wajib melewati filter **anti-slop** (`.agents/rules/antislop.md` & `.agents/skills/antislop/`, merujuk standar [anti-slop](https://github.com/miqdadbadjuber/anti-slop.git)) dengan kepatuhan mutlak terhadap Hard Gate (R-01 s/d R-38):
+
+| ❌ Dilarang (Slop) | ✅ Yang diterapkan (Anti-Slop Standar) |
 |---|---|
-| Gradasi ungu–biru generik | Palet hangat oranye + netral batu (stone) |
-| Emoji sebagai ikon | **SVG kustom** (lihat 11.4) |
+| Gradasi ungu–biru generik tanpa alasan | Palet hangat oranye + netral batu (stone) terkurasi |
+| Emoji sebagai ikon | **SVG kustom** berukuran presisi (lihat 11.4) |
 | Glassmorphism / blur berlebihan | Kartu flat, border 1px, bayangan halus minim |
-| Hero besar foto stok tanpa makna | Data berguna langsung terlihat (kuota, skor, aksi) |
-| Semua teks rata tengah | Hierarki kiri–kanan jelas, mobile-first |
-| Bayangan tebal / neon / glow | Elevasi tipis, radius konsisten |
-| Kotak kosong tanpa hierarki | Kontras antar kartu, grid 8pt, spacing ketat |
-| Spinner "berputar tak jelas" saat AI bekerja | **Skeleton loader** + status progres bertahap |
-| Kata-kata kosong ("Tingkatkan pengalaman Anda!") | Salinan ringkas, spesifik, dan berguna |
+| Hero besar foto stok tanpa makna | Data berguna langsung terlihat (kuota, skor, aksi cepat) |
+| Semua teks rata tengah (*center-aligned slop*) | Hierarki kiri–kanan terstruktur, mobile-first |
+| Bayangan tebal / neon / glow liar | Elevasi tipis, radius konsisten (rounded-xl/2xl) |
+| Kotak kosong tanpa hierarki kontras | Kontras antar kartu, grid 8pt, spacing ketat |
+| Spinner "berputar tak jelas" saat AI bekerja | **Skeleton loader** + status progres bertahap informatif |
+| Kata-kata kosong klise AI ("elevate", "delve", "game-changer") | Salinan bahasa Indonesia ringkas, spesifik, dan berbobot |
 
 ### 11.2 Warna (Primer: Oranye)
 Token desain disimpan di `frontend/src/design/tokens.js` (`struktur_file.md` §5).
@@ -319,6 +334,7 @@ Token desain disimpan di `frontend/src/design/tokens.js` (`struktur_file.md` §5
 '--oranye-700': '#C2410C',   // teks aksen & state tekan
 '--oranye-800': '#9A3412',
 '--oranye-900': '#7C2D12',
+'--oranye-950': '#431407',
 
 // Netral hangat (batu/stone) — menemani oranye
 '--latar':        '#FAFAF7', // background halaman
@@ -328,6 +344,8 @@ Token desain disimpan di `frontend/src/design/tokens.js` (`struktur_file.md` §5
 '--teks-muted':   '#78716C', // batu-500
 '--garis':        '#D6D3D1', // batu-300: border 1px
 '--teks-link':    '#C2410C', // oranye-700 (AA di bg terang)
+'--batu-900':     '#1C1917',
+'--batu-950':     '#0C0A09', // kontainer banner & viewport simulasi gelap kontras tinggi
 
 // Status (hanya fungsi, bukan dekorasi)
 '--sukses':   '#16A34A',
@@ -473,7 +491,23 @@ Halaman interaktif persiapan dan ruang simulasi wawancara kerja berbasis AI (FR-
 6. **Persistensi Database & Evaluasi Skor Komprehensif (FR-12, FR-13):**
    - Rangkaian sesi, butir pertanyaan, dan jawaban pengguna disimpan secara persisten ke database Supabase (`sesi_wawancara`, `pertanyaan_sesi`, `jawaban_sesi`, `evaluasi_sesi`) dengan sinkronisasi ke penyimpanan lokal.
    - Evaluasi pasca-wawancara menyajikan Skor Keseluruhan (0–100), Predikat Kesiapan Kerja, 4 Pilar Metrik (Kesesuaian Isi, Analisis Metode STAR, Kosa Kata Profesional, Kepercayaan Diri), Rincian Pertanyaan & Jawaban Ideal, serta Rekomendasi Karir/CV lanjutan.
+7. **Penyelarasan Warna & Ergonomi Mobile (Zero-Fatigue UI/UX):**
+   - **Hero Banner Bersih & Kontras Tinggi:** Menggunakan kontainer kartu putih bersih (`bg-white border border-batu-200/90`) dengan tipografi gelap kontras tinggi (`text-batu-900`) dan aksen badge oranye lembut (`bg-oranye-50 border-oranye-200 text-oranye-700`), menghilangkan potensi teks putih di atas latar terang (*contrast collision*).
+   - **Kepadatan Vertikal Ringkas di Layar Mobile:** Memangkas tinggi hero banner pengantar pada layar kecil (≤390px) agar navigasi tab dan kontrol konfigurasi (Wizard 2 langkah) langsung terlihat di layar pertama (*above the fold*) tanpa memaksa pengguna melakukan *scrolling* yang melelahkan.
+8. **Animasi & Transisi Halus (Framer Motion Integration):**
+   - Mengadopsi library `framer-motion` untuk transisi antarmuka yang modern, responsif, dan bebas sentakan (*jank-free*).
+   - **Wizard Stepper Transition:** Transisi perpindahan antara Langkah 1 (Target Posisi) dan Langkah 2 (Format & Perangkat) menggunakan animasi geser horizontal halus (`<AnimatePresence mode="wait">`).
+   - **Kartu Lowongan & Modals:** Daftar kartu lowongan dirender dengan efek stagger berurutan saat dimuat, dan modal dialog (Detail & Custom Input) menggunakan efek pegas (*spring physics*) dengan pembukaan dan penutupan yang presisi.
 
+### 11.12 Desain & Prototype Antarmuka Mobile di Google Stitch
+Seluruh halaman utama MeIntervU AI dirancang secara mobile-first di **Google Stitch** (Project ID: `5300245815618569314` - *MeIntervU AI - Mobile Screens*) dengan Design System terintegrasi (`assets/1f3ba97b8beb40ddaba1a01f13f6841b`):
+1. **Beranda / Landing Page (Mobile):** Header ringkas, Hero CTA ganda, Bar statistik, 5 Pilar fitur unggulan, dan sticky bottom quick-action bar.
+2. **Dashboard Utama / Home (Mobile):** Kartu kuota AI harian (18/20 panggilan), status skor ATS CV, hero card rekomendasi wawancara Tokopedia, statistik performa, dan glassmorphic bottom navigation (5 tab).
+3. **Simulasi Wawancara AI (Mobile):** Antarmuka video live interview, feed kamera portrait dengan framing guide, audio waveform real-time, tips metode STAR interaktif, dan bar kontrol jempol (mute, camera, selesaikan jawaban).
+4. **Analisis Skor CV (Mobile):** Circular ATS gauge (88/100), rincian 4 pilar evaluasi (Format, Kata Kunci, Dampak, Struktur), chip kata kunci terdeteksi vs saran penambahan, serta kartu rekomendasi tindakan prioritas.
+5. **Bursa Lowongan Kerja & Job Matcher (Mobile):** Input pencarian & filter pills (Remote, Hybrid, Jakarta), kartu lowongan kerja dengan persentase kecocokan CV nyata (94% Match), dan tombol langsung "Simulasi Wawancara Posisi Ini".
+6. **Pembuat CV ATS (Mobile):** Multi-step wizard stepper (Data Diri, Pengalaman, Pendidikan, Keahlian), input form ergonomis dengan generator poin pencapaian AI, dan preview live ATS score.
+7. **Masuk / Login & Profil Pengguna (Mobile):** Autentikasi Google OAuth & email yang bersih, status sisa kuota harian transparan, dan menu preferensi karir/bahasa.
 
 ---
 

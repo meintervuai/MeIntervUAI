@@ -15,6 +15,7 @@ export const WARNA = {
     700: '#C2410C', // teks aksen & state tekan
     800: '#9A3412',
     900: '#7C2D12',
+    950: '#431407',
   },
   batu: {
     50: '#FAFAF9',
@@ -27,6 +28,7 @@ export const WARNA = {
     700: '#44403C',
     800: '#292524', // teks utama
     900: '#1C1917',
+    950: '#0C0A09',
   },
   status: {
     sukses: '#16A34A',

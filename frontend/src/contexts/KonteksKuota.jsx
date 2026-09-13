@@ -44,7 +44,7 @@ export function KonteksKuota({ children }) {
   }, []);
 
   return (
-    <Konteks.Provider value={{ kuota, memuat, segarkan, kurangi }}>
+    <Konteks.Provider value={{ kuota, memuat, segarkan, kurangi, kurangiKuota: kurangi }}>
       {children}
     </Konteks.Provider>
   );

@@ -2,6 +2,18 @@
 
 > Baca dokumen ini **pertama** sebelum mengerjakan tugas apa pun di repositori ini.
 
+## 0. PRIORITAS UTAMA: ANTI-SLOP (WAJIB & NON-NEGOTIABLE)
+
+Seluruh agen AI yang bekerja di repositori ini **WAJIB MENJADIKAN `anti-slop` SEBAGAI PRIORITAS UTAMA** (sumber: [anti-slop](https://github.com/miqdadbadjuber/anti-slop.git)):
+- Aturan tersimpan di `.agents/rules/antislop.md` dan 6 modul skill di `.agents/skills/`:
+  - `antislop` (Core filter, always on — [SKILL.md](file:///c:/Users/r/Documents/Project/MeIntervUAI/.agents/skills/antislop/SKILL.md))
+  - `antislop-ui` (UI & visual — [SKILL.md](file:///c:/Users/r/Documents/Project/MeIntervUAI/.agents/skills/antislop-ui/SKILL.md))
+  - `antislop-copywriting` (Copy & teks — [SKILL.md](file:///c:/Users/r/Documents/Project/MeIntervUAI/.agents/skills/antislop-copywriting/SKILL.md))
+  - `antislop-human` (Manusia & persona — [SKILL.md](file:///c:/Users/r/Documents/Project/MeIntervUAI/.agents/skills/antislop-human/SKILL.md))
+  - `antislop-layoutmobile` (Layout mobile & responsif — [SKILL.md](file:///c:/Users/r/Documents/Project/MeIntervUAI/.agents/skills/antislop-layoutmobile/SKILL.md))
+  - `antislop-code` (Komentar & struktur kode — [SKILL.md](file:///c:/Users/r/Documents/Project/MeIntervUAI/.agents/skills/antislop-code/SKILL.md))
+- **Hard Gate (R-01 s/d R-38)** & **Delivery Gate** wajib dipatuhi: nol generic AI slop, tidak ada gradasi hiasan kosong, tidak ada teks placeholder klise ("elevate your career", "delve into", "game-changer"), dan antarmuka berjiwa (lively, berkarakter, purposeful).
+
 ## 1. Titik Masuk Wajib
 
 Sebelum menulis kode, baca ketiga dokumen sumber keputusan **secara berurutan**:
@@ -69,6 +81,7 @@ Setiap agen AI yang bekerja di repositori ini WAJIB memeriksa dan memperbarui:
 - [ ] Tabel/kolom baru tercatat di `database.md` §5
 - [ ] Perilaku/fitur/UI baru tercatat di `prd.md` §5, §6, atau §11
 - [ ] Kuota AI diperhitungkan (kena hitung batas 20/hari) & dicatat di `pemakaian_ai`
+- [ ] **LULUS FILTER ANTI-SLOP:** Bebas AI Slop (Hard Gate R-01 s/d R-38 & Delivery Gate) per `.agents/rules/antislop.md`
 - [ ] Tampilan dicek versi mobile (viewport ≤390px) sebelum desktop
 - [ ] Ikon memakai SVG kustom (bukan font icon / emoji)
 - [ ] Video wawancara dipastikan tidak disimpan

@@ -270,7 +270,7 @@ Seed utama (⊕ = ditambah migrasi 002):
 
 | Tabel | FR | Kolom utama (ringkas) |
 |---|---|---|
-| `sesi_wawancara` | FR-09,10,22 | id, profil_id FK, mode (`teks/audio/video`), bahasa, posisi_target, status (`berlangsung/selesai/dibatalkan`), skor_total, predikat, level, tanggal_mulai, tanggal_selesai |
+| `sesi_wawancara` | FR-09,10,22 | id, profil_id FK, mode (`teks/audio/video`), bahasa, posisi_target, perusahaan_target (teks, nullable), status (`berlangsung/selesai/dibatalkan`), skor_total, predikat, level, tanggal_mulai, tanggal_selesai |
 | `pertanyaan_sesi` | FR-10 | id, sesi_id FK, tipe (`perkenalan_diri/cross_check_cv/inti/lanjutan`), sumber_konteks, pertanyaan, urutan, pertanyaan_induk_id FK (self, untuk follow-up), status (`terjawab/dilewati`) |
 | `jawaban_sesi` | FR-10,13 | id, pertanyaan_sesi_id FK, teks_mentah, teks_terkoreksi (auto-correct), durasi (detik) |
 | `metrik_performa` | FR-12 | id, jawaban_sesi_id FK, kontak_mata_persen, postur (`tegak/membungkuk`), durasi, skor_kepercayaan_diri |
@@ -382,7 +382,8 @@ CREATE INDEX idx_sesi_profil_tgl          ON public.sesi_wawancara (profil_id, d
 | 004 | `004_penyimpanan_foto.sql` | saat mulai M1 | bucket Storage `foto-profil` (publik) + kebijakan RLS per-uid `{uid}/avatar.*` |
 | 005 | `005_perbaikan_status_akun.sql` | saat mulai M1 | default & nilai `status_akun` → `aktif` + CHECK enum Indonesia |
 | 006 | `006_sesi_wawancara_m3.sql` | M3 | Buat tabel `sesi_wawancara`, `pertanyaan_sesi`, `jawaban_sesi`, `evaluasi_sesi`, RLS, dan indeks performa |
-| 007+ | (fase berikut) | M4–M5 | `metrik_performa`, `saran_revisi_cv`, `lowongan`, `rekomendasi_lowongan`, `notifikasi`, dll |
+| 007 | `007_rekomendasi_lowongan.sql` | M5 | Tambah `perusahaan_target` pada `sesi_wawancara`; buat tabel `lowongan`, `rekomendasi_lowongan`, RLS, dan indeks |
+| 008+ | (fase berikut) | M4–M5 | `metrik_performa`, `saran_revisi_cv`, `notifikasi`, dll |
 
 > ⚠️ `000_*`-seed & migrasi lama di dashboard Supabase (quota, RLS admin, testimoni) **dibiarkan/tidak dihapus**; migrasi baru menyesuaikan (rename) — dokumentasikan setiap penyimpangan di kolom "Catatan".
 

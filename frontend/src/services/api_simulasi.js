@@ -1,4 +1,5 @@
 import { supabase } from './klien_supabase';
+import { panggilApi } from './klien_api';
 
 /**
  * Layanan penyimpanan sesi simulasi wawancara kerja AI (FR-09, FR-10, FR-12, FR-13).
@@ -14,6 +15,7 @@ const LOCAL_STORAGE_KEY = 'mentervu_riwayat_simulasi';
 export async function buatSesiWawancara({
   profilId,
   posisiTarget,
+  perusahaanTarget = null,
   mode,
   bahasa = 'id',
 }) {
@@ -21,6 +23,7 @@ export async function buatSesiWawancara({
     id: `sesi-${Date.now()}`,
     profil_id: profilId || null,
     posisi_target: posisiTarget,
+    perusahaan_target: perusahaanTarget,
     mode,
     bahasa,
     status: 'berlangsung',
@@ -29,15 +32,20 @@ export async function buatSesiWawancara({
 
   if (profilId) {
     try {
+      const payload = {
+        profil_id: profilId,
+        posisi_target: posisiTarget,
+        mode,
+        bahasa,
+        status: 'berlangsung',
+      };
+      if (perusahaanTarget) {
+        payload.perusahaan_target = perusahaanTarget;
+      }
+
       const { data, error } = await supabase
         .from('sesi_wawancara')
-        .insert({
-          profil_id: profilId,
-          posisi_target: posisiTarget,
-          mode,
-          bahasa,
-          status: 'berlangsung',
-        })
+        .insert(payload)
         .select()
         .single();
 
@@ -317,3 +325,130 @@ export async function ambilRiwayatSimulasi(profilId) {
 
   return rawList;
 }
+
+/**
+ * Evaluasi jawaban kandidat secara interaktif via Backend LLM (atau fallback lokal cerdas).
+ * Memberikan respons percakapan manusiawi, skor objektif (0-100), dan evaluasi STAR.
+ */
+export async function evaluasiJawabanInteraktif({
+  sesiId,
+  pertanyaan,
+  jawaban,
+  posisiTarget,
+  perusahaanTarget,
+  kategori = 'Umum',
+  jawabanIdeal = '',
+  urutan = 1,
+}) {
+  const teksBersih = (jawaban || '').trim();
+
+  // Deteksi cepat client-side untuk jawaban tidak tahu / menyerah / ngawur
+  const lower = teksBersih.toLowerCase();
+  const kataCount = lower.split(/\s+/).filter(Boolean).length;
+  const kataKunciTidakTahu = [
+    'gak tau',
+    'nggak tau',
+    'tidak tahu',
+    'ngga tau',
+    'gatau',
+    'ndak tau',
+    'ga faham',
+    'tidak paham',
+    'kurang tahu',
+    'belum tahu',
+    'idk',
+    'dont know',
+    "don't know",
+    'no idea',
+    'skip',
+    'lewat',
+    'entah',
+    'kurang paham',
+    'belum pernah',
+  ];
+  const isTidakTahu = kataKunciTidakTahu.some((k) => lower.includes(k)) && kataCount <= 12;
+  const isSpam = kataCount <= 3 && /(.)\1{4,}/.test(lower);
+
+  if (kataCount === 0) {
+    return {
+      skor: 0,
+      kategori_kualitas: 'kosong',
+      reaksi_pewawancara:
+        'Sepertinya belum ada jawaban yang disampaikan. Tidak apa-apa, mari kita beralih ke pertanyaan berikutnya.',
+      evaluasi_singkat: 'Kandidat tidak memberikan jawaban. Pertanyaan dilewati tanpa poin.',
+      rekomendasi_star: 'Cobalah selalu memberikan jawaban dasar meski tidak menguasai topik secara penuh.',
+    };
+  }
+
+  if (isTidakTahu) {
+    return {
+      skor: 15,
+      kategori_kualitas: 'tidak_tahu',
+      reaksi_pewawancara:
+        'Baik, kejujuran Anda kami hargai. Tidak masalah jika Anda belum familiar dengan hal ini, mari kita beralih ke aspek lain yang pernah Anda tangani.',
+      evaluasi_singkat: 'Kandidat menyatakan belum menguasai materi pertanyaan. Poin teknikal rendah namun jujur.',
+      rekomendasi_star: 'Jika belum menguasai topik, jelaskan analogi atau kemauan mempelajari konsep tersebut secara terstruktur.',
+    };
+  }
+
+  if (isSpam) {
+    return {
+      skor: 5,
+      kategori_kualitas: 'ngawur',
+      reaksi_pewawancara:
+        'Jawaban yang diberikan belum relevan dengan konteks pertanyaan wawancara. Mari kita fokus kembali ke pembahasan.',
+      evaluasi_singkat: 'Jawaban berupa teks acak atau tidak bermakna.',
+      rekomendasi_star: 'Fokus pada substansi pertanyaan posisi kerja yang dilamar.',
+    };
+  }
+
+  // Panggil endpoint backend FastAPI
+  try {
+    const hasil = await panggilApi('/simulasi/evaluasi-interaktif', {
+      metode: 'POST',
+      isi: {
+        sesi_id: sesiId,
+        pertanyaan,
+        jawaban: teksBersih,
+        posisi_target: posisiTarget,
+        perusahaan_target: perusahaanTarget,
+        kategori,
+        jawaban_ideal: jawabanIdeal,
+        urutan,
+      },
+    });
+    if (hasil && typeof hasil.skor === 'number') {
+      return hasil;
+    }
+  } catch (err) {
+    console.warn('[api_simulasi] Panggilan backend evaluasi gagal, menggunakan fallback heuristik lokal:', err);
+  }
+
+  // Fallback heuristik lokal jika server backend tidak dapat dihubungi
+  const namaPt = perusahaanTarget || 'perusahaan kami';
+  let skor = 60;
+  let reaksi = `Terima kasih atas penjelasannya. Poin yang Anda sampaikan cukup memberikan gambaran awal mengenai pendekatan Anda.`;
+  let evaluasi = 'Penyampaian cukup jelas, disarankan memperkuat dampak kuantitatif (Result).';
+  let kategoriKualitas = 'cukup';
+
+  if (kataCount < 10) {
+    skor = 35;
+    reaksi = `Jawaban Anda cukup ringkas. Untuk posisi ${posisiTarget || 'ini'} di ${namaPt}, kami ingin mendengar contoh tindakan yang lebih mendalam.`;
+    evaluasi = 'Jawaban terlalu singkat dan belum memaparkan tindakan konkrit.';
+    kategoriKualitas = 'kurang';
+  } else if (kataCount > 30) {
+    skor = 82;
+    reaksi = `Penjelasan yang sangat terstruktur dan runut! Contoh kasus yang Anda uraikan relevan dengan kebutuhan peran ${posisiTarget || 'ini'}.`;
+    evaluasi = 'Struktur jawaban komprehensif, mencerminkan pemahaman alur kerja yang baik.';
+    kategoriKualitas = 'baik';
+  }
+
+  return {
+    skor,
+    kategori_kualitas: kategoriKualitas,
+    reaksi_pewawancara: reaksi,
+    evaluasi_singkat: evaluasi,
+    rekomendasi_star: 'Gunakan metode STAR untuk menegaskan peran pribadi dan dampak hasil kerja nyata.',
+  };
+}
+
