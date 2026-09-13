@@ -386,23 +386,56 @@ export async function evaluasiJawabanInteraktif({
     };
   }
 
-  // Deteksi keyboard smash / spam kata
-  const apakahNgawur = (kata) => {
-    if (kata.length < 4) return false;
-    if (/(.)\1{3,}/.test(kata)) return true;
-    if (kata.length >= 6 && /^[asdfghjkl]+$/.test(kata)) return true;
-    if (kata.length >= 6 && /^[qwertyuiop]+$/.test(kata)) return true;
-    if (kata.length >= 6 && /^[zxcvbnm]+$/.test(kata)) return true;
-    if (/[bcdfghjklmnpqrstvwxyz]{5,}/.test(kata)) return true;
-    if (kata.length >= 8) {
-      const vokal = (kata.match(/[aiueo]/g) || []).length;
-      if (vokal / kata.length < 0.22) return true;
+  // Deteksi kata kosong repetitif & penolakan menjawab (contoh: "bla bla bla", "wkwkwk", "di next pertanyaannya", "cukup itu saja")
+  const polaRepetitif = [
+    /\b(bla|blabla|blablabla)\b/i,
+    /\b(wkwk|wkwkwk|haha|hahaha|hehe|hehehe)\b/i,
+    /\b(di\s*next|next\s*pertanyaan|skip\s*aja|lanjut\s*aja|lewatkan\s*saja|cukup\s*itu\s*saja)\b/i,
+    /\b(asal\s*jawab|ngasal|ngawur|gak\s*jelas)\b/i,
+    /\b(ulang\s*lagi\s*pertanyaannya|diulangi\s*lagi)\b/i,
+  ];
+  const isPolaRepetitif = polaRepetitif.some((reg) => reg.test(lower));
+
+  // Cek kata berulang berturut-turut (misal: "bla bla bla", "apa apa apa", "tes tes tes")
+  const isKataBerulangBerturut = /\b(\w{2,})\s+\1\s+\1\b/i.test(lower);
+
+  // Cek rasio keunikan kata: jika banyak kata tapi sedikit kata unik
+  let isRasioUnikRendah = false;
+  let isDominasiSatuKata = false;
+  if (kataCount >= 8) {
+    const unikSet = new Set(kataList);
+    if (unikSet.size / kataCount < 0.45) {
+      isRasioUnikRendah = true;
     }
-    if (kata.length > 7 && new Set(kata).size <= 4) return true;
+    const freq = {};
+    kataList.forEach((w) => {
+      freq[w] = (freq[w] || 0) + 1;
+    });
+    const maxFreq = Math.max(...Object.values(freq));
+    if (maxFreq / kataCount >= 0.30) {
+      isDominasiSatuKata = true;
+    }
+  }
+
+  // Deteksi keyboard smash / spam kata
+  const KATA_WAJAR_HOMEROW = new Set(['adalah', 'falsafah', 'salah', 'kalah', 'gajah', 'hadiah', 'dada', 'asal', 'asah', 'jasa', 'jala', 'hala', 'khalifah']);
+
+  const apakahNgawur = (kata) => {
+    const kataMurni = kata.replace(/[^\w]/g, '').toLowerCase();
+    if (kataMurni.length < 5 || KATA_WAJAR_HOMEROW.has(kataMurni)) return false;
+    if (/(.)\1{3,}/.test(kataMurni)) return true;
+    if (/asdfg|sdfgh|dfghj|fghjk|ghjkl|qwerty|wertyu|zxcvb|xcvbn/.test(kataMurni)) return true;
+    if (/[bcdfghjklmnpqrstvwxyz]{5,}/.test(kataMurni)) return true;
+    if (kataMurni.length >= 8) {
+      const vokal = (kataMurni.match(/[aiueo]/g) || []).length;
+      if (vokal / kataMurni.length < 0.18) return true;
+    }
+    if (kataMurni.length >= 9 && new Set(kataMurni).size <= 3) return true;
     return false;
   };
 
-  const isSpam = kataList.some(apakahNgawur);
+  const ngawurCount = kataList.filter(apakahNgawur).length;
+  const isSpam = (kataCount <= 3 && ngawurCount > 0) || (kataCount > 3 && ngawurCount / kataCount >= 0.25);
 
   if (kataCount === 0) {
     return {
@@ -423,6 +456,17 @@ export async function evaluasiJawabanInteraktif({
         'Baik, kejujuran Anda kami hargai. Tidak masalah jika Anda belum familiar dengan hal ini, mari kita beralih ke aspek lain yang pernah Anda tangani.',
       evaluasi_singkat: 'Kandidat menyatakan belum menguasai materi pertanyaan. Poin teknikal rendah namun jujur.',
       rekomendasi_star: 'Jika belum menguasai topik, jelaskan analogi atau kemauan mempelajari konsep tersebut secara terstruktur.',
+    };
+  }
+
+  if (isPolaRepetitif || isKataBerulangBerturut || isRasioUnikRendah || isDominasiSatuKata) {
+    return {
+      skor: 5,
+      kategori_kualitas: 'ngawur',
+      reaksi_pewawancara:
+        'Mohon maaf, tanggapan Anda memuat pengulangan kata tidak relevan dan kurang menunjukkan keseriusan menjawab. Mari kita fokus kembali pada pertanyaan wawancara.',
+      evaluasi_singkat: 'Jawaban terdeteksi memuat repetisi kata kosong (seperti "bla bla bla" / permintaan skip) tanpa substansi percakapan profesional.',
+      rekomendasi_star: 'Hindari menggunakan kata pengisi sembarangan atau meminta melewati pertanyaan. Uraikan pengalaman nyata Anda dengan metode STAR.',
     };
   }
 
@@ -461,25 +505,34 @@ export async function evaluasiJawabanInteraktif({
 
   // Fallback heuristik lokal jika server backend tidak dapat dihubungi
   const namaPt = perusahaanTarget || 'perusahaan kami';
-  let skor = 60;
+  const indikatorStar = ['karena', 'sehingga', 'proyek', 'hasil', 'kendala', 'solusi', 'menggunakan', 'tim', 'berhasil', 'metode', 'optimasi'];
+  const cocokStar = indikatorStar.filter((ind) => lower.includes(ind)).length;
+
+  let skor = 50;
   let reaksi = `Terima kasih atas penjelasannya. Poin yang Anda sampaikan cukup memberikan gambaran awal mengenai pendekatan Anda.`;
   let evaluasi = 'Penyampaian cukup jelas, disarankan memperkuat dampak kuantitatif (Result).';
   let kategoriKualitas = 'cukup';
   let pertanyaanLanjutan = '';
 
-  if (kataCount < 4) {
+  if (kataCount < 5) {
     skor = 20;
     reaksi = `Jawaban Anda sangat singkat dan belum memberikan gambaran memadai mengenai kompetensi Anda untuk posisi ${posisiTarget || 'ini'}. Mari kita gali lebih dalam.`;
-    evaluasi = 'Jawaban terlalu minim (kurang dari 4 kata), belum memuat metode STAR ataupun bukti kerja nyata.';
+    evaluasi = 'Jawaban terlalu minim (kurang dari 5 kata), belum memuat metode STAR ataupun bukti kerja nyata.';
     kategoriKualitas = 'kurang';
-  } else if (kataCount < 10) {
-    skor = 35;
+  } else if (kataCount < 12) {
+    skor = 35 + Math.min(10, cocokStar * 3);
     reaksi = `Jawaban Anda cukup ringkas. Untuk posisi ${posisiTarget || 'ini'} di ${namaPt}, kami ingin mendengar contoh tindakan yang lebih mendalam.`;
     evaluasi = 'Jawaban terlalu singkat dan belum memaparkan tindakan konkrit.';
     kategoriKualitas = 'kurang';
-  } else if (kataCount > 30) {
-    skor = 82;
-    reaksi = `Penjelasan yang sangat terstruktur dan runut! Contoh kasus yang Anda uraikan relevan dengan kebutuhan peran ${posisiTarget || 'ini'}.`;
+  } else if (cocokStar < 2) {
+    // Meskipun kata panjang, jika tidak memuat substansi metode STAR nyata, skor dibatasi
+    skor = 40 + Math.min(15, cocokStar * 5);
+    reaksi = `Penjelasan Anda cukup panjang, namun belum memaparkan secara konkret tindakan dan hasil nyata yang Anda capai.`;
+    evaluasi = 'Jawaban bersifat umum/deskriptif, belum mencakup struktur STAR (terutama Action dan Result yang terukur).';
+    kategoriKualitas = 'kurang';
+  } else {
+    skor = 70 + Math.min(20, cocokStar * 4);
+    reaksi = `Penjelasan yang terstruktur dan runut. Pendekatan yang Anda uraikan relevan dengan kebutuhan peran ${posisiTarget || 'ini'}.`;
     evaluasi = 'Struktur jawaban komprehensif, mencerminkan pemahaman alur kerja yang baik.';
     kategoriKualitas = 'baik';
     if (/arsitektur|optimasi|kinerja|skala|database/i.test(teksBersih)) {

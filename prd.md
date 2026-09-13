@@ -179,9 +179,9 @@ Prioritas: **P0** = wajib di Milestone 1 • **P1** = penting • **P2** = pelen
 | FR-07 | Saran Revisi CV | Saran per bagian (Ringkasan/Pengalaman/Keahlian) yang bisa diterima/ditolak | P1 | M4 | `saran_revisi_cv` |
 | FR-08 | Unduh CV PDF | Ekspor PDF profesional & ramah ATS via `html2pdf.js` | P1 | M2 | `riwayat_cv` |
 | FR-09 | Persiapan Simulasi | Navigasi Tab 1 ("Pilih Mode Simulasi"): Akses gate kelengkapan CV, pilih posisi target, mode (Teks/Audio/Video), bahasa (id/en), & device check | P0 | M3 | `sesi_wawancara` |
-| FR-10 | Simulasi Real-time | STT, analisis MediaPipe, hybrid input, auto-correct, timer & progress sticky, kontrol darurat | P0 | M3 | `sesi_wawancara`, `pertanyaan_sesi`, `jawaban_sesi` |
+| FR-10 | Simulasi Real-time | STT, analisis MediaPipe, hybrid input, auto-correct, timer & progress sticky, kontrol darurat, **TTS Alami Gemini/Siri (rate 0.98, pitch 1.02)**, serta **Guard Anti-Advance** yang memblokir lanjut otomatis bila kandidat belum berbicara (dengan opsi lewati berpenalti skor 0) | P0 | M3 | `sesi_wawancara`, `pertanyaan_sesi`, `jawaban_sesi` |
 | FR-11 | Peringatan Koneksi | Deteksi latency tinggi / frame rendah → peringatan + tombol cepat ke mode audio | P1 | M3 | `pengaturan_sistem` |
-| FR-12 | Evaluasi AI | Evaluasi verbal & non-verbal real-time + normalisasi skor antar model | P0 | M3 | `evaluasi_sesi`, `metrik_performa` |
+| FR-12 | Evaluasi AI | Evaluasi verbal & non-verbal real-time + normalisasi skor antar model + **Evaluasi Semantik Ketat Anti-Ngawur** (penalti skor 0–5 untuk repetisi 'bla bla bla', spam keyboard smash, atau permintaan skip disertai teguran visual pewawancara) | P0 | M3 | `evaluasi_sesi`, `metrik_performa` |
 | FR-13 | Review Hasil | Tab 2 ("Hasil Review Sesi"): Transkrip (mentah + ideal), skor total numerik, metrik pilar STAR, kekuatan & perbaikan, rekomendasi karir | P0 | M3 | `evaluasi_sesi`, `jawaban_sesi`, `evaluasi_wawancara` |
 | FR-14 | Analisis Kesenjangan | AI membandingkan CV dengan jawaban → kesenjangan keahlian | P1 | M4 | `analisis_cv`, `evaluasi_sesi` |
 | FR-15 | Terapkan Saran Sekali Klik | Terima/tolak saran per bagian; "Terima Semua" / "Tolak Semua" | P1 | M4 | `saran_revisi_cv` |

@@ -561,13 +561,21 @@ export default function Simulasi() {
     setAudioLevel(0);
   };
 
-  // Uji Suara Speaker
+  // Uji Suara Speaker (Dengan Seleksi Suara Alami Gemini/Siri & Artikulasi Ramah)
   const putarTesSpeaker = () => {
     setIsTestingSpeaker(true);
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
-      const ut = new SpeechSynthesisUtterance('Tes audio speaker berjalan lancar. Suara jernih dan bebas gaung.');
+      const ut = new SpeechSynthesisUtterance(
+        konfigurasi.bahasa === 'en'
+          ? 'Hello! I am your AI interviewer assistant. Your speaker and audio output are working clearly and naturally.'
+          : 'Halo! Saya asisten pewawancara AI Anda di Mentervu. Suara speaker dan audio terdengar jernih, ramah, dan artikulatif.'
+      );
       ut.lang = konfigurasi.bahasa === 'en' ? 'en-US' : 'id-ID';
+      ut.rate = 0.98;
+      ut.pitch = 1.02;
+      const v = temukanSuaraTerbaik(konfigurasi.bahasa);
+      if (v) ut.voice = v;
       ut.onend = () => setIsTestingSpeaker(false);
       ut.onerror = () => setIsTestingSpeaker(false);
       window.speechSynthesis.speak(ut);
@@ -827,6 +835,8 @@ export default function Simulasi() {
   // State Modal & Loading Animasi Baru (Anti-Lag, No Browser Native Popups)
   const [modalPeringatanBelumBicara, setModalPeringatanBelumBicara] = useState(false);
   const [notifikasiPeringatan, setNotifikasiPeringatan] = useState(null);
+  const [peringatanEvaluasiNgawur, setPeringatanEvaluasiNgawur] = useState(null); // Peringatan tegas jika jawaban ngawur/spam
+  const [suaraKustomNama, setSuaraKustomNama] = useState(''); // Pilihan suara kustom dari user
   const [sedangMenyusunRapor, setSedangMenyusunRapor] = useState(false);
   const [sedangMulaiSimulasi, setSedangMulaiSimulasi] = useState(false);
 
@@ -975,42 +985,56 @@ export default function Simulasi() {
     return () => clearInterval(interval);
   }, [tahap, isJeda, indeksPertanyaan, jawabanSaatIni]);
 
-  // Helper mencari profil suara TTS terbaik (Prioritaskan suara Bahasa Indonesia alami yang tidak kaku)
+  // Helper mencari profil suara TTS terbaik (Prioritaskan suara Bahasa Indonesia alami mirip Gemini / Siri)
   const temukanSuaraTerbaik = (bahasa) => {
     if (!('speechSynthesis' in window)) return null;
     const semuaSuara = daftarSuara.length > 0 ? daftarSuara : (window.speechSynthesis.getVoices() || []);
     if (!semuaSuara || semuaSuara.length === 0) return null;
 
+    // Jika pengguna memilih suara spesifik via selector
+    if (suaraKustomNama) {
+      const matchKustom = semuaSuara.find((v) => v.name === suaraKustomNama);
+      if (matchKustom) return matchKustom;
+    }
+
     if (bahasa === 'en') {
       return (
-        semuaSuara.find((v) => v.lang.startsWith('en') && /natural|google|samantha|george|online/i.test(v.name)) ||
+        semuaSuara.find((v) => v.lang.startsWith('en') && /natural|google|siri|samantha|george|online/i.test(v.name)) ||
         semuaSuara.find((v) => v.lang.startsWith('en-US')) ||
         semuaSuara.find((v) => v.lang.startsWith('en')) ||
         null
       );
     }
 
-    // Bahasa Indonesia: Urutan prioritas suara natural & artikulatif
+    // Bahasa Indonesia: Urutan prioritas suara natural & artikulatif (Mirip Google Gemini / Apple Siri)
     return (
-      // 1. Google Bahasa Indonesia di Chrome
-      semuaSuara.find((v) => /google.*bahasa.*indonesia|google.*indonesia/i.test(v.name)) ||
-      // 2. Microsoft Gadis / Ardi Natural di Windows
-      semuaSuara.find((v) => /gadis|ardi/i.test(v.name) && /indonesia|id/i.test(v.lang || v.name)) ||
-      // 3. Suara dengan lang id-ID
+      // 1. Google Bahasa Indonesia di Chrome / Android (Aksen resmi Gemini & Google Assistant)
+      semuaSuara.find((v) => /google.*(bahasa.*indonesia|indonesia)|indonesia.*google/i.test(v.name)) ||
+      // 2. Microsoft Gadis Natural di Edge / Windows (Suara neural Azure wanita - sangat mirip Siri)
+      semuaSuara.find((v) => /gadis.*natural|natural.*gadis/i.test(v.name)) ||
+      // 3. Microsoft Ardi Natural di Edge / Windows (Suara neural Azure pria)
+      semuaSuara.find((v) => /ardi.*natural|natural.*ardi/i.test(v.name)) ||
+      // 4. Apple Siri / Damayanti di iOS / macOS Safari
+      semuaSuara.find((v) => /damayanti|siri/i.test(v.name) && /id/i.test(v.lang || v.name)) ||
+      // 5. Microsoft Gadis / Ardi standard
+      semuaSuara.find((v) => /gadis|ardi/i.test(v.name) && /id|indonesia/i.test(v.lang || v.name)) ||
+      // 6. Suara dengan lang id-ID
       semuaSuara.find((v) => (v.lang || '').replace('_', '-').toLowerCase() === 'id-id') ||
-      // 4. Suara dengan prefix id
+      // 7. Suara dengan prefix id
       semuaSuara.find((v) => (v.lang || '').toLowerCase().startsWith('id')) ||
-      // 5. Suara yang memuat kata indonesia
+      // 8. Suara yang memuat kata indonesia
       semuaSuara.find((v) => /indonesia/i.test(v.name)) ||
+      // 9. Fallback suara natural jernih
+      semuaSuara.find((v) => /natural|online|samantha|hazel/i.test(v.name)) ||
       null
     );
   };
 
-  // Speech Synthesis untuk Membacakan Pertanyaan AI (Dengan Echo Prevention & Native Voice)
+  // Speech Synthesis untuk Membacakan Pertanyaan AI (Dengan Karakter Suara Gemini/Siri yang Ramah & Jernih)
   const bacakanPertanyaan = (teks) => {
     if (!('speechSynthesis' in window) || konfigurasi.mode === 'teks') return;
 
-    // Jeda pengenalan suara saat AI berbicara agar suara AI tidak terekam kembali
+    // Jeda pengenalan suara saat AI berbicara agar suara AI tidak terekam kembali (echo loop prevention)
     if (recognitionRef.current) {
       try {
         recognitionRef.current.stop();
@@ -1021,8 +1045,8 @@ export default function Simulasi() {
     const utterance = new SpeechSynthesisUtterance(teks);
     const targetLang = konfigurasi.bahasa === 'en' ? 'en-US' : 'id-ID';
     utterance.lang = targetLang;
-    utterance.rate = 0.94; // Kecepatan pelafalan yang artikulatif dan tidak terburu-buru
-    utterance.pitch = 1.0;
+    utterance.rate = 0.98; // Kecepatan pelafalan luwes, tidak monoton lambat layaknya asisten pintar Gemini/Siri
+    utterance.pitch = 1.02; // Sedikit dinaikkan untuk sentuhan intonasi hangat, ramah, dan artikulatif
 
     const suaraTerpilih = temukanSuaraTerbaik(konfigurasi.bahasa);
     if (suaraTerpilih) {
@@ -1224,7 +1248,7 @@ export default function Simulasi() {
     }
   };
 
-  // Kirim Jawaban & Lanjut ke Pertanyaan Berikutnya (Dengan Evaluasi Semantik & Respons AI Alami)
+  // Kirim Jawaban & Lanjut ke Pertanyaan Berikutnya (Dengan Evaluasi Semantik Ketat & Anti-Ngawur)
   const kirimJawabanOtomatis = async (paksaLanjut = false) => {
     // Jika dalam mode audio/video dan pengguna belum berbicara sama sekali (dan bukan paksa lanjut)
     if (!paksaLanjut && konfigurasi.mode !== 'teks' && !jawabanSaatIni.trim()) {
@@ -1234,7 +1258,7 @@ export default function Simulasi() {
 
     window.speechSynthesis.cancel();
     const pertanyaanAktif = daftarPertanyaan[indeksPertanyaan];
-    const teksJawaban = jawabanSaatIni.trim() || (paksaLanjut ? '' : '(Jawaban disampaikan secara verbal)');
+    const teksJawaban = jawabanSaatIni.trim();
     const durasiDipakai = 120 - countdownDetik;
 
     // 1. Tampilkan pesan pengguna di chat log seketika jika mode teks
@@ -1243,7 +1267,7 @@ export default function Simulasi() {
         ...prev,
         {
           pengirim: 'user',
-          pesan: teksJawaban || '(Tidak memberikan jawaban)',
+          pesan: teksJawaban || '(Pertanyaan dilewati tanpa jawaban)',
           waktu: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         },
       ]);
@@ -1261,7 +1285,7 @@ export default function Simulasi() {
       evaluasiHasil = {
         skor: 0,
         kategori_kualitas: 'kosong',
-        reaksi_pewawancara: 'Pertanyaan ini dilewati tanpa jawaban. Mari kita lanjutkan ke topik berikutnya.',
+        reaksi_pewawancara: 'Pertanyaan ini dilewati tanpa jawaban. Mari kita lanjutkan ke pertanyaan berikutnya.',
         evaluasi_singkat: 'Kandidat melewati pertanyaan tanpa memberikan tanggapan.',
         rekomendasi_star: 'Upayakan selalu memberikan respon dasar menggunakan metode STAR meskipun belum menguasai topik secara mendalam.',
       };
@@ -1282,24 +1306,70 @@ export default function Simulasi() {
       }
     }
 
-    const skorSoal = evaluasiHasil?.skor ?? 70;
-    const evaluasiSingkat =
-      evaluasiHasil?.evaluasi_singkat ||
-      'Jawaban telah dicatat dan dievaluasi sesuai standar kompetensi posisi kerja.';
-    const reaksiPewawancara =
-      evaluasiHasil?.reaksi_pewawancara ||
-      'Terima kasih atas jawaban Anda. Mari kita lanjutkan ke topik berikutnya.';
+    // Evaluasi defensif lokal bila evaluasiHasil null / gagal
+    let skorSoal = evaluasiHasil?.skor;
+    let kategoriKualitas = evaluasiHasil?.kategori_kualitas;
+    let evaluasiSingkat = evaluasiHasil?.evaluasi_singkat;
+    let reaksiPewawancara = evaluasiHasil?.reaksi_pewawancara;
+
+    if (skorSoal === undefined || skorSoal === null) {
+      const lower = teksJawaban.toLowerCase();
+      const kataList = lower.split(/\s+/).filter(Boolean);
+      const kataCount = kataList.length;
+
+      const isRepetisi =
+        /\b(bla|blabla|blablabla)\b/i.test(lower) ||
+        /\b(wkwk|wkwkwk|haha|hahaha|hehe)\b/i.test(lower) ||
+        /\b(di\s*next|next\s*pertanyaan|skip\s*aja|lanjut\s*aja|lewatkan\s*saja|cukup\s*itu\s*saja)\b/i.test(lower) ||
+        /\b(\w{2,})\s+\1\s+\1\b/i.test(lower) ||
+        (kataCount >= 8 && new Set(kataList).size / kataCount < 0.45);
+
+      if (!teksJawaban) {
+        skorSoal = 0;
+        kategoriKualitas = 'kosong';
+        reaksiPewawancara = 'Pertanyaan ini dilewati tanpa jawaban.';
+        evaluasiSingkat = 'Kandidat tidak memberikan jawaban.';
+      } else if (isRepetisi) {
+        skorSoal = 5;
+        kategoriKualitas = 'ngawur';
+        reaksiPewawancara = 'Mohon maaf, tanggapan Anda memuat pengulangan kata yang tidak dapat dipahami dan kurang relevan. Mari kita fokus kembali pada pertanyaan.';
+        evaluasiSingkat = 'Jawaban terdeteksi memuat repetisi kata kosong ("bla bla bla" / permintaan skip).';
+      } else if (kataCount < 5) {
+        skorSoal = 20;
+        kategoriKualitas = 'kurang';
+        reaksiPewawancara = 'Jawaban Anda sangat singkat dan belum memuat bukti pengalaman kerja nyata.';
+        evaluasiSingkat = 'Jawaban terlalu singkat (kurang dari 5 kata).';
+      } else {
+        skorSoal = 40;
+        kategoriKualitas = 'kurang';
+        reaksiPewawancara = 'Terima kasih atas tanggapan awal Anda. Mari kita lanjutkan ke topik berikutnya.';
+        evaluasiSingkat = 'Jawaban telah dicatat dan membutuhkan elaborasi metode STAR yang lebih terstruktur.';
+      }
+    }
+
+    // Jika jawaban ngawur atau skor sangat rendah (<= 15), tampilkan teguran langsung
+    if (kategoriKualitas === 'ngawur' || skorSoal <= 15) {
+      setPeringatanEvaluasiNgawur({
+        judul: `Teguran Pewawancara (Skor: ${skorSoal}/100)`,
+        pesan:
+          reaksiPewawancara ||
+          `Jawaban Anda terdeteksi tidak relevan atau memuat pengulangan kata ("bla bla bla"). Skor untuk pertanyaan ini adalah ${skorSoal}/100. Harap jawab pertanyaan berikutnya dengan serius.`,
+      });
+      setTimeout(() => {
+        setPeringatanEvaluasiNgawur(null);
+      }, 7000);
+    }
 
     const dataJawaban = {
       idPertanyaan: pertanyaanAktif.id,
       pertanyaan: pertanyaanAktif.pertanyaan,
       kategori: pertanyaanAktif.kategori,
-      jawabanPengguna: teksJawaban || '(Pertanyaan dilewati)',
+      jawabanPengguna: teksJawaban || '(Pertanyaan dilewati tanpa jawaban)',
       durasiTerpakai: durasiDipakai,
       skor: skorSoal,
-      evaluasi: evaluasiSingkat,
-      reaksi: reaksiPewawancara,
-      kategoriKualitas: evaluasiHasil?.kategori_kualitas || 'cukup',
+      evaluasi: evaluasiSingkat || 'Jawaban telah dievaluasi.',
+      reaksi: reaksiPewawancara || 'Terima kasih atas jawaban Anda.',
+      kategoriKualitas: kategoriKualitas || 'kurang',
       jawabanIdeal: pertanyaanAktif.jawabanIdeal,
     };
 
@@ -1329,9 +1399,9 @@ export default function Simulasi() {
 
       if (
         evaluasiHasil?.pertanyaan_lanjutan &&
-        evaluasiHasil.kategori_kualitas !== 'ngawur' &&
-        evaluasiHasil.kategori_kualitas !== 'kosong' &&
-        evaluasiHasil.kategori_kualitas !== 'kurang' &&
+        kategoriKualitas !== 'ngawur' &&
+        kategoriKualitas !== 'kosong' &&
+        kategoriKualitas !== 'kurang' &&
         daftarPertanyaan.length < 15
       ) {
         followUp = {
@@ -1343,12 +1413,12 @@ export default function Simulasi() {
           petunjuk: 'Jelaskan lebih spesifik mengenai keputusan, kendala, atau hasil dari poin yang Anda ceritakan sebelumnya.',
           jawabanIdeal: `Contoh Jawaban Model STAR: "Menindaklanjuti hal tersebut, pendekatan konkret yang saya ambil adalah merancang solusi... Hasil terukurnya adalah..."`,
         };
-      } else {
+      } else if (kategoriKualitas !== 'ngawur' && kategoriKualitas !== 'kosong') {
         followUp = buatAdaptiveFollowUp(
           teksJawaban,
           pertanyaanAktif,
           nextIdx + 1,
-          evaluasiHasil?.kategori_kualitas
+          kategoriKualitas
         );
       }
 
@@ -2694,32 +2764,73 @@ export default function Simulasi() {
                         </div>
                       )}
 
-                      {/* 4. Cek Speaker / Output Suara */}
+                      {/* 4. Cek Speaker / Karakter Suara AI Recruiter (Gemini / Siri Style) */}
                       {konfigurasi.mode !== 'teks' && (
                         <div className="space-y-2 pt-1">
                           <div className="flex items-center justify-between text-xs">
                             <span className="font-bold text-batu-700 flex items-center gap-1.5">
-                              <Volume2 className="h-3.5 w-3.5 text-batu-600" />
-                              <span>Speaker / Suara AI Recruiter</span>
+                              <Volume2 className="h-3.5 w-3.5 text-oranye-600" />
+                              <span>Suara AI Recruiter (TTS Alami)</span>
                             </span>
                             <button
                               type="button"
                               onClick={putarTesSpeaker}
                               disabled={isTestingSpeaker}
-                              className="text-xs font-bold text-oranye-600 hover:text-oranye-700 bg-oranye-50 px-2.5 py-1 rounded-lg border border-oranye-200 transition-all cursor-pointer"
+                              className="text-xs font-bold text-oranye-700 hover:text-oranye-800 bg-oranye-100/70 hover:bg-oranye-100 px-3 py-1 rounded-lg border border-oranye-300 shadow-2xs transition-all cursor-pointer flex items-center gap-1.5"
                             >
-                              {isTestingSpeaker ? 'Memutar Suara...' : 'Putar Suara Tes'}
+                              <Sparkles className="h-3 w-3 text-oranye-600" />
+                              <span>{isTestingSpeaker ? 'Memutar Suara...' : 'Uji Suara Pewawancara'}</span>
                             </button>
                           </div>
+
+                          {/* Info Profil Suara Alami yang Sedang Digunakan */}
                           {(() => {
                             const v = temukanSuaraTerbaik(konfigurasi.bahasa);
+                            const namaSuara = v ? v.name : 'Suara Alami Browser';
+                            const isGeminiLike = /google/i.test(namaSuara);
+                            const isSiriLike = /gadis|damayanti|siri/i.test(namaSuara);
+                            const labelTone = isGeminiLike
+                              ? 'Tone Google Gemini (Artikulatif & Ramah)'
+                              : isSiriLike
+                              ? 'Tone Siri / Azure Neural (Alami & Berwibawa)'
+                              : 'Tone Standar Browser';
+
+                            const suaraBahasaId = daftarSuara.filter((s) =>
+                              (s.lang || '').toLowerCase().startsWith('id') || /indonesia/i.test(s.name)
+                            );
+
                             return (
-                              <p className="text-[10.5px] text-oranye-800 font-medium">
-                                Profil Suara Terdeteksi:{' '}
-                                <strong className="text-oranye-900 font-bold">
-                                  {v ? `${v.name} (${v.lang})` : 'Suara Alami Sistem Browser'}
-                                </strong>
-                              </p>
+                              <div className="rounded-xl border border-oranye-200/90 bg-oranye-50/50 p-2.5 space-y-1.5 text-xs text-batu-800">
+                                <div className="flex items-center justify-between">
+                                  <span className="text-[11px] font-bold text-oranye-900 flex items-center gap-1">
+                                    <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                    <span>{labelTone}</span>
+                                  </span>
+                                  <span className="text-[10px] font-mono text-batu-500 bg-white px-1.5 py-0.5 rounded border border-oranye-100">
+                                    {v ? v.lang : 'id-ID'}
+                                  </span>
+                                </div>
+                                <p className="text-[11px] text-batu-600 font-medium truncate">
+                                  Engine: <strong>{namaSuara}</strong>
+                                </p>
+
+                                {/* Dropdown opsional jika ada lebih dari 1 suara bahasa Indonesia di browser */}
+                                {suaraBahasaId.length > 1 && (
+                                  <div className="pt-1">
+                                    <select
+                                      value={suaraKustomNama || (v ? v.name : '')}
+                                      onChange={(e) => setSuaraKustomNama(e.target.value)}
+                                      className="w-full text-[11px] bg-white border border-oranye-200 rounded-lg px-2 py-1 text-batu-800 focus:outline-none focus:border-oranye-400"
+                                    >
+                                      {suaraBahasaId.map((suaraItem) => (
+                                        <option key={suaraItem.name} value={suaraItem.name}>
+                                          {suaraItem.name} {/gadis|google/i.test(suaraItem.name) ? '⭐ (Rekomendasi)' : ''}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                )}
+                              </div>
                             );
                           })()}
                         </div>
@@ -3115,6 +3226,25 @@ export default function Simulasi() {
               </button>
             </div>
           </header>
+
+          {/* BANNER TEGURAN JAWABAN NGAWUR / SPAM REAL-TIME */}
+          {peringatanEvaluasiNgawur && (
+            <div className="bg-amber-500 text-white px-4 py-2.5 text-xs font-bold flex items-center justify-between shadow-md shrink-0 border-b border-amber-600 animate-in slide-in-from-top duration-200">
+              <div className="flex items-center gap-2.5 max-w-4xl">
+                <AlertTriangle className="h-4 w-4 shrink-0 text-amber-100" />
+                <span className="leading-snug">
+                  <strong>{peringatanEvaluasiNgawur.judul}:</strong> {peringatanEvaluasiNgawur.pesan}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPeringatanEvaluasiNgawur(null)}
+                className="text-white hover:text-amber-100 font-extrabold text-xs px-2 py-0.5 rounded bg-amber-600/60 hover:bg-amber-600 cursor-pointer ml-3 shrink-0"
+              >
+                Tutup
+              </button>
+            </div>
+          )}
 
           {/* MAIN SIMULATION VIEWPORT (STRICT 1 LAYAR NON-SCROLLABLE) */}
           <main className="flex-1 min-h-0 w-full p-2 sm:p-4 flex flex-col overflow-hidden">
@@ -3711,7 +3841,7 @@ export default function Simulasi() {
                       Belum Ada Suara Terdeteksi
                     </h3>
                     <p className="text-xs text-batu-600 mt-1 leading-relaxed">
-                      Mikrofon belum menangkap ucapan Anda atau transkrip masih kosong. Bicaralah terlebih dahulu atau klik &ldquo;Lewati Pertanyaan&rdquo; jika ingin lanjut tanpa menjawab.
+                      Mikrofon belum menangkap ucapan Anda atau transkrip masih kosong. Bicaralah sekarang untuk menjawab, atau klik <strong>&ldquo;Lewati (Skor 0)&rdquo;</strong> jika ingin berpindah ke pertanyaan berikutnya tanpa nilai.
                     </p>
                   </div>
                 </div>
@@ -3723,9 +3853,9 @@ export default function Simulasi() {
                       setModalPeringatanBelumBicara(false);
                       kirimJawabanOtomatis(true);
                     }}
-                    className="px-3.5 py-2 rounded-xl border border-oranye-200 bg-white hover:bg-oranye-50 text-xs font-bold text-batu-600 transition-colors cursor-pointer"
+                    className="px-3.5 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-xs font-bold text-rose-700 transition-colors cursor-pointer"
                   >
-                    Lewati Pertanyaan
+                    Lewati (Skor 0)
                   </button>
                   <button
                     type="button"

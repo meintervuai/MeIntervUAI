@@ -72,9 +72,9 @@ def _deteksi_jawaban_tidak_tahu_atau_ngawur(teks: str) -> Optional[Dict[str, Any
             "rekomendasi_star": "Pastikan memberikan respon verbal yang terdengar jelas atau gunakan opsi koreksi teks bila mikrofon bermasalah.",
         }
 
-    # Cek frase 'tidak tahu'
+    # Cek frase 'tidak tahu' atau penyerahan
     for fr in KATA_KUNCI_TIDAK_TAHU:
-        if fr in pembersih and total_kata <= 12:
+        if fr in pembersih and total_kata <= 14:
             return {
                 "skor": 15,
                 "kategori_kualitas": "tidak_tahu",
@@ -83,34 +83,90 @@ def _deteksi_jawaban_tidak_tahu_atau_ngawur(teks: str) -> Optional[Dict[str, Any
                 "rekomendasi_star": "Bila tidak tahu, sampaikan kejujuran disusul kesediaan belajar atau analogi pemecahan masalah serupa yang pernah dihadapi.",
             }
 
+    # Cek kata kosong repetitif & penolakan menjawab (contoh: "bla bla bla", "wkwkwk", "di next pertanyaannya", "cukup itu saja")
+    pola_repetitif = [
+        r"\b(bla|blabla|blablabla)\b",
+        r"\b(wkwk|wkwkwk|haha|hahaha|hehe|hehehe)\b",
+        r"\b(di\s*next|next\s*pertanyaan|skip\s*aja|lanjut\s*aja|lewatkan\s*saja|cukup\s*itu\s*saja)\b",
+        r"\b(asal\s*jawab|ngasal|ngawur|gak\s*jelas)\b",
+        r"\b(ulang\s*lagi\s*pertanyaannya|diulangi\s*lagi)\b",
+    ]
+    for pola in pola_repetitif:
+        if re.search(pola, pembersih):
+            return {
+                "skor": 5,
+                "kategori_kualitas": "ngawur",
+                "reaksi_pewawancara": "Mohon maaf, jawaban Anda tidak relevan dengan pertanyaan dan memuat pengulangan kata yang tidak profesional. Mari kita fokus kembali pada pertanyaan wawancara.",
+                "evaluasi_singkat": "Jawaban memuat pengulangan kata tidak bermakna ('bla bla bla' / permintaan skip) dan tidak menunjukkan keseriusan menjawab.",
+                "rekomendasi_star": "Hindari menggunakan kata pengisi sembarangan atau meminta melewati pertanyaan. Uraikan pengalaman nyata yang relevan dengan metode STAR.",
+            }
+
+    # Cek kata berulang berturut-turut (misal: "bla bla bla", "apa apa apa", "tes tes tes")
+    if re.search(r"\b(\w{2,})\s+\1\s+\1\b", pembersih):
+        return {
+            "skor": 5,
+            "kategori_kualitas": "ngawur",
+            "reaksi_pewawancara": "Jawaban Anda memuat pengulangan kata berturut-turut tanpa substansi. Mohon sampaikan respon profesional yang jelas.",
+            "evaluasi_singkat": "Terdeteksi pengulangan kata identik berturut-turut secara berlebihan.",
+            "rekomendasi_star": "Gunakan struktur kalimat efektif dan profesional, bukan pengulangan kata.",
+        }
+
+    # Cek rasio keunikan kata: Jika banyak kata tetapi sangat sedikit kata unik (misal 35 kata tapi cuma 8 kata unik)
+    if total_kata >= 8:
+        kata_unik = set(kata_list)
+        rasio_unik = len(kata_unik) / total_kata
+        if rasio_unik < 0.45:
+            return {
+                "skor": 10,
+                "kategori_kualitas": "ngawur",
+                "reaksi_pewawancara": "Tanggapan Anda terdeteksi memuat pengulangan kata yang dominan dan kurang memiliki substansi jawaban.",
+                "evaluasi_singkat": "Rasio kosakata sangat rendah akibat perulangan kata yang sama berulang kali.",
+                "rekomendasi_star": "Perkaya kosa kata teknis dan profesional Anda dengan menjelaskan situasi, tindakan nyata, dan hasil pencapaian.",
+            }
+
+    # Cek dominasi satu kata tunggal (misal 1 kata menyumbang >= 30% dari seluruh kalimat)
+    if total_kata >= 6:
+        from collections import Counter
+        hitung_kata = Counter(kata_list)
+        kata_terbanyak, frek = hitung_kata.most_common(1)[0]
+        if len(kata_terbanyak) > 2 and frek / total_kata >= 0.30:
+            return {
+                "skor": 10,
+                "kategori_kualitas": "ngawur",
+                "reaksi_pewawancara": f"Tanggapan Anda didominasi pengulangan kata '{kata_terbanyak}' dan belum menjawab esensi pertanyaan.",
+                "evaluasi_singkat": f"Jawaban tidak berbobot karena didominasi pengulangan kata '{kata_terbanyak}'.",
+                "rekomendasi_star": "Fokuslah pada elaborasi jawaban dengan metode STAR.",
+            }
+
     # Cek spam karakter / keyboard smash (contoh: "skdaldsalda", "asdfghjkl", "hahahaha", "zzzzz", "qwerty")
+    KATA_WAJAR_HOMEROW = {"adalah", "falsafah", "salah", "kalah", "gajah", "hadiah", "dada", "asal", "asah", "jasa", "jala", "hala", "khalifah"}
+
     def _apakah_ngawur(kata: str) -> bool:
-        if len(kata) < 4:
+        kata_murni = re.sub(r"[^\w]", "", kata).lower()
+        if len(kata_murni) < 5 or kata_murni in KATA_WAJAR_HOMEROW:
             return False
         # Karakter berulang berurutan (misal: aaaaa, fffff)
-        if re.search(r"(.)\1{3,}", kata):
+        if re.search(r"(.)\1{3,}", kata_murni):
             return True
-        # Home row keyboard smash / sequence
-        if len(kata) >= 6 and set(kata).issubset(set("asdfghjkl")):
+        # Home row keyboard smash berurutan (misal: "asdfg", "sdfgh", "qwerty", "zxcvb")
+        if any(seq in kata_murni for seq in ["asdfg", "sdfgh", "dfghj", "fghjk", "ghjkl", "qwerty", "wertyu", "ertyui", "zxcvb", "xcvbn"]):
             return True
-        if len(kata) >= 6 and set(kata).issubset(set("qwertyuiop")):
+        # Kluster konsonan tanpa vokal yang tidak wajar (>= 5 konsonan berderet tanpa vokal)
+        if re.search(r"[bcdfghjklmnpqrstvwxyz]{5,}", kata_murni):
             return True
-        if len(kata) >= 6 and set(kata).issubset(set("zxcvbnm")):
-            return True
-        # Kluster konsonan tanpa vokal yang tidak wajar di bahasa Indonesia/Inggris (>= 4 konsonan berderet)
-        if re.search(r"[bcdfghjklmnpqrstvwxyz]{5,}", kata):
-            return True
-        # Rasio vokal sangat rendah untuk kata panjang (misal: "skdaldsalda" -> 11 huruf, vokal hanya a, a (2/11 = 0.18))
-        if len(kata) >= 8:
-            vokal_count = sum(1 for c in kata if c in "aiueo")
-            if vokal_count / len(kata) < 0.22:
+        # Rasio vokal sangat rendah untuk kata panjang
+        if len(kata_murni) >= 8:
+            vokal_count = sum(1 for c in kata_murni if c in "aiueo")
+            if vokal_count / len(kata_murni) < 0.18:
                 return True
-        # Terlalu sedikit karakter unik untuk kata panjang
-        if len(kata) > 7 and len(set(kata)) <= 4:
+        # Terlalu sedikit karakter unik untuk kata panjang tanpa makna
+        if len(kata_murni) >= 9 and len(set(kata_murni)) <= 3:
             return True
         return False
 
-    if any(_apakah_ngawur(k) for k in kata_list) or (total_kata <= 3 and any(_apakah_ngawur(k) for k in kata_list)):
+    # Deteksi spam jika kalimat sangat pendek dan ada kata ngawur, ATAU jika >= 25% kata adalah spam
+    ngawur_count = sum(1 for k in kata_list if _apakah_ngawur(k))
+    if (total_kata <= 3 and ngawur_count > 0) or (total_kata > 3 and ngawur_count / total_kata >= 0.25):
         return {
             "skor": 5,
             "kategori_kualitas": "ngawur",
@@ -139,19 +195,25 @@ def _evaluasi_heuristik_lokal(
     nama_pt = perusahaan_target or "perusahaan kami"
 
     # Evaluasi berbasis indikator kata profesional & metode STAR
-    indikator_star = ["karena", "sehingga", "proyek", "hasil", "kendala", "solusi", "menggunakan", "tim", "berhasil"]
+    indikator_star = ["karena", "sehingga", "proyek", "hasil", "kendala", "solusi", "menggunakan", "tim", "berhasil", "metode", "optimasi", "tanggung jawab"]
     cocok_star = sum(1 for ind in indikator_star if ind in jawaban.lower())
 
     pertanyaan_lanjutan = ""
-    if kata_count < 4:
+    if kata_count < 5:
         skor = 20
         reaksi = f"Jawaban Anda sangat singkat dan belum memberikan gambaran memadai mengenai kompetensi Anda untuk posisi {posisi_target}. Mari kita gali lebih dalam."
-        evaluasi = "Jawaban terlalu minim (kurang dari 4 kata), belum memuat metode STAR ataupun bukti pengalaman nyata."
+        evaluasi = "Jawaban terlalu minim (kurang dari 5 kata), belum memuat metode STAR ataupun bukti pengalaman nyata."
         kategori_kualitas = "kurang"
-    elif kata_count < 10:
-        skor = 45
+    elif kata_count < 12:
+        skor = 35 + min(10, cocok_star * 3)
         reaksi = f"Terima kasih atas tanggapan awal Anda. Di {nama_pt}, kami sangat mengutamakan penjabaran tindakan konkrit. Mari kita gali lebih dalam."
         evaluasi = "Jawaban terlalu singkat, kurang memaparkan contoh tindakan nyata dan konteks situasi."
+        kategori_kualitas = "kurang"
+    elif cocok_star < 2:
+        # Meskipun kata banyak, jika tidak ada indikator STAR / substansi profesional, skor tidak boleh tinggi
+        skor = 40 + min(15, cocok_star * 5)
+        reaksi = f"Penjelasan Anda cukup panjang, namun belum memaparkan secara konkret tindakan dan hasil nyata yang Anda capai."
+        evaluasi = "Jawaban bersifat umum/deskriptif, belum mencakup struktur STAR (terutama Action dan Result yang terukur)."
         kategori_kualitas = "kurang"
     elif kata_count < 25:
         skor = 65 + min(15, cocok_star * 3)
@@ -263,14 +325,14 @@ Tugas Anda:
 6. Buat "pertanyaan_lanjutan": String opsional. Jika jawaban kandidat cukup atau baik dan memiliki topik menarik (misal proyek tertentu, teknologi tertentu, atau insiden tertentu yang mereka sebut), buat 1 pertanyaan lanjutan yang menggali detail tersebut agar wawancara mengalir seperti obrolan nyata. Jika jawaban ngawur/kosong/tidak tahu, kosongkan ("").
 
 Wajib menghasilkan format JSON valid dengan skema berikut:
-{
+{{
   "skor": <integer 0-100>,
   "kategori_kualitas": "<ngawur|tidak_tahu|kurang|cukup|baik|sangat_baik>",
   "reaksi_pewawancara": "<string reaksi lisan alami>",
   "evaluasi_singkat": "<string kritik evaluasi>",
   "rekomendasi_star": "<string contoh/saran STAR>",
   "pertanyaan_lanjutan": "<string pertanyaan follow-up konseptual atau string kosong>"
-}
+}}
 """
 
     prompt_user = f"""
