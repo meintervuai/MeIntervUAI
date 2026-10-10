@@ -1,0 +1,27 @@
+/* Centralized Design Tokens (FE-03, UX-02, UX-07, UX-08) */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    --radius-default: 8px;
+    --radius-sm: 4px;
+    --radius-lg: 12px;
+    --unit-scale: 4px;
+  }
+
+  body {
+    font-family: var(--font-sans);
+    background-color: #f8fafc;
+    color: #0f172a;
+    min-height: 100vh;
+  }
+}
+
+/* Custom Accessibility Focus State (R-32) */
+:focus-visible {
+  outline: 2px solid #4f46e5;
+  outline-offset: 2px;
+}
