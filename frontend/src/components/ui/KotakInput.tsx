@@ -20,22 +20,22 @@ export const KotakInput: React.FC<PropertiKotakInput> = ({
   return (
     <div className="w-full">
       {label && (
-        <label htmlFor={inputId} className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
+        <label htmlFor={inputId} className="block text-xs font-semibold text-stone-800 uppercase tracking-wider mb-1.5">
           {label}
         </label>
       )}
       <input
         id={inputId}
-        className={`w-full px-3.5 py-2.5 text-sm bg-white text-slate-900 border rounded-lg transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 disabled:bg-slate-100 disabled:text-slate-500 ${
-          pesanGalat ? 'border-rose-500 focus:ring-rose-500 focus:border-rose-500' : 'border-slate-300'
+        className={`w-full px-3.5 py-2.5 text-sm bg-white text-stone-900 border rounded-lg transition-colors placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600 disabled:bg-stone-100 disabled:text-stone-500 ${
+          pesanGalat ? 'border-rose-500 focus:ring-rose-500 focus:border-rose-500' : 'border-stone-300'
         } ${className}`}
         {...props}
       />
       {pesanGalat && (
-        <p className="mt-1.5 text-xs text-rose-600 font-medium">{pesanGalat}</p>
+        <p className="mt-1.5 text-xs text-rose-700 font-medium">{pesanGalat}</p>
       )}
       {keteranganBantuan && !pesanGalat && (
-        <p className="mt-1.5 text-xs text-slate-500">{keteranganBantuan}</p>
+        <p className="mt-1.5 text-xs text-stone-600">{keteranganBantuan}</p>
       )}
     </div>
   );

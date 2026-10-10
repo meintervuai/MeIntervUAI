@@ -3,7 +3,13 @@
 .env.local
 .env.*.local
 *.env
-
+.cursor
+.codex
+.agent
+.agents
+.claude
+.gemini
+.opencode
 # Dependencies
 node_modules/
 dist/

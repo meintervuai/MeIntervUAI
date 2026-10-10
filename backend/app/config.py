@@ -13,7 +13,8 @@ load_dotenv(dotenv_path=ENV_PATH)
 
 class Settings(BaseSettings):
     # Supabase
-    SUPABASE_URL: str = os.getenv("SUPABASE_URL", os.getenv("VITE_SUPABASE_URL", ""))
+    _raw_url = os.getenv("SUPABASE_URL", os.getenv("VITE_SUPABASE_URL", ""))
+    SUPABASE_URL: str = _raw_url.split("/rest")[0].rstrip("/") if _raw_url else ""
     SUPABASE_KEY: str = os.getenv("SUPABASE_KEY", os.getenv("VITE_SUPABASE_ANON_KEY", ""))
 
     # Google OAuth

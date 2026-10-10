@@ -1,0 +1,236 @@
+import { PusatBantuanKonten } from '../types';
+
+export const kontenEn: PusatBantuanKonten = {
+  nav: {
+    logoText: 'MeIntervUAI',
+    ctaMasuk: 'Sign In',
+    ctaMulai: 'Start Free',
+  },
+  hero: {
+    kicker: 'Interview Readiness & Practice Hub',
+    judul: 'Prepare for Job Interviews with Structured Feedback',
+    subjudul: 'Refine how you answer situational and technical questions. MeIntervUAI helps you test your response flow before your actual interview day.',
+    ctaPrimer: 'Try Practice Simulation',
+    ctaSekunder: 'Explore STAR Framework',
+    pilarPlatform: [
+      {
+        judul: 'STAR Method',
+        label: 'Structured Flow',
+        keterangan: 'Practice structuring Situation, Task, Action, and Result clearly.',
+      },
+      {
+        judul: 'Text & Voice',
+        label: 'Two Practice Modes',
+        keterangan: 'Choose guided typing or direct voice response through microphone.',
+      },
+      {
+        judul: 'Grading Rubric',
+        label: 'Instant Feedback',
+        keterangan: 'Evaluate speech articulation and technical relevance of answers.',
+      },
+    ],
+  },
+  simulator: {
+    kicker: 'Flexible Practice Formats',
+    judul: '3 Interview Simulation Modes',
+    subjudul: 'Select the practice format that fits your readiness. From guided text typing to live audio calls and face-to-face video simulations.',
+    fokusLatihanLabel: 'Practice Focus:',
+    daftarMode: [
+      {
+        id: 'teks',
+        nama: 'Interactive Text Mode',
+        durasi: '10 - 15 Mins',
+        tag: 'Guided Typing Practice',
+        ringkasan: 'Type your responses deliberately while organizing your STAR storyline step by step.',
+        penjelasan: 'Ideal if you are practicing for the first time and want to get comfortable structuring Situation, Task, Action, and Result without conversational time pressure.',
+        fiturUtama: [
+          'Structured STAR input prompts',
+          'Sentence clarity check',
+          'Immediate written response feedback',
+        ],
+        gambar: '/illustrations/text-mode.svg',
+        ctaTeks: 'Try Text Mode',
+      },
+      {
+        id: 'suara',
+        nama: 'Real-time Voice Mode',
+        durasi: '20 - 25 Mins',
+        tag: 'Live Audio Conversation',
+        ringkasan: 'Speak directly into your microphone, replicating a recruiter phone screening or audio interview.',
+        penjelasan: 'Trains your speaking pace, technical articulation, and helps eliminate filler words such as um and uh during situational questions.',
+        fiturUtama: [
+          'Speech cadence and pause detection',
+          'Audio articulation clarity scoring',
+          'Automated session transcript',
+        ],
+        gambar: '/illustrations/audio-conversation.svg',
+        ctaTeks: 'Try Voice Mode',
+      },
+      {
+        id: 'video',
+        nama: 'Video Interview Mode',
+        durasi: '25 - 30 Mins',
+        tag: 'Face-to-Face Simulation',
+        ringkasan: 'Full simulation with an interviewer visual to practice eye contact and camera poise.',
+        penjelasan: 'Mirrors real Zoom or Google Meet interview conditions, helping you manage nerves and maintain engagement in front of the camera.',
+        fiturUtama: [
+          'Realistic online interview atmosphere',
+          'Camera focus and composure cues',
+          'Comprehensive response evaluation',
+        ],
+        gambar: '/illustrations/interview.svg',
+        ctaTeks: 'Try Video Mode',
+      },
+    ],
+  },
+  ulasan: {
+    kicker: 'User Reviews & Feedback',
+    judul: 'What Practice Candidates Say',
+    subjudul: 'Read genuine impressions from job seekers who practiced on MeIntervUAI, or share your own rating and experience below.',
+    rataRataLabel: 'Average Rating',
+    totalUlasanLabel: 'Total Reviews Submitted',
+    tombolTulisUlasan: 'Write a Review',
+    tutupFormUlasan: 'Close Review Form',
+    form: {
+      judul: 'Share Your Practice Experience',
+      labelNama: 'Full Name',
+      placeholderNama: 'e.g. Alex Johnson',
+      labelPeran: 'Role / Career Track',
+      placeholderPeran: 'e.g. Junior Web Developer / CS Graduate',
+      labelRating: 'Your Rating (1 to 5 Stars)',
+      labelKomentar: 'Your Review & Feedback',
+      placeholderKomentar: 'Tell us how this mock interview helped your interview preparation...',
+      tombolKirim: 'Submit Review',
+      suksesNotif: 'Thank you! Your review has been added successfully.',
+      ratingDesc: {
+        1: 'Needs Major Improvement',
+        2: 'Fair, Needs Work',
+        3: 'Good & Helpful',
+        4: 'Very Good & Insightful',
+        5: 'Outstanding, Highly Recommended!',
+      },
+    },
+    daftarAwal: [
+      {
+        id: 'rev-1',
+        nama: 'Rian Firmansyah',
+        peran: 'Junior Frontend Developer',
+        rating: 5,
+        tanggal: 'October 10, 2026',
+        komentar: 'The STAR feedback structure helped me cut unnecessary rambling when describing previous technical bottlenecks. Kept answers crisp.',
+      },
+      {
+        id: 'rev-2',
+        nama: 'Siti Nurhaliza',
+        peran: 'Information Systems Graduate',
+        rating: 5,
+        tanggal: 'October 8, 2026',
+        komentar: 'Perfect for rehearsing before first real tech interviews. Questions closely matched actual recruiter behavior rounds.',
+      },
+      {
+        id: 'rev-3',
+        nama: 'Dimas Wicaksono',
+        peran: 'Associate Product Manager',
+        rating: 4,
+        tanggal: 'October 5, 2026',
+        komentar: 'The scoring rubric gave me a clear picture of what interviewers look for in situational questions. Clean and thoughtful interface.',
+      },
+    ],
+  },
+  bankSoal: {
+    judul: 'STAR Question Bank & Framework Guide',
+    subjudul: 'Curated interview questions formulated by hiring managers to train concise and structured responses.',
+    kategori: [
+      { id: 'behavioral', nama: 'Behavioral & Culture', jumlahSoal: '120+ Cases' },
+      { id: 'leadership', nama: 'Team Leadership', jumlahSoal: '85+ Cases' },
+      { id: 'problem-solving', nama: 'Problem Solving', jumlahSoal: '150+ Cases' },
+    ],
+    daftarSoal: [
+      {
+        id: 'soal-1',
+        kategori: 'Behavioral & Culture',
+        pertanyaan: 'How do you handle a scenario where team members push back on an architectural migration you proposed?',
+        tujuanPenguji: 'Evaluates technical empathy, persuasion techniques, and evidence-backed rationale.',
+        kunciJawabanSTAR: 'Highlight small prototype demos, objective latency metrics, and collaborative consensus building.',
+      },
+      {
+        id: 'soal-2',
+        kategori: 'Team Leadership',
+        pertanyaan: 'Describe a moment when you had to make a high-stakes call with incomplete operational data.',
+        tujuanPenguji: 'Measures calculated decisiveness, worst-case safeguards, and transparent stakeholder communication.',
+        kunciJawabanSTAR: 'Detail core assumptions made, circuit breaker rollback points, and continuous validation cycles.',
+      },
+      {
+        id: 'soal-3',
+        kategori: 'Problem Solving',
+        pertanyaan: 'Have you ever caused a critical production degradation with your code change? What was your immediate reaction?',
+        tujuanPenguji: 'Evaluates composure under fire, blameless post-mortem ownership, and durable system fixes.',
+        kunciJawabanSTAR: 'Prioritize immediate user impact mitigation (rollback/traffic shift) before root cause diagnosis and regression guardrails.',
+      },
+    ],
+  },
+  faq: {
+    judul: 'Frequently Asked Questions',
+    subjudul: 'Direct answers regarding our speech privacy standards, evaluation scoring engine, and session management.',
+    daftarFaq: [
+      {
+        tanya: 'Are my audio and video recordings stored or used to train public foundation models?',
+        jawab: 'No. All audio data is processed inside encrypted, ephemeral streams and discarded immediately after the rubric evaluation is completed. We never monetize personal user speech data.',
+      },
+      {
+        tanya: 'How does the AI grade my interview responses?',
+        jawab: 'Our evaluation engine operates on strict industry rubrics: adherence to the STAR framework (Situation, Task, Action, Result), technical vocabulary relevance, speech pacing, and concise time allocation.',
+      },
+      {
+        tanya: 'Can I select different job functions for the simulation?',
+        jawab: 'Yes. You can switch between software engineering, product management, data analytics, and other targeted tracks to calibrate the depth of questioning.',
+      },
+      {
+        tanya: 'Can I export my evaluation report after completing a session?',
+        jawab: 'Yes. You can export complete performance summaries and line-by-line examiner recommendations as a PDF or copy formatted markdown notes.',
+      },
+    ],
+  },
+  kontak: {
+    judul: 'User Support & Technical Inquiries',
+    subjudul: 'Have questions regarding the simulation workflow or platform capabilities? Reach our dedicated operations team.',
+    placeholderNama: 'Your Full Name',
+    placeholderEmail: 'Active Email Address',
+    placeholderPesan: 'Describe your query or feedback in specific detail...',
+    tombolKirim: 'Submit Inquiry',
+    pesanTerkirim: 'Your request has been received. Our technical team responds within 2 operational business hours.',
+    slaResponse: 'Average First Response SLA: 45 Minutes during business hours (08:00 - 20:00 WIB)',
+  },
+  footer: {
+    deskripsi: 'MeIntervUAI is an adaptive AI-driven mock interview platform designed to build candidate confidence through evidence-based objective feedback.',
+    statusSistem: 'All Systems Operational',
+    latency: '82ms API Latency',
+    kolomTautan: [
+      {
+        judul: 'Core Capabilities',
+        tautan: [
+          { label: 'Interview Simulator', href: '#simulator' },
+          { label: 'ATS CV Scanner', href: '/cv' },
+          { label: 'Job Opportunities', href: '/job' },
+        ],
+      },
+      {
+        judul: 'Knowledge Hub',
+        tautan: [
+          { label: 'STAR Methodology Guide', href: '#bank-soal' },
+          { label: 'Hiring Rubrics', href: '#simulator' },
+          { label: 'Frequently Asked Questions', href: '#faq' },
+        ],
+      },
+      {
+        judul: 'Trust & Privacy',
+        tautan: [
+          { label: 'Data Privacy Policy', href: '#privasi' },
+          { label: 'Terms of Service', href: '#syarat' },
+          { label: 'Encryption Standards', href: '#keamanan' },
+        ],
+      },
+    ],
+    hakCipta: '© 2026 MeIntervUAI. All rights reserved.',
+  },
+};

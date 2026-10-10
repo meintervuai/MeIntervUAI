@@ -1,4 +1,4 @@
-// API client wrapper untuk berkomunikasi dengan backend FastAPI IntervU AI.
+// API client wrapper untuk berkomunikasi dengan backend FastAPI MeIntervUAI.
 // Mengelola panggilan autentikasi, profil, CSM publik, dan pengaturan akun.
 
 const BASE_URL = '/api';

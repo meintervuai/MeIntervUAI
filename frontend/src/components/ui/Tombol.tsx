@@ -19,16 +19,16 @@ export const Tombol: React.FC<PropertiTombol> = ({
   const kelasDasar = 'inline-flex items-center justify-center font-medium rounded-lg transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
 
   const kelasUkuran = {
-    sm: 'px-3 py-1.5 text-xs',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-6 py-3 text-base',
+    sm: 'px-3 py-1.5 text-xs min-h-[36px]',
+    md: 'px-4 py-2.5 text-sm min-h-[44px]',
+    lg: 'px-6 py-3 text-base min-h-[48px]',
   }[ukuran];
 
   const kelasVarian = {
-    primer: 'bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 focus-visible:outline-brand-600 shadow-sm',
-    sekunder: 'bg-slate-200 text-slate-800 hover:bg-slate-300 active:bg-slate-400 focus-visible:outline-slate-500',
-    outline: 'border border-slate-300 text-slate-700 hover:bg-slate-100 active:bg-slate-200 focus-visible:outline-brand-600',
-    bahaya: 'bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 focus-visible:outline-rose-600 shadow-sm',
+    primer: 'bg-brand-700 text-white hover:bg-brand-800 active:bg-brand-900 focus-visible:outline-brand-700 shadow-sm',
+    sekunder: 'bg-stone-200 text-stone-800 hover:bg-stone-300 active:bg-stone-400 focus-visible:outline-stone-500',
+    outline: 'border border-stone-300 text-stone-800 hover:bg-stone-100 active:bg-stone-200 focus-visible:outline-brand-700',
+    bahaya: 'bg-rose-700 text-white hover:bg-rose-800 active:bg-rose-900 focus-visible:outline-rose-700 shadow-sm',
   }[varian];
 
   return (

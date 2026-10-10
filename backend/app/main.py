@@ -1,4 +1,4 @@
-# File aplikasi utama FastAPI untuk platform IntervU AI.
+# File aplikasi utama FastAPI untuk platform MeIntervUAI.
 # Mengonfigurasi middleware CORS, exception handlers, dan mendaftarkan router API.
 
 from fastapi import FastAPI, Request
@@ -7,7 +7,7 @@ from fastapi.responses import JSONResponse
 from app.routers import auth, csm_publik, profil, pengaturan
 
 app = FastAPI(
-    title="IntervU AI Backend API",
+    title="MeIntervUAI Backend API",
     description="Layanan backend untuk simulasi wawancara kerja AI, CV ATS Builder, dan CSM Support.",
     version="1.0.0"
 )
@@ -30,11 +30,11 @@ app.include_router(pengaturan.router)
 @app.get("/")
 async def root():
     return {
-        "nama_layanan": "IntervU AI Gateway",
+        "nama_layanan": "MeIntervUAI Gateway",
         "status": "aktif",
         "versi": "1.0.0"
     }
 
 @app.get("/api/kesehatan")
 async def cek_kesehatan():
-    return {"status": "sehat", "layanan": "IntervU AI API"}
+    return {"status": "sehat", "layanan": "MeIntervUAI API"}

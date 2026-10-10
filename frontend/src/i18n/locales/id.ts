@@ -1,0 +1,236 @@
+import { PusatBantuanKonten } from '../types';
+
+export const kontenId: PusatBantuanKonten = {
+  nav: {
+    logoText: 'MeIntervUAI',
+    ctaMasuk: 'Masuk Akun',
+    ctaMulai: 'Coba Gratis',
+  },
+  hero: {
+    kicker: 'Pusat Panduan & Latihan Wawancara',
+    judul: 'Latihan Menghadapi Wawancara Kerja dengan Umpan Balik Terarah',
+    subjudul: 'Asah cara menjawab pertanyaan situasional dan teknis. MeIntervUAI membantu Anda menguji alur jawaban sebelum hari wawancara kerja yang sesungguhnya.',
+    ctaPrimer: 'Coba Simulasi Langsung',
+    ctaSekunder: 'Pelajari Metode STAR',
+    pilarPlatform: [
+      {
+        judul: 'Metode STAR',
+        label: 'Alur Terstruktur',
+        keterangan: 'Latihan merangkum Situation, Task, Action, dan Result secara runtut.',
+      },
+      {
+        judul: 'Teks & Suara',
+        label: 'Dua Mode Latihan',
+        keterangan: 'Pilihan mengetik jawaban terpandu atau berbicara langsung via mikrofon.',
+      },
+      {
+        judul: 'Rubrik Evaluasi',
+        label: 'Umpan Balik Instan',
+        keterangan: 'Evaluasi kejelasan artikulasi dan kesesuaian aspek teknis jawaban.',
+      },
+    ],
+  },
+  simulator: {
+    kicker: 'Format Latihan Fleksibel',
+    judul: '3 Pilihan Mode Simulasi Wawancara',
+    subjudul: 'Pilih format latihan yang paling nyaman untuk Anda. Mulai dari latihan mengetik terpandu hingga percakapan suara dan simulasi tatap muka.',
+    fokusLatihanLabel: 'Fokus Latihan:',
+    daftarMode: [
+      {
+        id: 'teks',
+        nama: 'Mode Teks Interaktif',
+        durasi: '10 - 15 Menit',
+        tag: 'Latihan Mengetik Terpandu',
+        ringkasan: 'Ketik jawaban Anda dengan tenang sambil menyusun alur cerita metode STAR langkah demi langkah.',
+        penjelasan: 'Cocok bagi Anda yang baru pertama kali berlatih dan ingin membiasakan diri menyusun poin Situation, Task, Action, dan Result tanpa tekanan waktu berbicara.',
+        fiturUtama: [
+          'Panduan kolom pengisian alur STAR',
+          'Pemeriksa kejelasan dan struktur kalimat',
+          'Umpan balik tertulis per jawaban',
+        ],
+        gambar: '/illustrations/text-mode.svg',
+        ctaTeks: 'Coba Mode Teks',
+      },
+      {
+        id: 'suara',
+        nama: 'Mode Suara Real-time',
+        durasi: '20 - 25 Menit',
+        tag: 'Percakapan Audio Langsung',
+        ringkasan: 'Latihan berbicara langsung via mikrofon seperti wawancara telepon atau panggilan audio HRD.',
+        penjelasan: 'Melatih kelancaran berbicara, tempo penyampaian, artikulasi kata teknis, dan meminimalkan jeda hening atau kata pengisi seperti umm dan ehm.',
+        fiturUtama: [
+          'Deteksi tempo bicara dan jeda hening',
+          'Analisis kejelasan artikulasi audio',
+          'Transkrip otomatis hasil rekaman latihan',
+        ],
+        gambar: '/illustrations/audio-conversation.svg',
+        ctaTeks: 'Coba Mode Suara',
+      },
+      {
+        id: 'video',
+        nama: 'Mode Video Tatap Muka',
+        durasi: '25 - 30 Menit',
+        tag: 'Simulasi Tatap Muka',
+        ringkasan: 'Simulasi menyeluruh dengan visual interviewer untuk melatih kontak mata dan pembawaan profesional.',
+        penjelasan: 'Meniru suasana sesi interview online sesungguhnya via Zoom atau Google Meet, membantu Anda membiasakan diri dengan ketenangan di depan kamera.',
+        fiturUtama: [
+          'Suasana realistis seperti online interview',
+          'Pengingat fokus pandangan kamera',
+          'Evaluasi ketenangan dan alur bicara',
+        ],
+        gambar: '/illustrations/interview.svg',
+        ctaTeks: 'Coba Mode Video',
+      },
+    ],
+  },
+  ulasan: {
+    kicker: 'Ulasan & Pengalaman Pengguna',
+    judul: 'Pendapat Pengguna yang Telah Mencoba',
+    subjudul: 'Lihat pengalaman mereka yang sudah mencoba latihan wawancara di MeIntervUAI, atau bagikan ulasan dan penilaian Anda sendiri di bawah.',
+    rataRataLabel: 'Rata-rata Penilaian',
+    totalUlasanLabel: 'Total Ulasan Masuk',
+    tombolTulisUlasan: 'Tulis Ulasan Anda',
+    tutupFormUlasan: 'Tutup Formulir',
+    form: {
+      judul: 'Bagikan Pengalaman Latihan Anda',
+      labelNama: 'Nama Lengkap',
+      placeholderNama: 'Contoh: Budi Pratama',
+      labelPeran: 'Posisi / Bidang Karier',
+      placeholderPeran: 'Contoh: Fresh Graduate IT / Frontend Developer',
+      labelRating: 'Penilaian Anda (Bintang 1 - 5)',
+      labelKomentar: 'Ulasan / Masukan Anda',
+      placeholderKomentar: 'Ceritakan bagaimana simulasi wawancara ini membantu persiapan karier Anda...',
+      tombolKirim: 'Kirim Ulasan Sekarang',
+      suksesNotif: 'Terima kasih! Ulasan Anda berhasil ditambahkan.',
+      ratingDesc: {
+        1: 'Perlu Banyak Perbaikan',
+        2: 'Cukup, Perlu Ditingkatkan',
+        3: 'Bagus dan Bermanfaat',
+        4: 'Sangat Bagus dan Membantu',
+        5: 'Luar Biasa, Sangat Bermanfaat!',
+      },
+    },
+    daftarAwal: [
+      {
+        id: 'rev-1',
+        nama: 'Rian Firmansyah',
+        peran: 'Junior Frontend Developer',
+        rating: 5,
+        tanggal: '10 Oktober 2026',
+        komentar: 'Format umpan balik STAR sangat membantu saya merapikan alur bercerita saat ditanya tentang problem teknis masa lalu. Jadi tidak bertele-tele saat interview.',
+      },
+      {
+        id: 'rev-2',
+        nama: 'Siti Nurhaliza',
+        peran: 'Fresh Graduate Sistem Informasi',
+        rating: 5,
+        tanggal: '8 Oktober 2026',
+        komentar: 'Sangat cocok untuk latihan sebelum interview kerja pertama kali. Pertanyaan yang diberikan mirip sekali dengan yang ditanyakan HRD minggu lalu.',
+      },
+      {
+        id: 'rev-3',
+        nama: 'Dimas Wicaksono',
+        peran: 'Associate Product Manager',
+        rating: 4,
+        tanggal: '5 Oktober 2026',
+        komentar: 'Mode teks dan simulasi rubriknya membuat saya paham poin apa saja yang dinilai oleh interviewer. Interface-nya bersih dan nyaman dipakai.',
+      },
+    ],
+  },
+  bankSoal: {
+    judul: 'Bank Soal & Panduan Metodologi STAR',
+    subjudul: 'Koleksi soal wawancara yang telah dikurasi oleh praktisi rekrutmen profesional untuk melatih respons terstruktur.',
+    kategori: [
+      { id: 'behavioral', nama: 'Perilaku & Budaya', jumlahSoal: '120+ Kasus' },
+      { id: 'leadership', nama: 'Kepemimpinan Tim', jumlahSoal: '85+ Kasus' },
+      { id: 'problem-solving', nama: 'Pemecahan Masalah', jumlahSoal: '150+ Kasus' },
+    ],
+    daftarSoal: [
+      {
+        id: 'soal-1',
+        kategori: 'Perilaku & Budaya',
+        pertanyaan: 'Bagaimana Anda mengatasi situasi ketika anggota tim menolak perubahan arsitektur yang Anda usulkan?',
+        tujuanPenguji: 'Mengukur empati teknis, kemampuan negosiasi, dan pendekatan berbasis bukti.',
+        kunciJawabanSTAR: 'Fokuskan pada sesi demo kecil, paparan data performa objektif, dan pelibatan tim dalam proses migrasi.',
+      },
+      {
+        id: 'soal-2',
+        kategori: 'Kepemimpinan Tim',
+        pertanyaan: 'Jelaskan saat Anda harus mengambil keputusan penting saat informasi yang tersedia sangat minim.',
+        tujuanPenguji: 'Menilai keberanian kalkulatif, mitigasi risiko terburuk, dan transparansi ke pemangku kepentingan.',
+        kunciJawabanSTAR: 'Jelaskan asumsi dasar yang dibuat, batasan kegagalan (circuit breaker), dan mekanisme evaluasi berkala.',
+      },
+      {
+        id: 'soal-3',
+        kategori: 'Pemecahan Masalah',
+        pertanyaan: 'Pernahkah terjadi insiden produksi kritis yang disebabkan oleh kode Anda? Apa langkah pertama Anda?',
+        tujuanPenguji: 'Mengevaluasi ketenangan di bawah tekanan, integritas kepemilikan masalah (blameless culture), dan post-mortem.',
+        kunciJawabanSTAR: 'Utamakan mitigasi dampak ke pengguna (rollback/failover) sebelum penyelidikan akar masalah dan perbaikan jangka panjang.',
+      },
+    ],
+  },
+  faq: {
+    judul: 'Pertanyaan yang Sering Diajukan',
+    subjudul: 'Jawaban langsung dan jelas seputar cara kerja platform, privasi data suara, dan akurasi evaluasi AI.',
+    daftarFaq: [
+      {
+        tanya: 'Apakah rekaman suara dan video saya disimpan atau digunakan untuk melatih model publik?',
+        jawab: 'Tidak. Seluruh rekaman suara diproses secara real-time di sesi terenkripsi dan dihapus setelah evaluasi selesai dibuat. Kami tidak menjual data pengguna atau menggunakannya untuk melatih model publik.',
+      },
+      {
+        tanya: 'Bagaimana AI memberikan penilaian pada jawaban saya?',
+        jawab: 'AI kami dikalibrasi menggunakan rubrik rekrutmen berstandar industri: kelengkapan metode STAR (Situation, Task, Action, Result), relevansi kata kunci teknis, kejernihan artikulasi, dan ketepatan alokasi waktu.',
+      },
+      {
+        tanya: 'Apakah saya dapat memilih berbagai bidang pekerjaan dalam simulasi?',
+        jawab: 'Ya. Anda dapat memilih berbagai peran mulai dari Software Engineer, Product Manager, Data Analyst, hingga peran spesifik lainnya untuk menyesuaikan tingkat kesulitan pertanyaan.',
+      },
+      {
+        tanya: 'Dapatkah saya mengunduh laporan evaluasi setelah simulasi selesai?',
+        jawab: 'Ya. Anda dapat mengunduh berkas ringkasan umpan balik dalam format PDF atau menyalin teks rekomendasi langsung ke catatan persiapan Anda.',
+      },
+    ],
+  },
+  kontak: {
+    judul: 'Layanan Pengguna & Bantuan Langsung',
+    subjudul: 'Butuh panduan seputar alur simulasi atau memiliki masukan pengembangan platform? Hubungi tim kami.',
+    placeholderNama: 'Nama Lengkap Anda',
+    placeholderEmail: 'Alamat Email Aktif',
+    placeholderPesan: 'Tuliskan pertanyaan atau kendala yang Anda hadapi secara spesifik...',
+    tombolKirim: 'Kirim Pesan Bantuan',
+    pesanTerkirim: 'Pesan Anda berhasil diterima. Tim layanan kami akan merespons dalam kurun waktu kurang dari 2 jam kerja.',
+    slaResponse: 'SLA Respon Rata-rata: 45 Menit pada Jam Kerja (08.00 - 20.00 WIB)',
+  },
+  footer: {
+    deskripsi: 'MeIntervUAI adalah platform simulasi wawancara kerja adaptif berbasis kecerdasan buatan, dirancang untuk membantu kandidat membangun kepercayaan diri melalui umpan balik objektif.',
+    statusSistem: 'Semua Sistem Operasional Normal',
+    latency: '82ms API Latency',
+    kolomTautan: [
+      {
+        judul: 'Fitur Utama',
+        tautan: [
+          { label: 'Simulator Wawancara', href: '#simulator' },
+          { label: 'Analisis CV ATS', href: '/cv' },
+          { label: 'Rekomendasi Loker', href: '/job' },
+        ],
+      },
+      {
+        judul: 'Pusat Belajar',
+        tautan: [
+          { label: 'Panduan Metode STAR', href: '#bank-soal' },
+          { label: 'Rubrik Penilaian HRD', href: '#simulator' },
+          { label: 'Tanya Jawab (FAQ)', href: '#faq' },
+        ],
+      },
+      {
+        judul: 'Kebijakan & Privasi',
+        tautan: [
+          { label: 'Kebijakan Privasi Data', href: '#privasi' },
+          { label: 'Syarat & Ketentuan', href: '#syarat' },
+          { label: 'Keamanan Enkripsi', href: '#keamanan' },
+        ],
+      },
+    ],
+    hakCipta: '© 2026 MeIntervUAI. Seluruh hak cipta dilindungi undang-undang.',
+  },
+};

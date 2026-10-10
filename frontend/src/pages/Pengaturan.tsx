@@ -138,7 +138,7 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 safe-padding-x">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
           Pengaturan Akun & Preferensi
@@ -394,7 +394,7 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
             Ulasan & Masukan untuk Tim Pengembang
           </h2>
           <p className="text-xs text-slate-500 mb-6">
-            Beri tahu kami pengalaman Anda menggunakan IntervU AI agar tim Customer Success dapat terus meningkatkan kualitas layanan.
+            Beri tahu kami pengalaman Anda menggunakan MeIntervUAI agar tim Customer Success dapat terus meningkatkan kualitas layanan.
           </p>
 
           <form onSubmit={kirimUlasan} className="space-y-4 max-w-lg">
