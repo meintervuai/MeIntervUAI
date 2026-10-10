@@ -90,6 +90,46 @@ export interface PusatBantuanKonten {
     pesanTerkirim: string;
     slaResponse: string;
   };
+  auth: {
+    kembaliKeBeranda: string;
+    judulMasuk: string;
+    subjudulMasuk: string;
+    judulDaftar: string;
+    subjudulDaftar: string;
+    tabMasuk: string;
+    tabDaftar: string;
+    tombolGoogle: string;
+    pembatasAtau: string;
+    labelEmail: string;
+    placeholderEmail: string;
+    labelUsername: string;
+    placeholderUsername: string;
+    labelKataSandi: string;
+    placeholderKataSandi: string;
+    labelKonfirmasiSandi: string;
+    placeholderKonfirmasiSandi: string;
+    ingatkanSayaLabel: string;
+    lupaKataSandi: string;
+    tombolSubmitMasuk: string;
+    tombolSubmitDaftar: string;
+    tokenSelamatDatangJudul: string;
+    tokenSelamatDatangDesc: string;
+    galatSandiPendek: string;
+    galatSandiBeda: string;
+    galatKredensialSalah: string;
+    galatEmailTerdaftar: string;
+    suksesDaftar: string;
+    statusGoogleArah: string;
+    // Desktop / Tablet Showcase
+    showcaseKicker: string;
+    showcaseJudul: string;
+    showcaseDesc: string;
+    simulasiLiveJudul: string;
+    simulasiLivePeran: string;
+    simulasiLiveSoal: string;
+    simulasiLiveEvaluasi: string;
+    fiturPoin: Array<{ judul: string; desc: string }>;
+  };
   footer: {
     deskripsi: string;
     statusSistem: string;

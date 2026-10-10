@@ -1,6 +1,6 @@
-# Standar Frontend: IntervU AI (FE-01 s.d FE-03)
+# Standar Frontend: MeIntervUAI (FE-01 s.d FE-05)
 
-Ruang lingkup: Struktur kode frontend, urutan render, pendekatan komponen OOP/DRY, dan sentralisasi token desain.
+Ruang lingkup: Struktur kode frontend, urutan render, pendekatan komponen OOP/DRY, sentralisasi token desain, modul dwibahasa i18n, dan standardisasi form input mobile-first.
 
 ## Aturan
 
@@ -11,7 +11,18 @@ Ruang lingkup: Struktur kode frontend, urutan render, pendekatan komponen OOP/DR
 ### FE-02: OOP & Komponen Kering (DRY Component Reuse)
 - Jangan menulis ulang komponen tombol, input, atau kartu dengan gaya yang berbeda di setiap halaman.
 - Bangun komponen dasar di `src/components/ui/` (`Tombol`, `KotakInput`, `Kartu`, `DialogModal`, `IndikatorToken`) dan gunakan secara konsisten di seluruh halaman aplikasi.
+- Dukung slot tambahan seperti `aksiKanan` pada `KotakInput` untuk tombol kontrol input (misalnya toggle password visibility) tanpa merusak konsistensi layout.
 
 ### FE-03: Sentralisasi Token Desain
 - Dilarang memberi nilai warna, spasi, atau ukuran font sembarangan (*arbitrary hardcoding*) di setiap file.
 - Seluruh variabel tema, skala ukuran, dan warna disentralisasi di `src/index.css` dan `tailwind.config.js`.
+
+### FE-04: Sentralisasi Teks & Lokalisasi Dwibahasa (i18n ID/EN)
+- Seluruh teks tampilan (UI copy, label form, error feedback, tombol, teks bantuan) dilarang di-hardcode di dalam komponen JSX/TSX.
+- Gunakan struktur bahasa terpusat di `src/i18n/` (`types.ts`, `locales/id.ts`, `locales/en.ts`) dan konsumsi melalui hook `useBahasa()`.
+- Sediakan switcher bahasa eksplisit `[ ID | EN ]` yang menyimpan preferensi pengguna di `localStorage`.
+
+### FE-05: Standardisasi Form Input & Password Toggle Mobile-First
+- Input formulir wajib menyertakan atribut semantik HTML5 (`type`, `autoComplete`, `required`).
+- Form kata sandi pada antarmuka mobile wajib menyertakan toggle visibilitas (`Eye` / `EyeOff`) untuk mencegah salah ketik pada keyboard virtual layar sentuh.
+- Hindari border bertumpuk atau gaya *side-tab border* tebal pada alert/notifikasi; gunakan container alert bersih dengan rounded pill, border tipis, dan ikon semantik status (sukses/gagal).

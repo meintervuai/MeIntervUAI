@@ -53,5 +53,18 @@ Tata letak wajib diuji dan bertahan pada seluruh ukuran standar:
 
 ### UX-12: Ketahanan Rotasi Layar (Portrait ↔ Landscape)
 - Saat ponsel atau tablet diputar ke posisi landscape, tinggi viewport berkurang tajam (seringkali hanya 320px–420px).
-- Modal dialog wajib memiliki `max-h-[90vh] overflow-y-auto` agar formulir dan tombol konfirmasi tetap dapat digulir dan tidak terpotong.
+- Modal dialog dan halaman form independen wajib memiliki pembungkus dengan `min-h-screen overflow-y-auto` dan `max-h-[90vh]` pada popup dialog agar formulir dan tombol konfirmasi tetap dapat digulir dan tidak terpotong.
 - Terapkan `viewport-fit=cover` dan padding lingkungan `env(safe-area-inset-*)` untuk mencegah konten tertutup oleh poni kamera (notch).
+
+### UX-13: Standardisasi Formulir & Pengalaman Layar Sentuh Mobile
+- **Target Sentuh Ergonomis**: Seluruh tombol, tab selector, checkbox, dan toggle visibilitas wajib memiliki target sentuh minimum 44px (`min-h-[44px]` dan `min-w-[44px]`).
+- **Pencegahan Saltik (Fat-Finger Prevention)**: Kolom kata sandi pada formulir autentikasi wajib menyediakan toggle mata (`Eye` / `EyeOff`) agar pengguna dapat memeriksa teks sebelum submit.
+- **Pencegahan Slop Side-Tab**: Dilarang menggunakan border tebal sepihak (`border-l-2`, `border-l-4`) pada kartu alert/status. Gunakan alert box bersih dengan warna latar tint halus (`bg-rose-50`, `bg-emerald-50`), border tipis seragam, dan ikon semantik status.
+- **Dwibahasa Terpadu**: Di halaman alur mandiri (seperti autentikasi), sediakan pemilih bahasa cepat (`[ ID | EN ]`) di bagian header atas agar pengguna dapat memilih bahasa sebelum berinteraksi dengan input.
+
+### UX-14: Pola Autentikasi Split-Screen Standar Industri (Rujukan GitHub >75k Stars)
+- **Struktur Grid 2-Kolom Desktop (`lg:grid lg:grid-cols-2`)**:
+  - **Kolom Kiri (Brand & Visual Storytelling)**: Panel latar gelap bersih (`bg-stone-900 border-r border-stone-800`) memuat logo brand, ilustrasi vektor unDraw SVG resmi, ringkasan pilar nilai platform, serta kutipan testimoni kandidat karier (`blockquote`).
+  - **Kolom Kanan (Formulir Autentikasi Terfokus)**: Form terpusat vertikal (`sm:w-[360px] lg:w-[400px]`), segmented tab switcher, Google OAuth resmi, input semantik, toggle password, dan *terms & privacy notice* di bagian bawah.
+- **Pengalaman Layar Seluler (`< 1024px`)**: Kolom visual kiri disembunyikan otomatis (`hidden lg:flex`), form mengambil lebar penuh dengan padding ergonomis, fokus 100% pada konversi pendaftaran tanpa hambatan visual berat.
+- **Zero AI-Slop & Zero Nested Cards**: Dilarang membuat kartu bertumpuk di dalam kartu, bayangan melayang berlebihan (*wide shadow*), maupun *kicker eyebrow* di atas judul. Heading harus tampil kuat, mandiri, dan berbobot.

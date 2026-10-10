@@ -5,12 +5,14 @@ interface PropertiKotakInput extends React.InputHTMLAttributes<HTMLInputElement>
   label?: string;
   pesanGalat?: string;
   keteranganBantuan?: string;
+  aksiKanan?: React.ReactNode;
 }
 
 export const KotakInput: React.FC<PropertiKotakInput> = ({
   label,
   pesanGalat,
   keteranganBantuan,
+  aksiKanan,
   id,
   className = '',
   ...props
@@ -24,13 +26,22 @@ export const KotakInput: React.FC<PropertiKotakInput> = ({
           {label}
         </label>
       )}
-      <input
-        id={inputId}
-        className={`w-full px-3.5 py-2.5 text-sm bg-white text-stone-900 border rounded-lg transition-colors placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600 disabled:bg-stone-100 disabled:text-stone-500 ${
-          pesanGalat ? 'border-rose-500 focus:ring-rose-500 focus:border-rose-500' : 'border-stone-300'
-        } ${className}`}
-        {...props}
-      />
+      <div className="relative flex items-center">
+        <input
+          id={inputId}
+          className={`w-full px-3.5 py-2.5 text-sm bg-white text-stone-900 border rounded-lg transition-colors placeholder:text-stone-500 focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600 disabled:bg-stone-100 disabled:text-stone-500 ${
+            aksiKanan ? 'pr-11' : ''
+          } ${
+            pesanGalat ? 'border-rose-500 focus:ring-rose-500 focus:border-rose-500' : 'border-stone-300'
+          } ${className}`}
+          {...props}
+        />
+        {aksiKanan && (
+          <div className="absolute right-1 flex items-center">
+            {aksiKanan}
+          </div>
+        )}
+      </div>
       {pesanGalat && (
         <p className="mt-1.5 text-xs text-rose-700 font-medium">{pesanGalat}</p>
       )}

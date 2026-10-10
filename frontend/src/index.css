@@ -65,3 +65,24 @@
 .subtle-surface {
   background: linear-gradient(180deg, #ffffff 0%, #fffbf7 100%);
 }
+
+/* Micro-animations untuk Showcase Simulator Wawancara */
+@keyframes audioWave {
+  0%, 100% { height: 6px; }
+  50% { height: 28px; }
+}
+
+.animate-wave-1 { animation: audioWave 1.2s ease-in-out infinite; }
+.animate-wave-2 { animation: audioWave 1.0s ease-in-out 0.2s infinite; }
+.animate-wave-3 { animation: audioWave 1.4s ease-in-out 0.4s infinite; }
+.animate-wave-4 { animation: audioWave 0.9s ease-in-out 0.1s infinite; }
+.animate-wave-5 { animation: audioWave 1.3s ease-in-out 0.3s infinite; }
+
+@keyframes authFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-auth-fade {
+  animation: authFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
