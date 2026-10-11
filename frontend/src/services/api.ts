@@ -4,7 +4,7 @@
 const BASE_URL = '/api';
 
 export interface ResponApi<T = any> {
-  status: 'sukses' | 'galat' | 'perlu_verifikasi_otp_30hari';
+  status: 'sukses' | 'galat' | 'perlu_verifikasi_otp_30hari' | 'belum_verifikasi';
   pesan?: string;
   data?: T;
   [key: string]: any;
@@ -35,6 +35,15 @@ export const api = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, kode_otp }),
+    });
+    return res.json();
+  },
+
+  async kirimUlangOTP(email: string): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/auth/kirim-ulang-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
     });
     return res.json();
   },
@@ -89,11 +98,36 @@ export const api = {
     nomor_telepon?: string;
     url_foto_profil?: string;
     preferensi_bahasa?: string;
+    umur?: number;
+    jenis_kelamin?: string;
+    status_pekerjaan?: string;
+    role_impian?: string;
   }): Promise<ResponApi> {
     const res = await fetch(`${BASE_URL}/pengaturan/identitas`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  async unggahFotoProfil(pengguna_id: string, berkas: File | Blob, namaBerkas: string = 'foto.jpg'): Promise<ResponApi> {
+    const formData = new FormData();
+    formData.append('pengguna_id', pengguna_id);
+    formData.append('berkas', berkas, namaBerkas);
+
+    const res = await fetch(`${BASE_URL}/pengaturan/foto-profil`, {
+      method: 'POST',
+      body: formData,
+    });
+    return res.json();
+  },
+
+  async hapusFotoProfil(pengguna_id: string): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/pengaturan/foto-profil`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pengguna_id }),
     });
     return res.json();
   },

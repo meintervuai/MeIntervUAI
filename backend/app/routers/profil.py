@@ -64,7 +64,15 @@ async def simpan_onboarding_profil(data: PermintaanPembaruanProfil):
         if data.role_impian:
             update_payload["role_impian"] = data.role_impian
 
-        sb.table("profil_pengguna").update(update_payload).eq("pengguna_id", data.pengguna_id).execute()
+        # Cek apakah profil sudah ada
+        cek = sb.table("profil_pengguna").select("profil_id").eq("pengguna_id", data.pengguna_id).limit(1).execute()
+        if not cek.data:
+            from app.services.supabase_service import buat_id_terstruktur
+            update_payload["profil_id"] = buat_id_terstruktur("prof")
+            update_payload["pengguna_id"] = data.pengguna_id
+            sb.table("profil_pengguna").insert(update_payload).execute()
+        else:
+            sb.table("profil_pengguna").update(update_payload).eq("pengguna_id", data.pengguna_id).execute()
 
         return {
             "status": "sukses",

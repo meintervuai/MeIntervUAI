@@ -64,7 +64,13 @@ Tata letak wajib diuji dan bertahan pada seluruh ukuran standar:
 
 ### UX-14: Pola Autentikasi Split-Screen Standar Industri (Rujukan GitHub >75k Stars)
 - **Struktur Grid 2-Kolom Desktop (`lg:grid lg:grid-cols-2`)**:
-  - **Kolom Kiri (Brand & Visual Storytelling)**: Panel latar gelap bersih (`bg-stone-900 border-r border-stone-800`) memuat logo brand, ilustrasi vektor unDraw SVG resmi, ringkasan pilar nilai platform, serta kutipan testimoni kandidat karier (`blockquote`).
-  - **Kolom Kanan (Formulir Autentikasi Terfokus)**: Form terpusat vertikal (`sm:w-[360px] lg:w-[400px]`), segmented tab switcher, Google OAuth resmi, input semantik, toggle password, dan *terms & privacy notice* di bagian bawah.
+  - **Kolom Kiri (Brand & Visual Storytelling)**: Panel latar Executive Orange (`bg-gradient-to-br from-orange-700 via-orange-800 to-orange-950`) memuat logo brand, ilustrasi vektor unDraw SVG resmi, ringkasan pilar nilai platform, serta kutipan testimoni kandidat karier (`blockquote`).
+  - **Kolom Kanan (Formulir Autentikasi Terfokus)**: Form terpusat vertikal (`max-w-[380px]`), segmented tab switcher, Google OAuth resmi, input semantik, toggle password, dan *terms & privacy notice* di bagian bawah tanpa scrollbar di desktop (`h-screen overflow-hidden`).
 - **Pengalaman Layar Seluler (`< 1024px`)**: Kolom visual kiri disembunyikan otomatis (`hidden lg:flex`), form mengambil lebar penuh dengan padding ergonomis, fokus 100% pada konversi pendaftaran tanpa hambatan visual berat.
 - **Zero AI-Slop & Zero Nested Cards**: Dilarang membuat kartu bertumpuk di dalam kartu, bayangan melayang berlebihan (*wide shadow*), maupun *kicker eyebrow* di atas judul. Heading harus tampil kuat, mandiri, dan berbobot.
+
+### UX-15: Standar Onboarding Profil & Personalisasi Studio (Pola Interaktif & Humanis)
+- **Zero Friction & Human Tone**: Hindari istilah intimidatif seperti kewajiban administratif. Gunakan penjelasan humanis tentang bagaimana AI menyesuaikan gaya pertanyaan dan rubrik STAR berdasarkan tahapan karir pengguna.
+- **Visual Micro-Hierarchy**: Gunakan icon visual (`Sparkles`, `User`, `GraduationCap`, `Briefcase`) untuk memperjelas konteks setiap bagian input secara intuitif.
+- **Fleksibilitas Role & Quick-Fill Chips**: Input posisi/role impian bersifat opsional dan dilengkapi chip pilihan rekomendasi cepat (misal: Frontend Developer, Backend Engineer, UI/UX Designer, Product Manager, Data Analyst, Customer Success).
+- **Aksesibilitas & Kontras**: Seluruh label input, tombol pilihan, dan deskripsi wajib memenuhi WCAG AA ($\ge 4.5:1$ untuk teks normal) dengan target sentuh ergonomis $\ge 44\text{px}$.

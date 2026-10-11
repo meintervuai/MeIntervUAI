@@ -2,7 +2,7 @@
 # Mendukung feedback ulasan aplikasi bintang 1-5 untuk tim Customer Success.
 
 from typing import Optional
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, UploadFile, File, Form
 from pydantic import BaseModel, EmailStr
 from app.services.supabase_service import get_supabase_client, buat_id_terstruktur
 
@@ -14,6 +14,10 @@ class PermintaanUbahIdentitas(BaseModel):
     nomor_telepon: Optional[str] = None
     url_foto_profil: Optional[str] = None
     preferensi_bahasa: Optional[str] = None
+    umur: Optional[int] = None
+    jenis_kelamin: Optional[str] = None
+    status_pekerjaan: Optional[str] = None
+    role_impian: Optional[str] = None
 
 class PermintaanUbahEmail(BaseModel):
     pengguna_id: str
@@ -27,24 +31,50 @@ class PermintaanUlasanAplikasi(BaseModel):
     bintang_rating: int
     isi_ulasan: Optional[str] = None
 
+class PermintaanHapusFoto(BaseModel):
+    pengguna_id: str
+
 @router.put("/identitas")
 async def perbarui_identitas(data: PermintaanUbahIdentitas):
     """
-    Memperbarui nama lengkap, nomor telepon, foto profil, dan preferensi bahasa.
+    Memperbarui nama lengkap, kontak, foto profil, preferensi bahasa, umur, status pekerjaan, dan role impian.
+    Juga menyinkronkan nama_lengkap ke tabel pengguna.
     """
     sb = get_supabase_client()
     try:
         payload = {}
-        if data.nama_lengkap:
+        if data.nama_lengkap is not None:
             payload["nama_lengkap"] = data.nama_lengkap
-        if data.nomor_telepon:
+        if data.nomor_telepon is not None:
             payload["nomor_telepon"] = data.nomor_telepon
-        if data.url_foto_profil:
+        if data.url_foto_profil is not None:
             payload["url_foto_profil"] = data.url_foto_profil
-        if data.preferensi_bahasa:
+        if data.preferensi_bahasa is not None:
             payload["preferensi_bahasa"] = data.preferensi_bahasa
+        if data.umur is not None:
+            payload["umur"] = data.umur
+        if data.jenis_kelamin is not None:
+            payload["jenis_kelamin"] = data.jenis_kelamin
+        if data.status_pekerjaan is not None:
+            payload["status_pekerjaan"] = data.status_pekerjaan
+        if data.role_impian is not None:
+            payload["role_impian"] = data.role_impian
 
-        sb.table("profil_pengguna").update(payload).eq("pengguna_id", data.pengguna_id).execute()
+        # Cek apakah profil sudah ada
+        cek = sb.table("profil_pengguna").select("profil_id").eq("pengguna_id", data.pengguna_id).limit(1).execute()
+        if not cek.data:
+            payload["profil_id"] = buat_id_terstruktur("prof")
+            payload["pengguna_id"] = data.pengguna_id
+            sb.table("profil_pengguna").insert(payload).execute()
+        else:
+            sb.table("profil_pengguna").update(payload).eq("pengguna_id", data.pengguna_id).execute()
+
+        # Update nama_pengguna di tabel pengguna jika nama_lengkap diisi
+        if data.nama_lengkap:
+            try:
+                sb.table("pengguna").update({"nama_pengguna": data.nama_lengkap}).eq("pengguna_id", data.pengguna_id).execute()
+            except Exception:
+                pass
 
         return {
             "status": "sukses",
@@ -54,6 +84,85 @@ async def perbarui_identitas(data: PermintaanUbahIdentitas):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Gagal memperbarui identitas: {str(e)}"
+        )
+
+@router.post("/foto-profil")
+async def unggah_foto_profil(pengguna_id: str = Form(...), berkas: UploadFile = File(...)):
+    """
+    Mengunggah berkas foto profil ke Supabase Storage (bucket foto-profil),
+    mengganti foto lama jika ada, dan memperbarui url_foto_profil di tabel profil_pengguna.
+    Maksimal ukuran berkas asli sebelum kompresi 5MB.
+    """
+    sb = get_supabase_client()
+    try:
+        konten = await berkas.read()
+        if len(konten) > 5 * 1024 * 1024:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Ukuran berkas melebihi batas maksimal 5MB."
+            )
+
+        ekstensi = berkas.filename.split(".")[-1].lower() if berkas.filename and "." in berkas.filename else "jpg"
+        if ekstensi not in ["jpg", "jpeg", "png", "webp"]:
+            ekstensi = "jpg"
+
+        nama_berkas_storage = f"avatar_{pengguna_id}.{ekstensi}"
+        tipe_konten = berkas.content_type or f"image/{ekstensi}"
+
+        # Upload atau timpa ke Supabase Storage
+        sb.storage.from_("foto-profil").upload(
+            nama_berkas_storage,
+            konten,
+            {"content-type": tipe_konten, "upsert": "true"}
+        )
+
+        url_publik = sb.storage.from_("foto-profil").get_public_url(nama_berkas_storage)
+        # Tambahkan query string cache-buster agar browser langsung menampilkan gambar terbaru
+        url_publik_versi = f"{url_publik}?v={buat_id_terstruktur('img')}"
+
+        sb.table("profil_pengguna").update({
+            "url_foto_profil": url_publik_versi
+        }).eq("pengguna_id", pengguna_id).execute()
+
+        return {
+            "status": "sukses",
+            "pesan": "Foto profil berhasil diunggah dan disimpan.",
+            "url_foto_profil": url_publik_versi
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Gagal mengunggah foto profil: {str(e)}"
+        )
+
+@router.delete("/foto-profil")
+async def hapus_foto_profil(data: PermintaanHapusFoto):
+    """
+    Menghapus foto profil dari storage dan mengosongkan url_foto_profil di database.
+    """
+    sb = get_supabase_client()
+    try:
+        # Coba hapus file dari bucket
+        for ext in ["jpg", "jpeg", "png", "webp"]:
+            try:
+                sb.storage.from_("foto-profil").remove([f"avatar_{data.pengguna_id}.{ext}"])
+            except Exception:
+                pass
+
+        sb.table("profil_pengguna").update({
+            "url_foto_profil": None
+        }).eq("pengguna_id", data.pengguna_id).execute()
+
+        return {
+            "status": "sukses",
+            "pesan": "Foto profil berhasil dihapus."
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Gagal menghapus foto profil: {str(e)}"
         )
 
 @router.post("/ubah-email")

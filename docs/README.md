@@ -48,3 +48,4 @@ d:\MeIntervUAI\
 - [Standar UI/UX, Multi-Device & Rotasi (UX-01 - UX-13)](ui-ux.md)
 - [Standar Basis Data (DB-01 - DB-06)](database.md)
 - [Standar Pengujian & Keamanan (OT-01 - OT-02)](others.md)
+- [ADR-001: Alur Autentikasi & Verifikasi OTP](adr-auth-otp.md)

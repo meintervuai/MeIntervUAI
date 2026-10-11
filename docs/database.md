@@ -19,12 +19,13 @@ Skema dan DDL tabel wajib disimpan di lokasi tetap dalam repositori: `db/schema.
 - Kolom kunci primer menggunakan format `<table>_id` (contoh: `pengguna_id`, `tiket_id`).
 
 ### DB-05: Format ID Terstruktur
-Dilarang menggunakan integer auto-increment biasa. Gunakan format UID terstruktur:
-`<prefix><YYYYMMDD><4 digit acak>` tanpa pemisah.
+Dilarang menggunakan integer auto-increment biasa. Gunakan format UID terstruktur urut per tanggal:
+`<prefix><YYYYMMDD><4 digit urut>` dimulai dari `0000` tanpa pemisah.
 Contoh:
-- `pengguna`: `peng202610104821`
-- `saldo_token`: `sald202610101928`
-- `tiket_bantuan_csm`: `tikt202610107412`
+- `pengguna`: `user202610110000`, `user202610110001`, `user202610110002` (prefix `user`)
+- `profil_pengguna`: `prof202610110000` (prefix `prof`)
+- `saldo_token`: `sald202610110000` (prefix `sald`)
+- `tiket_bantuan_csm`: `tikt202610110000` (prefix `tikt`)
 
 ### DB-06: Indeks untuk Kolom Kueri Kunci
 Setiap kolom yang sering digunakan untuk pencarian, pemfilteran, atau foreign key wajib memiliki indeks (misal: `idx_pengguna_email`, `idx_tiket_status`).

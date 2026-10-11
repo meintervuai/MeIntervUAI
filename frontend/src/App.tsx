@@ -2,10 +2,15 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Navbar } from './components/tata_letak/Navbar';
-import { Beranda } from './pages/Beranda';
+import { Beranda } from './pages/beranda/Beranda';
 import { CSMPublik } from './pages/CSMPublik';
-import { MasukDaftar } from './pages/MasukDaftar';
 import { Pengaturan } from './pages/Pengaturan';
+import { HalamanGalat } from './pages/HalamanGalat';
+import { Masuk } from './pages/auth/Masuk';
+import { Daftar } from './pages/auth/Daftar';
+import { OTP } from './pages/auth/OTP';
+import { LupaSandi } from './pages/auth/LupaSandi';
+import { AturUlangSandi } from './pages/auth/AturUlangSandi';
 import { authSupabase, supabase } from './services/supabase';
 
 const SegeraHadir: React.FC<{ judul: string }> = ({ judul }) => (
@@ -28,7 +33,7 @@ const KerangkaAplikasi: React.FC<{
 }> = ({ pengguna, onKeluar, children }) => {
   const location = useLocation();
   const isHalamanMandiri =
-    ['/csm', '/bantuan', '/masuk'].includes(location.pathname) ||
+    ['/csm', '/bantuan', '/masuk', '/daftar', '/otp', '/lupa-sandi', '/reset-sandi'].includes(location.pathname) ||
     (!pengguna && location.pathname === '/');
 
   if (isHalamanMandiri) {
@@ -62,59 +67,99 @@ export const App: React.FC = () => {
         localStorage.removeItem('intervu_ingatkan_saya');
         return null;
       }
-      return JSON.parse(tersimpan);
-    } else if (tersimpan) {
-      localStorage.setItem('intervu_waktu_login', Date.now().toString());
-      return JSON.parse(tersimpan);
+      try {
+        const parsed = JSON.parse(tersimpan);
+        if (!parsed.email_terverifikasi) {
+          localStorage.removeItem('intervu_pengguna');
+          return null;
+        }
+        return parsed;
+      } catch (_) {
+        return null;
+      }
     }
     return null;
   });
 
   useEffect(() => {
-    const waktuLogin = localStorage.getItem('intervu_waktu_login');
-    if (waktuLogin) {
-      const selisih = Date.now() - parseInt(waktuLogin, 10);
-      if (selisih > TIGA_PULUH_HARI_MS) {
-        localStorage.removeItem('intervu_pengguna');
-        localStorage.removeItem('intervu_waktu_login');
-        localStorage.removeItem('intervu_ingatkan_saya');
-        setPengguna(null);
-        authSupabase.keluar().catch(() => {});
-        return;
-      }
-    }
+    const validasiSesiDatabase = async () => {
+      try {
+        const session = await authSupabase.dapatkanSesi();
+        if (!session?.user?.email) {
+          // Tidak ada sesi auth aktif
+          setPengguna(null);
+          localStorage.removeItem('intervu_pengguna');
+          localStorage.removeItem('intervu_waktu_login');
+          localStorage.removeItem('intervu_ingatkan_saya');
+          return;
+        }
 
-    authSupabase.dapatkanSesi().then((session) => {
-      if (session?.user) {
-        const meta = session.user.user_metadata || {};
-        const namaUser = meta.full_name || meta.name || meta.nama_pengguna || session.user.email?.split('@')[0];
-        const profil = {
-          pengguna_id: `peng_${session.user.id.slice(0, 12)}`,
-          email: session.user.email,
-          nama_pengguna: namaUser,
-          saldo_token: 100,
-        };
-        setPengguna(profil);
-        localStorage.setItem('intervu_pengguna', JSON.stringify(profil));
+        // Cek secara ketat ke tabel database 'pengguna'
+        const { data: dbUser, error } = await supabase
+          .from('pengguna')
+          .select('*')
+          .eq('email', session.user.email)
+          .limit(1)
+          .maybeSingle();
+
+        if (error || !dbUser) {
+          // Akun sudah dihapus dari database atau tidak ditemukan
+          // Tendang dan bersihkan sesi seketika!
+          console.warn('Akun tidak terdaftar di database. Membersihkan sesi...');
+          await authSupabase.keluar().catch(() => {});
+          setPengguna(null);
+          localStorage.removeItem('intervu_pengguna');
+          localStorage.removeItem('intervu_waktu_login');
+          localStorage.removeItem('intervu_ingatkan_saya');
+          return;
+        }
+
+        // Akun ada, tapi belum verifikasi email
+        if (!dbUser.email_terverifikasi) {
+          console.warn('Akun belum verifikasi email. Menolak akses beranda...');
+          await authSupabase.keluar().catch(() => {});
+          setPengguna(null);
+          localStorage.removeItem('intervu_pengguna');
+          localStorage.removeItem('intervu_waktu_login');
+          localStorage.removeItem('intervu_ingatkan_saya');
+          return;
+        }
+
+        // Akun sah & terverifikasi
+        setPengguna(dbUser);
+        localStorage.setItem('intervu_pengguna', JSON.stringify(dbUser));
         if (!localStorage.getItem('intervu_waktu_login')) {
           localStorage.setItem('intervu_waktu_login', Date.now().toString());
         }
+      } catch (err) {
+        console.error('Gagal validasi sesi pengguna:', err);
+        setPengguna(null);
+        localStorage.removeItem('intervu_pengguna');
       }
-    });
+    };
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        const meta = session.user.user_metadata || {};
-        const namaUser = meta.full_name || meta.name || meta.nama_pengguna || session.user.email?.split('@')[0];
-        const profil = {
-          pengguna_id: `peng_${session.user.id.slice(0, 12)}`,
-          email: session.user.email,
-          nama_pengguna: namaUser,
-          saldo_token: 100,
-        };
-        setPengguna(profil);
-        localStorage.setItem('intervu_pengguna', JSON.stringify(profil));
-        localStorage.setItem('intervu_waktu_login', Date.now().toString());
+    validasiSesiDatabase();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (event === 'SIGNED_IN' && session?.user?.email) {
+        const { data: dbUser } = await supabase
+          .from('pengguna')
+          .select('*')
+          .eq('email', session.user.email)
+          .limit(1)
+          .maybeSingle();
+
+        if (dbUser && dbUser.email_terverifikasi) {
+          setPengguna(dbUser);
+          localStorage.setItem('intervu_pengguna', JSON.stringify(dbUser));
+          localStorage.setItem('intervu_waktu_login', Date.now().toString());
+        } else {
+          // Akun tidak ada di DB atau belum verifikasi
+          await authSupabase.keluar().catch(() => {});
+          setPengguna(null);
+          localStorage.removeItem('intervu_pengguna');
+          localStorage.removeItem('intervu_waktu_login');
+        }
       } else if (event === 'SIGNED_OUT') {
         setPengguna(null);
         localStorage.removeItem('intervu_pengguna');
@@ -153,7 +198,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <KerangkaAplikasi pengguna={pengguna} onKeluar={tanganiKeluar}>
         <Routes>
           {/* Rute Beranda: Halaman Mandiri jika belum login, Studio Kesiapan jika sudah login */}
@@ -226,19 +271,52 @@ export const App: React.FC = () => {
           <Route path="/csm" element={<CSMPublik />} />
           <Route path="/bantuan" element={<CSMPublik />} />
 
-          {/* Rute Autentikasi Masuk & Daftar */}
+          {/* Rute Autentikasi Modular (pages/auth) */}
           <Route
             path="/masuk"
             element={
               pengguna ? (
                 <Navigate to="/" replace />
               ) : (
-                <MasukDaftar onLoginSukses={tanganiLoginSukses} />
+                <Masuk onLoginSukses={tanganiLoginSukses} />
+              )
+            }
+          />
+          <Route
+            path="/daftar"
+            element={
+              pengguna ? (
+                <Navigate to="/" replace />
+              ) : (
+                <Daftar />
+              )
+            }
+          />
+          <Route
+            path="/otp"
+            element={
+              pengguna ? (
+                <Navigate to="/" replace />
+              ) : (
+                <OTP />
+              )
+            }
+          />
+          <Route
+            path="/lupa-sandi"
+            element={
+              pengguna ? (
+                <Navigate to="/" replace />
+              ) : (
+                <LupaSandi />
               )
             }
           />
 
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Rute Reset Kata Sandi Baru */}
+          <Route path="/reset-sandi" element={<AturUlangSandi />} />
+
+          <Route path="*" element={<HalamanGalat />} />
         </Routes>
       </KerangkaAplikasi>
     </Router>

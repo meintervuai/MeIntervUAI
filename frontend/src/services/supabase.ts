@@ -16,7 +16,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
 });
 
 export const authSupabase = {
-  // Pendaftaran Asli
+  // Pendaftaran Asli Sesuai DB-05 (<prefix><YYYYMMDD><4digit>)
   async daftar(email: string, kataSandi: string, namaPengguna: string) {
     const { data, error } = await supabase.auth.signUp({
       email,
@@ -35,7 +35,31 @@ export const authSupabase = {
     // Inisialisasi data profil & saldo awal 100 token jika user berhasil dibuat
     if (data.user) {
       try {
-        const penggunaId = `peng_${data.user.id.slice(0, 12)}`;
+        const tgl = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+        const prefixHariIni = `user${tgl}`;
+
+        // Ambil ID pengguna terakhir hari ini untuk nomor urut
+        let nomorUrut = 0;
+        try {
+          const { data: listUser } = await supabase
+            .from('pengguna')
+            .select('pengguna_id')
+            .like('pengguna_id', `${prefixHariIni}%`)
+            .order('pengguna_id', { ascending: false })
+            .limit(1);
+
+          if (listUser && listUser.length > 0) {
+            const idTerakhir = listUser[0].pengguna_id || '';
+            const suffix = idTerakhir.slice(prefixHariIni.length);
+            if (/^\d+$/.test(suffix)) {
+              nomorUrut = parseInt(suffix, 10) + 1;
+            }
+          }
+        } catch (_) {}
+
+        const digitUrut = nomorUrut.toString().padStart(4, '0');
+        const penggunaId = `user${tgl}${digitUrut}`;
+
         await supabase.from('pengguna').upsert({
           pengguna_id: penggunaId,
           email: data.user.email,
@@ -43,23 +67,24 @@ export const authSupabase = {
           peran: 'kandidat',
           email_terverifikasi: false,
           login_terakhir: new Date().toISOString(),
+          auth_user_id: data.user.id,
         });
 
         await supabase.from('saldo_token').upsert({
-          saldo_id: `sald_${data.user.id.slice(0, 12)}`,
+          saldo_id: `sald${tgl}${digitUrut}`,
           pengguna_id: penggunaId,
           jumlah_saldo: 100,
           total_terpakai: 0,
         });
 
         await supabase.from('profil_pengguna').upsert({
-          profil_id: `prof_${data.user.id.slice(0, 12)}`,
+          profil_id: `prof${tgl}${digitUrut}`,
           pengguna_id: penggunaId,
           nama_lengkap: namaPengguna,
           preferensi_bahasa: 'id',
         });
       } catch (e) {
-        // Abaikan jika RLS tabel memerlukan service key, fallback ke backend
+        // Fallback jika ditangani oleh service backend
       }
     }
 
@@ -143,5 +168,44 @@ export const authSupabase = {
   async dapatkanPengguna() {
     const { data } = await supabase.auth.getUser();
     return data.user;
+  },
+
+  // Permintaan Reset Kata Sandi Asli
+  async mintaResetKataSandi(email: string) {
+    const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-sandi`,
+    });
+    if (error) throw error;
+    return data;
+  },
+
+  // Sinkronisasi record database resmi (DB-05 format: user<YYYYMMDD><4digit-urut>)
+  async sinkronkanPenggunaDatabase(userAuth: any) {
+    if (!userAuth || !userAuth.email) return null;
+
+    try {
+      // 1. Cari pengguna berdasarkan email
+      const { data: penggunaAda } = await supabase
+        .from('pengguna')
+        .select('*')
+        .eq('email', userAuth.email)
+        .limit(1);
+
+      if (penggunaAda && penggunaAda.length > 0) {
+        const p = penggunaAda[0];
+        // Pastikan auth_user_id sinkron
+        if (!p.auth_user_id) {
+          await supabase.from('pengguna').update({ auth_user_id: userAuth.id }).eq('pengguna_id', p.pengguna_id);
+        }
+        return p;
+      }
+
+      // 2. Jika akun TIDAK ADA di tabel pengguna (misal telah dihapus oleh admin dari DB)
+      // JANGAN buatkan akun baru secara otomatis! Akun yang dihapus harus dianggap tidak valid.
+      return null;
+    } catch (err) {
+      console.error('Gagal verifikasi pengguna DB:', err);
+      return null;
+    }
   },
 };

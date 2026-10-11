@@ -120,10 +120,51 @@ export interface PusatBantuanKonten {
     galatEmailTerdaftar: string;
     suksesDaftar: string;
     statusGoogleArah: string;
+    // OTP Verifikasi
+    judulVerifikasiOTP: string;
+    subjudulVerifikasiOTP: string;
+    labelKodeOTP: string;
+    placeholderKodeOTP: string;
+    tombolVerifikasiOTP: string;
+    tombolKirimUlangOTP: string;
+    tombolKembaliDaftar: string;
+    countdownKirimUlang: string;
+    suksesKirimUlangOTP: string;
+    suksesVerifikasiOTP: string;
+    // Lupa Sandi
+    judulLupaSandi: string;
+    subjudulLupaSandi: string;
+    tombolKirimPemulihan: string;
+    placeholderEmailLupaSandi: string;
+    suksesKirimPemulihan: string;
+    kembaliKeMasuk: string;
+    // Atur Ulang Sandi
+    judulAturUlangSandi: string;
+    subjudulAturUlangSandi: string;
+    labelSandiBaru: string;
+    placeholderSandiBaru: string;
+    labelKonfirmasiSandiBaru: string;
+    placeholderKonfirmasiSandiBaru: string;
+    tombolSimpanSandiBaru: string;
+    tombolSedangMenyimpan: string;
+    suksesPerbaruiSandi: string;
+    tautanKedaluwarsaJudul: string;
+    tautanKedaluwarsaDesc: string;
+    tombolMintaTautanBaru: string;
+    tipsSandi: string;
+    butuhBantuanCSM: string;
+    tautanBantuanCSM: string;
+    // Kekuatan Sandi
+    labelKekuatanSandi: string;
+    kekuatanSandiLevel: Record<number, string>;
+    // Ketentuan & Privasi
+    disclaimerKetentuan: string;
     // Desktop / Tablet Showcase
     showcaseKicker: string;
     showcaseJudul: string;
     showcaseDesc: string;
+    kutipanShowcase: string;
+    penulisShowcase: string;
     simulasiLiveJudul: string;
     simulasiLivePeran: string;
     simulasiLiveSoal: string;
