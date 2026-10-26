@@ -3,6 +3,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useBahasa } from '../i18n';
 
 interface PropsHalamanGalat {
   kodeStatus?: number | string;
@@ -12,10 +13,14 @@ interface PropsHalamanGalat {
 
 export const HalamanGalat: React.FC<PropsHalamanGalat> = ({
   kodeStatus = '404',
-  judul = 'Halaman Tidak Ditemukan',
-  deskripsi = 'Tautan yang Anda tuju mungkin telah berpindah, dihapus, atau belum tersedia pada sistem simulasi.',
+  judul,
+  deskripsi,
 }) => {
   const navigate = useNavigate();
+  const { t } = useBahasa();
+
+  const judulTampil = judul || t.galat.judul404;
+  const deskripsiTampil = deskripsi || t.galat.deskripsi404;
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-16 bg-[#fdfbf7]">
@@ -23,7 +28,7 @@ export const HalamanGalat: React.FC<PropsHalamanGalat> = ({
         {/* Lencana Status */}
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 border border-orange-200 text-orange-800 text-xs font-semibold">
           <span className="w-2 h-2 rounded-full bg-orange-600 animate-pulse" />
-          Status {kodeStatus}
+          {t.galat.statusLabel} {kodeStatus}
         </div>
 
         {/* Angka Kode Visual */}
@@ -48,10 +53,10 @@ export const HalamanGalat: React.FC<PropsHalamanGalat> = ({
         {/* Teks Penjelasan */}
         <div className="space-y-2">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-stone-900 tracking-tight">
-            {judul}
+            {judulTampil}
           </h2>
           <p className="text-stone-600 text-sm leading-relaxed max-w-md mx-auto">
-            {deskripsi}
+            {deskripsiTampil}
           </p>
         </div>
 
@@ -62,22 +67,22 @@ export const HalamanGalat: React.FC<PropsHalamanGalat> = ({
             onClick={() => navigate(-1)}
             className="w-full sm:w-auto px-5 py-2.5 rounded-xl border border-stone-300 text-stone-700 text-sm font-semibold hover:bg-stone-100 hover:text-stone-900 transition-colors focus:outline-none focus:ring-2 focus:ring-orange-600"
           >
-            ← Kembali ke Sebelumnya
+            {t.galat.kembali}
           </button>
           <button
             type="button"
             onClick={() => navigate('/')}
             className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-orange-700 hover:bg-orange-800 text-white text-sm font-semibold shadow-md shadow-orange-900/20 transition-all focus:outline-none focus:ring-2 focus:ring-orange-600 focus:ring-offset-2"
           >
-            Menuju Beranda
+            {t.galat.menujuBeranda}
           </button>
         </div>
 
         {/* Bantuan */}
         <p className="text-xs text-stone-500 pt-4">
-          Mengalami kendala akun atau rute sistem? Kunjungi{' '}
+          {t.galat.bantuanTeks}{' '}
           <a href="/csm" className="font-semibold text-orange-700 hover:underline">
-            Pusat Bantuan & Tiket CSM
+            {t.galat.tautanBantuan}
           </a>
         </p>
       </div>

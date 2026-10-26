@@ -4,6 +4,7 @@ import { Kartu } from '../components/ui/Kartu';
 import { KotakInput } from '../components/ui/KotakInput';
 import { Tombol } from '../components/ui/Tombol';
 import { api } from '../services/api';
+import { useBahasa, KodeBahasa } from '../i18n';
 import { 
   User, 
   ShieldCheck, 
@@ -13,9 +14,9 @@ import {
   AlertCircle, 
   Save, 
   Lock, 
-  Mail,
-  Upload,
-  Trash2,
+  Mail, 
+  Upload, 
+  Trash2, 
   Loader2 
 } from 'lucide-react';
 
@@ -25,6 +26,7 @@ interface PropertiPengaturan {
 }
 
 export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiPengguna }) => {
+  const { bahasa, setBahasa, t } = useBahasa();
   const [tabAktif, setTabAktif] = useState<'profil' | 'keamanan' | 'bahasa' | 'ulasan'>('profil');
 
   // Tab Profil State
@@ -42,7 +44,7 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
   const [emailBaru, setEmailBaru] = useState('');
 
   // Tab Bahasa State
-  const [bahasaDipilih, setBahasaDipilih] = useState('id');
+  const [bahasaDipilih, setBahasaDipilih] = useState<KodeBahasa>(bahasa);
 
   // Tab Ulasan State
   const [ratingBintang, setRatingBintang] = useState(5);
@@ -53,6 +55,10 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
   const [notifikasi, setNotifikasi] = useState<{ tipe: 'sukses' | 'galat'; teks: string } | null>(null);
 
   useEffect(() => {
+    setBahasaDipilih(bahasa);
+  }, [bahasa]);
+
+  useEffect(() => {
     if (pengguna && pengguna.pengguna_id) {
       api.getProfil(pengguna.pengguna_id).then((res) => {
         if (res.status === 'sukses' && res.profil) {
@@ -60,7 +66,10 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
           setNamaLengkap(p.nama_lengkap || pengguna.nama_pengguna || '');
           setNomorTelepon(p.nomor_telepon || '');
           setUrlFoto(p.url_foto_profil || '');
-          setBahasaDipilih(p.preferensi_bahasa || 'id');
+          if (p.preferensi_bahasa === 'id' || p.preferensi_bahasa === 'en') {
+            setBahasaDipilih(p.preferensi_bahasa);
+            setBahasa(p.preferensi_bahasa);
+          }
           if (p.umur) setUmur(p.umur);
           if (p.jenis_kelamin) setJenisKelamin(p.jenis_kelamin);
           if (p.status_pekerjaan) setStatusPekerjaan(p.status_pekerjaan);
@@ -281,10 +290,10 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 safe-padding-x">
       <div className="mb-8">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-          Pengaturan Akun & Preferensi
+          {t.pengaturan.judul}
         </h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">
-          Kelola informasi identitas pribadi, keamanan akun, dan berikan penilaian aplikasi.
+          {t.pengaturan.subjudul}
         </p>
       </div>
 
@@ -298,7 +307,7 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <User className="w-4 h-4" /> Identitas Profil
+          <User className="w-4 h-4" /> {t.pengaturan.tabProfil}
         </button>
         <button
           onClick={() => { setTabAktif('keamanan'); setNotifikasi(null); }}
@@ -308,7 +317,7 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <ShieldCheck className="w-4 h-4" /> Keamanan & Akun
+          <ShieldCheck className="w-4 h-4" /> {t.pengaturan.tabKeamanan}
         </button>
         <button
           onClick={() => { setTabAktif('bahasa'); setNotifikasi(null); }}
@@ -318,7 +327,7 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Globe className="w-4 h-4" /> Pengaturan Bahasa
+          <Globe className="w-4 h-4" /> {t.pengaturan.tabBahasa}
         </button>
         <button
           onClick={() => { setTabAktif('ulasan'); setNotifikasi(null); }}
@@ -328,7 +337,7 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
               : 'border-transparent text-slate-500 hover:text-slate-800'
           }`}
         >
-          <Star className="w-4 h-4" /> Ulasan Aplikasi
+          <Star className="w-4 h-4" /> {t.pengaturan.tabUlasan}
         </button>
       </div>
 
@@ -524,14 +533,14 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
           <Kartu className="p-6 sm:p-8">
             <h2 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
               <Mail className="w-4 h-4 text-brand-600" />
-              Perbarui Alamat Email
+              {t.pengaturan.keamanan.judulEmail}
             </h2>
             <p className="text-xs text-slate-500 mb-4">
               Email saat ini: <strong className="text-slate-800">{pengguna?.email || 'Belum terdaftar'}</strong>
             </p>
             <form onSubmit={ajukanGantiEmail} className="space-y-4 max-w-md">
               <KotakInput
-                label="Alamat Email Baru"
+                label={t.pengaturan.keamanan.labelEmailBaru}
                 type="email"
                 required
                 placeholder="emailbaru@domain.com"
@@ -544,7 +553,7 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
                 ukuran="md"
                 sedangMemuat={sedangMenyimpan}
               >
-                Ajukan Perubahan Email
+                {t.pengaturan.keamanan.tombolGantiEmail}
               </Tombol>
             </form>
           </Kartu>
@@ -552,10 +561,10 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
           <Kartu className="p-6 sm:p-8">
             <h2 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
               <Lock className="w-4 h-4 text-brand-600" />
-              Pemulihan / Reset Kata Sandi
+              {t.pengaturan.keamanan.judulReset}
             </h2>
             <p className="text-xs text-slate-500 mb-4 leading-relaxed">
-              Jika Anda ingin mengganti kata sandi atau lupa kata sandi lama Anda, kami akan mengirimkan tautan pemulihan aman ke email terdaftar Anda.
+              {t.pengaturan.keamanan.subjudulReset}
             </p>
             <Tombol
               varian="sekunder"
@@ -567,7 +576,7 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
                 });
               }}
             >
-              Kirim Tautan Reset Kata Sandi
+              {t.pengaturan.keamanan.tombolKirimReset}
             </Tombol>
           </Kartu>
         </div>
@@ -578,10 +587,10 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
         <Kartu className="p-6 sm:p-8">
           <h2 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
             <Globe className="w-4 h-4 text-brand-600" />
-            Preferensi Bahasa Aplikasi & Simulasi
+            {t.pengaturan.bahasa.judul}
           </h2>
           <p className="text-xs text-slate-500 mb-6">
-            Pilih bahasa utama untuk navigasi antarmuka dan default bahasa wawancara AI.
+            {t.pengaturan.bahasa.subjudul}
           </p>
 
           <div className="space-y-3 max-w-md">
@@ -591,15 +600,18 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
               <div className="flex items-center gap-3">
                 <span className="text-lg">🇮🇩</span>
                 <div>
-                  <div className="text-sm font-bold text-slate-900">Bahasa Indonesia</div>
-                  <div className="text-xs text-slate-500">Antarmuka & pewawancara berbahasa Indonesia</div>
+                  <div className="text-sm font-bold text-slate-900">{t.pengaturan.bahasa.labelId}</div>
+                  <div className="text-xs text-slate-500">{t.pengaturan.bahasa.descId}</div>
                 </div>
               </div>
               <input
                 type="radio"
                 name="bahasa"
                 checked={bahasaDipilih === 'id'}
-                onChange={() => setBahasaDipilih('id')}
+                onChange={() => {
+                  setBahasaDipilih('id');
+                  setBahasa('id');
+                }}
                 className="w-4 h-4 text-brand-600"
               />
             </label>
@@ -610,15 +622,18 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
               <div className="flex items-center gap-3">
                 <span className="text-lg">🇬🇧</span>
                 <div>
-                  <div className="text-sm font-bold text-slate-900">English (Global)</div>
-                  <div className="text-xs text-slate-500">Interface & interviewer in English language</div>
+                  <div className="text-sm font-bold text-slate-900">{t.pengaturan.bahasa.labelEn}</div>
+                  <div className="text-xs text-slate-500">{t.pengaturan.bahasa.descEn}</div>
                 </div>
               </div>
               <input
                 type="radio"
                 name="bahasa"
                 checked={bahasaDipilih === 'en'}
-                onChange={() => setBahasaDipilih('en')}
+                onChange={() => {
+                  setBahasaDipilih('en');
+                  setBahasa('en');
+                }}
                 className="w-4 h-4 text-brand-600"
               />
             </label>
@@ -627,10 +642,13 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
               <Tombol
                 varian="primer"
                 ukuran="md"
-                onClick={simpanProfil}
+                onClick={(e) => {
+                  setBahasa(bahasaDipilih);
+                  simpanProfil(e);
+                }}
                 sedangMemuat={sedangMenyimpan}
               >
-                Terapkan Pilihan Bahasa
+                {t.pengaturan.bahasa.tombolTerapkan}
               </Tombol>
             </div>
           </div>
@@ -642,16 +660,16 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
         <Kartu className="p-6 sm:p-8">
           <h2 className="text-base font-bold text-slate-900 mb-2 flex items-center gap-2">
             <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-            Ulasan & Masukan untuk Tim Pengembang
+            {t.pengaturan.ulasan.judul}
           </h2>
           <p className="text-xs text-slate-500 mb-6">
-            Beri tahu kami pengalaman Anda menggunakan MeIntervUAI agar tim Customer Success dapat terus meningkatkan kualitas layanan.
+            {t.pengaturan.ulasan.subjudul}
           </p>
 
           <form onSubmit={kirimUlasan} className="space-y-4 max-w-lg">
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                Rating Kepuasan
+                {t.pengaturan.ulasan.labelRating}
               </label>
               <div className="flex items-center gap-2">
                 {[1, 2, 3, 4, 5].map((bintang) => (
@@ -672,19 +690,19 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
                   </button>
                 ))}
                 <span className="ml-2 text-xs font-bold text-slate-700">
-                  {ratingBintang} dari 5 Bintang
+                  {ratingBintang} / 5
                 </span>
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-                Pesan Ulasan / Saran Perbaikan
+                {t.pengaturan.ulasan.labelIsi}
               </label>
               <textarea
                 rows={4}
                 required
-                placeholder="Bagikan apa yang Anda sukai atau fitur yang ingin Anda tambahkan..."
+                placeholder={t.pengaturan.ulasan.placeholderIsi}
                 value={isiUlasan}
                 onChange={(e) => setIsiUlasan(e.target.value)}
                 className="w-full px-3.5 py-2.5 text-sm bg-white text-slate-900 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-500 placeholder:text-slate-400"
@@ -697,7 +715,7 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
               ukuran="md"
               sedangMemuat={sedangMenyimpan}
             >
-              Kirim Ulasan Aplikasi
+              {t.pengaturan.ulasan.tombolKirim}
             </Tombol>
           </form>
         </Kartu>

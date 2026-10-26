@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { DialogModal } from '../../components/ui/DialogModal';
 import { Tombol } from '../../components/ui/Tombol';
 import { api } from '../../services/api';
+import { useBahasa } from '../../i18n';
 import { ArrowRight } from 'lucide-react';
 
 interface PropertiDataAwal {
@@ -29,6 +30,7 @@ export const DataAwal: React.FC<PropertiDataAwal> = ({
   profilAwal,
   onSelesai,
 }) => {
+  const { t } = useBahasa();
   const [umur, setUmur] = useState<number | ''>(profilAwal?.umur || '');
   const [jenisKelamin, setJenisKelamin] = useState(profilAwal?.jenis_kelamin || 'pria');
   const [statusPekerjaan, setStatusPekerjaan] = useState(profilAwal?.status_pekerjaan || 'mahasiswa');
@@ -112,7 +114,7 @@ export const DataAwal: React.FC<PropertiDataAwal> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-bold text-stone-800 mb-1">
-                  Umur (Tahun) <span className="text-rose-600 text-xs">*</span>
+                  {t.pengaturan.profil.labelUmur} <span className="text-rose-600 text-xs">*</span>
                 </label>
                 <input
                   type="number"
@@ -128,16 +130,16 @@ export const DataAwal: React.FC<PropertiDataAwal> = ({
 
               <div>
                 <label className="block text-xs font-bold text-stone-800 mb-1">
-                  Jenis Kelamin <span className="text-rose-600 text-xs">*</span>
+                  {t.pengaturan.profil.labelGender} <span className="text-rose-600 text-xs">*</span>
                 </label>
                 <select
                   value={jenisKelamin}
                   onChange={(e) => setJenisKelamin(e.target.value)}
                   className="w-full px-3 py-2 text-xs sm:text-sm bg-white text-stone-900 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-orange-600 shadow-sm transition-all"
                 >
-                  <option value="pria">Pria</option>
-                  <option value="wanita">Wanita</option>
-                  <option value="memilih_tidak_disebutkan">Memilih tidak disebutkan</option>
+                  <option value="pria">{t.pengaturan.profil.genderPria}</option>
+                  <option value="wanita">{t.pengaturan.profil.genderWanita}</option>
+                  <option value="memilih_tidak_disebutkan">{t.pengaturan.profil.genderRahasia}</option>
                 </select>
               </div>
             </div>
@@ -145,19 +147,17 @@ export const DataAwal: React.FC<PropertiDataAwal> = ({
             {/* Status Karir Saat Ini */}
             <div>
               <label className="block text-xs font-bold text-stone-800 mb-1">
-                Tahap Karir Saat Ini <span className="text-rose-600 text-xs">*</span>
+                {t.pengaturan.profil.labelStatus} <span className="text-rose-600 text-xs">*</span>
               </label>
               <select
                 value={statusPekerjaan}
                 onChange={(e) => setStatusPekerjaan(e.target.value)}
                 className="w-full px-3 py-2 text-xs sm:text-sm bg-white text-stone-900 border border-stone-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-orange-600 shadow-sm transition-all"
               >
-                <option value="mahasiswa">Mahasiswa Aktif (Persiapan Magang / Skripsi)</option>
-                <option value="pelajar">Pelajar SMA / SMK</option>
-                <option value="fresh_graduate">Fresh Graduate (Lulusan Baru &lt; 1 Tahun)</option>
-                <option value="pekerja">Karyawan / Profesional Aktif</option>
-                <option value="mencari_kerja">Sedang Aktif Mencari Kerja</option>
-                <option value="lainnya">Lainnya</option>
+                <option value="mahasiswa">{t.pengaturan.profil.statusMahasiswa}</option>
+                <option value="fresh_graduate">{t.pengaturan.profil.statusFreshGrad}</option>
+                <option value="pekerja">{t.pengaturan.profil.statusBekerja}</option>
+                <option value="mencari_kerja">{t.pengaturan.profil.statusPencariKerja}</option>
               </select>
             </div>
 

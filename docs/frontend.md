@@ -26,3 +26,11 @@ Ruang lingkup: Struktur kode frontend, urutan render, pendekatan komponen OOP/DR
 - Input formulir wajib menyertakan atribut semantik HTML5 (`type`, `autoComplete`, `required`).
 - Form kata sandi pada antarmuka mobile wajib menyertakan toggle visibilitas (`Eye` / `EyeOff`) untuk mencegah salah ketik pada keyboard virtual layar sentuh.
 - Hindari border bertumpuk atau gaya *side-tab border* tebal pada alert/notifikasi; gunakan container alert bersih dengan rounded pill, border tipis, dan ikon semantik status (sukses/gagal).
+
+### FE-06: Pemisahan Komponen Multi-Device Berdasarkan Form-Factor
+- Komponen antarmuka yang kompleks atau memiliki layout yang sangat berbeda antara mobile dan desktop wajib dipisahkan menjadi sub-komponen terisolasi:
+  - `*Mobile.tsx` untuk viewport `< 768px` (dioptimasi untuk sentuhan, drawer, dan gulir vertikal bebas horizontal scroll mulai 320px).
+  - `*Desktop.tsx` untuk viewport `≥ 768px` (dioptimasi untuk grid lebar, multi-kolom, shortcut, dan hover interaction).
+  - `index.tsx` / Wrapper Utama sebagai koordinator yang menyajikan varian yang tepat tanpa duplikasi logika bisnis.
+- **Tujuan Arsitektur**: Memudahkan pemeliharaan (*maintainability*) dan isolasi galat, sehingga perbaikan tata letak di satu jenis perangkat tidak menyebabkan regresi tampilan pada perangkat lainnya.
+

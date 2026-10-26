@@ -74,3 +74,18 @@ Tata letak wajib diuji dan bertahan pada seluruh ukuran standar:
 - **Visual Micro-Hierarchy**: Gunakan icon visual (`Sparkles`, `User`, `GraduationCap`, `Briefcase`) untuk memperjelas konteks setiap bagian input secara intuitif.
 - **Fleksibilitas Role & Quick-Fill Chips**: Input posisi/role impian bersifat opsional dan dilengkapi chip pilihan rekomendasi cepat (misal: Frontend Developer, Backend Engineer, UI/UX Designer, Product Manager, Data Analyst, Customer Success).
 - **Aksesibilitas & Kontras**: Seluruh label input, tombol pilihan, dan deskripsi wajib memenuhi WCAG AA ($\ge 4.5:1$ untuk teks normal) dengan target sentuh ergonomis $\ge 44\text{px}$.
+
+### UX-16: Riset Ergonomi Mobile-Native, Tipografi & Elemen Khusus Ponsel (Anti Desktop-Shrink)
+- **Dilarang Sekadar Menyusutkan Tampilan Desktop (*No Mere Scaling Down*)**:
+  - Tampilan mobile bukan miniatur desktop. Dilarang sekadar memperkecil font atau memadatkan tabel desktop ke layar 360px–420px hingga tidak terbaca.
+  - Setiap komponen mobile (`*Mobile.tsx`) wajib dirancang berdasarkan **riset ergonomi penggunaan satu tangan (*thumb-driven navigation*)**.
+- **Standar Tipografi & Skala Teks Mobile**:
+  - **Body Text**: Minimal `14px` (`text-sm`), dilarang menggunakan teks di bawah `12px` (`text-[10px]` dilarang untuk teks instruksi/konten).
+  - **Heading Mobile**: Menggunakan skala proporsional yang ringkas (H1 mobile: `20px–24px`, bukan `36px–48px` yang memakan setengah layar ponsel).
+  - **Tinggi Baris (Line Height)**: Gunakan `leading-relaxed` atau `leading-normal` agar paragraf tidak menumpuk saat dibaca sambil berjalan/bergerak.
+- **Pola Komponen Khusus Mobile (*Mobile-Native Patterns*)**:
+  - **Jangkauan Ibu Jari (*Thumb Zone*)**: Tombol tindakan utama (*Primary CTA*) diletakkan di bagian bawah layar (*sticky bottom bar* atau *floating footer* dengan padding aman `env(safe-area-inset-bottom)`), bukan di sudut atas yang sulit dijangkau.
+  - **Bottom Sheet vs Modal Tengah**: Ganti pop-up tengah layar dengan *Bottom Sheet* atau drawer geser dari bawah yang mudah ditutup dengan swipe jempol.
+  - **Segmented Control & Pill Carousel**: Ganti deretan tombol horizontal panjang dengan *horizontal scrollable chips/pills* dengan snapping yang mulus.
+  - **Input Friendly**: Input form harus mencegah zoom otomatis di iOS Safari (`font-size >= 16px` pada input field mobile).
+

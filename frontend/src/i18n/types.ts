@@ -181,4 +181,84 @@ export interface PusatBantuanKonten {
     }>;
     hakCipta: string;
   };
+  pengaturan: {
+    judul: string;
+    subjudul: string;
+    tabProfil: string;
+    tabKeamanan: string;
+    tabBahasa: string;
+    tabUlasan: string;
+    profil: {
+      judul: string;
+      subjudul: string;
+      labelNama: string;
+      labelNomorHp: string;
+      subjudulKarir: string;
+      labelUmur: string;
+      labelGender: string;
+      genderPria: string;
+      genderWanita: string;
+      genderRahasia: string;
+      labelStatus: string;
+      statusMahasiswa: string;
+      statusFreshGrad: string;
+      statusBekerja: string;
+      statusPencariKerja: string;
+      labelRoleImpian: string;
+      tombolSimpan: string;
+    };
+    keamanan: {
+      judulEmail: string;
+      subjudulEmail: string;
+      labelEmailBaru: string;
+      tombolGantiEmail: string;
+      judulReset: string;
+      subjudulReset: string;
+      tombolKirimReset: string;
+    };
+    bahasa: {
+      judul: string;
+      subjudul: string;
+      labelId: string;
+      descId: string;
+      labelEn: string;
+      descEn: string;
+      tombolTerapkan: string;
+    };
+    ulasan: {
+      judul: string;
+      subjudul: string;
+      labelRating: string;
+      labelIsi: string;
+      placeholderIsi: string;
+      tombolKirim: string;
+    };
+  };
+  beranda: {
+    judulStudio: string;
+    sambutan: string;
+    kreditTersedia: string;
+    cvTerverifikasi: string;
+    cvBelumLengkap: string;
+    peluncurJudul: string;
+    peluncurDesc: string;
+    cvStudioJudul: string;
+    cvStudioDesc: string;
+    tombolMulai: string;
+    tombolPerbaruiCV: string;
+    tombolBuatCV: string;
+    riwayatJudul: string;
+    riwayatKosong: string;
+    tipsJudul: string;
+    tipsDesc: string;
+  };
+  galat: {
+    statusLabel: string;
+    judul404: string;
+    deskripsi404: string;
+    kembali: string;
+    menujuBeranda: string;
+    bantuanTeks: string;
+    tautanBantuan: string;
+  };
 }

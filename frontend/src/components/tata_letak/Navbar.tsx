@@ -1,7 +1,7 @@
-// Komponen Navbar utama: Navigasi Suite aplikasi benaran (Home, CV, Job, Simulasi, Pengaturan) setelah login, dan identitas MeIntervUAI oranye eksekutif untuk pengunjung publik.
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { IndikatorToken } from '../ui/IndikatorToken';
+import { useBahasa } from '../../i18n';
 import { 
   Menu, 
   X, 
@@ -11,7 +11,7 @@ import {
   Video, 
   Settings, 
   LogOut,
-  HelpCircle
+  Globe
 } from 'lucide-react';
 
 interface PropertiNavbar {
@@ -22,6 +22,7 @@ interface PropertiNavbar {
 export const Navbar: React.FC<PropertiNavbar> = ({ pengguna, onKeluar }) => {
   const [menuMobileTerbuka, setMenuMobileTerbuka] = useState(false);
   const location = useLocation();
+  const { bahasa, setBahasa } = useBahasa();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -91,21 +92,39 @@ export const Navbar: React.FC<PropertiNavbar> = ({ pengguna, onKeluar }) => {
                   <Settings className="w-3.5 h-3.5" />
                   <span>Pengaturan</span>
                 </Link>
-                <Link
-                  to="/csm"
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 ${
-                    isActive('/csm') || isActive('/bantuan') ? 'text-white bg-orange-700 shadow-sm shadow-orange-700/25' : 'text-stone-800 hover:text-orange-800 hover:bg-orange-100/70'
-                  }`}
-                >
-                  <HelpCircle className="w-3.5 h-3.5" />
-                  <span>Pusat Bantuan</span>
-                </Link>
               </nav>
             )}
           </div>
 
           {/* Right Controls */}
           <div className="hidden md:flex items-center gap-3">
+            {/* Language Switcher */}
+            <div className="inline-flex items-center gap-1 bg-white border border-stone-200 rounded-lg p-0.5 shadow-sm">
+              <Globe className="w-3.5 h-3.5 text-stone-500 ml-1" />
+              <button
+                type="button"
+                onClick={() => setBahasa('id')}
+                className={`px-1.5 py-0.5 text-xs font-bold rounded min-h-[24px] transition-colors ${
+                  bahasa === 'id'
+                    ? 'bg-orange-700 text-white'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                ID
+              </button>
+              <button
+                type="button"
+                onClick={() => setBahasa('en')}
+                className={`px-1.5 py-0.5 text-xs font-bold rounded min-h-[24px] transition-colors ${
+                  bahasa === 'en'
+                    ? 'bg-orange-700 text-white'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                EN
+              </button>
+            </div>
+
             {pengguna ? (
               <>
                 <IndikatorToken saldo={pengguna.saldo_token || 100} />
@@ -132,6 +151,28 @@ export const Navbar: React.FC<PropertiNavbar> = ({ pengguna, onKeluar }) => {
 
           {/* Mobile Hamburger Button */}
           <div className="flex md:hidden items-center gap-2">
+            {/* Mobile Language Switcher */}
+            <div className="inline-flex items-center gap-0.5 bg-white border border-stone-200 rounded-lg p-0.5 shadow-sm">
+              <button
+                type="button"
+                onClick={() => setBahasa('id')}
+                className={`px-1.5 py-0.5 text-xs font-bold rounded ${
+                  bahasa === 'id' ? 'bg-orange-700 text-white' : 'text-stone-600'
+                }`}
+              >
+                ID
+              </button>
+              <button
+                type="button"
+                onClick={() => setBahasa('en')}
+                className={`px-1.5 py-0.5 text-xs font-bold rounded ${
+                  bahasa === 'en' ? 'bg-orange-700 text-white' : 'text-stone-600'
+                }`}
+              >
+                EN
+              </button>
+            </div>
+
             {pengguna && <IndikatorToken saldo={pengguna.saldo_token || 100} />}
             <button
               onClick={() => setMenuMobileTerbuka(!menuMobileTerbuka)}
@@ -193,15 +234,6 @@ export const Navbar: React.FC<PropertiNavbar> = ({ pengguna, onKeluar }) => {
                 }`}
               >
                 <Settings className="w-4 h-4" /> Pengaturan Akun
-              </Link>
-              <Link
-                to="/csm"
-                onClick={() => setMenuMobileTerbuka(false)}
-                className={`flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-bold ${
-                  isActive('/csm') || isActive('/bantuan') ? 'text-white bg-orange-700' : 'text-stone-800 hover:bg-orange-100/70'
-                }`}
-              >
-                <HelpCircle className="w-4 h-4" /> Pusat Bantuan
               </Link>
               <button
                 onClick={() => {

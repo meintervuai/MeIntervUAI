@@ -5,6 +5,7 @@ import { Kartu } from '../../components/ui/Kartu';
 import { Tombol } from '../../components/ui/Tombol';
 import { DataAwal } from './DataAwal';
 import { api } from '../../services/api';
+import { useBahasa } from '../../i18n';
 import { 
   FileText, 
   Video, 
@@ -27,6 +28,7 @@ interface PropertiBeranda {
 }
 
 export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
+  const { t } = useBahasa();
   // State Onboarding Modal
   const [modalOnboarding, setModalOnboarding] = useState(false);
   const [umur, setUmur] = useState<number | ''>('');
@@ -103,10 +105,10 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-stone-200/90">
         <div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-stone-900 tracking-tight">
-            Studio Persiapan Karir & Simulasi
+            {t.beranda.judulStudio}
           </h1>
           <p className="mt-2 text-sm sm:text-base text-stone-600 max-w-2xl leading-relaxed">
-            Selamat datang, <span className="font-semibold text-stone-900">{pengguna?.nama_pengguna || 'Kandidat'}</span>. Latih ketenangan, kejelasan artikulasi, dan struktur jawaban STAR Anda bersama pewawancara AI adaptif.
+            {t.beranda.sambutan} <span className="font-semibold text-stone-900">{pengguna?.nama_pengguna || 'Kandidat'}</span>.
           </p>
         </div>
 
@@ -114,7 +116,7 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2.5 px-3.5 py-2 rounded-xl bg-stone-900 text-white text-xs font-medium shadow-sm">
             <Coins className="w-4 h-4 text-amber-400" />
-            <span>Kredit Tersedia: <strong className="text-amber-300 font-bold">{saldoToken}</strong> Token</span>
+            <span>{t.beranda.kreditTersedia} <strong className="text-amber-300 font-bold">{saldoToken}</strong> Token</span>
           </div>
 
           <div className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border ${
@@ -123,7 +125,7 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
               : 'bg-amber-50 text-amber-800 border-amber-200'
           }`}>
             <span className={`w-2 h-2 rounded-full ${cvTersedia ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'}`} />
-            <span>{cvTersedia ? 'CV Terverifikasi' : 'CV Belum Lengkap'}</span>
+            <span>{cvTersedia ? t.beranda.cvTerverifikasi : t.beranda.cvBelumLengkap}</span>
           </div>
         </div>
       </div>
@@ -137,10 +139,10 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
                 <h2 className="text-xl font-bold text-stone-900 tracking-tight">
-                  Peluncur Sesi Simulasi Wawancara
+                  {t.beranda.peluncurJudul}
                 </h2>
                 <p className="text-xs text-stone-500 mt-1">
-                  Pilih format latihan yang sesuai dengan kebutuhan persiapan Anda hari ini.
+                  {t.beranda.peluncurDesc}
                 </p>
               </div>
               <span className="text-xs font-mono text-stone-600 bg-stone-100 px-2.5 py-1 rounded-md">
