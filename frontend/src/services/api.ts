@@ -69,6 +69,11 @@ export const api = {
     return res.json();
   },
 
+  async getUlasanPublik(): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/csm/ulasan-publik`);
+    return res.json();
+  },
+
   // Profil & Onboarding
   async getProfil(pengguna_id: string): Promise<ResponApi> {
     const res = await fetch(`${BASE_URL}/profil/${pengguna_id}`);

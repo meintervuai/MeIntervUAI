@@ -69,3 +69,22 @@ async def daftar_faq_publik():
             }
         ]
     }
+
+@router.get("/ulasan-publik")
+async def ambil_ulasan_publik():
+    """
+    Mengambil daftar ulasan aplikasi nyata dari database Supabase untuk landing page publik.
+    """
+    sb = get_supabase_client()
+    try:
+        ulasan = sb.table("ulasan_aplikasi").select("ulasan_id, bintang_rating, isi_ulasan, dibuat_pada, pengguna(nama_pengguna, profil_pengguna(role_impian))").order("dibuat_pada", desc=True).limit(10).execute()
+        return {
+            "status": "sukses",
+            "ulasan": ulasan.data or []
+        }
+    except Exception as e:
+        return {
+            "status": "sukses",
+            "ulasan": []
+        }
+

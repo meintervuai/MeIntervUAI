@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useBahasa } from '../i18n';
 import { UlasanPenggunaItem } from '../i18n/types';
+import { api } from '../services/api';
 
 export const CSMPublik: React.FC = () => {
   const { bahasa, setBahasa, t } = useBahasa();
@@ -33,26 +34,28 @@ export const CSMPublik: React.FC = () => {
   const [formPesan, setFormPesan] = useState('');
   const [pesanTerkirim, setPesanTerkirim] = useState(false);
 
-  // State Seksi Ulasan & Rating Pengguna Interaktif
-  const [daftarUlasan, setDaftarUlasan] = useState<UlasanPenggunaItem[]>(() => {
-    try {
-      const tersimpan = localStorage.getItem('meintervu_ulasan_pengguna');
-      if (tersimpan) {
-        const parsed = JSON.parse(tersimpan);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch {
-      // Fallback
-    }
-    return t.ulasan.daftarAwal;
-  });
+  // State Seksi Ulasan & Rating Pengguna Interaktif (Database + Local Fallback)
+  const [daftarUlasan, setDaftarUlasan] = useState<UlasanPenggunaItem[]>(t.ulasan.daftarAwal);
 
-  // Sinkronkan ulasan awal jika bahasa berganti dan belum ada review kustom
+  // Ambil ulasan nyata dari database Supabase
   useEffect(() => {
-    const tersimpan = localStorage.getItem('meintervu_ulasan_pengguna');
-    if (!tersimpan) {
+    api.getUlasanPublik().then((res) => {
+      if (res.status === 'sukses' && res.ulasan && res.ulasan.length > 0) {
+        const ulasanDb: UlasanPenggunaItem[] = res.ulasan.map((u: any) => ({
+          id: u.ulasan_id,
+          nama: u.pengguna?.nama_pengguna || 'Kandidat MeIntervUAI',
+          peran: u.pengguna?.profil_pengguna?.[0]?.role_impian || (bahasa === 'id' ? 'Pengguna Terverifikasi' : 'Verified Candidate'),
+          rating: u.bintang_rating,
+          tanggal: new Date(u.dibuat_pada).toLocaleDateString(bahasa === 'id' ? 'id-ID' : 'en-US', { day: 'numeric', month: 'short' }),
+          komentar: u.isi_ulasan || '',
+        }));
+        setDaftarUlasan([...ulasanDb, ...t.ulasan.daftarAwal]);
+      } else {
+        setDaftarUlasan(t.ulasan.daftarAwal);
+      }
+    }).catch(() => {
       setDaftarUlasan(t.ulasan.daftarAwal);
-    }
+    });
   }, [bahasa, t.ulasan.daftarAwal]);
 
   const [formUlasanBuka, setFormUlasanBuka] = useState(false);
