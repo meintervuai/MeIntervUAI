@@ -341,6 +341,72 @@ export interface PusatBantuanKonten {
     bagianKeahlian: string;
     tambahKeahlian: string;
     keahlianPlaceholder: string;
+    keahlianTip: string;
+    keahlianKosong: string;
+    // Tab Navigasi Horizontal
+    tabKontak: string;
+    tabEdukasi: string;
+    tabPengalaman: string;
+    tabProyek: string;
+    tabOrganisasi: string;
+    tabBahasa: string;
+    tabKeahlian: string;
+    tabPengaturan: string;
+    // Kolom Tambahan Dinamis Berdasarkan Template
+    tempatTanggalLahir: string;
+    tempatTanggalLahirPlaceholder: string;
+    github: string;
+    portofolio: string;
+    nomorWa: string;
+    bahasaIbu: string;
+    // Pengaturan CV
+    pengaturanCvJudul: string;
+    pengaturanCvDesc: string;
+    targetRoleBantuan: string;
+    judulCvBantuan: string;
+    // Kustomisasi Template, Kertas, Warna & Tipografi
+    pilihTemplateJudul: string;
+    templateIvyClassic: string;
+    templateIvyClassicDesc: string;
+    templateTechSilicon: string;
+    templateTechSiliconDesc: string;
+    templateBumnNasional: string;
+    templateBumnNasionalDesc: string;
+    templateEuropass: string;
+    templateEuropassDesc: string;
+    templateExecutiveDin: string;
+    templateExecutiveDinDesc: string;
+    templateModernAts: string;
+    templateModernAtsDesc: string;
+    formatKertasJudul: string;
+    kertasA4: string;
+    kertasLetter: string;
+    marginLabel: string;
+    marginKompak: string;
+    marginStandar: string;
+    marginLega: string;
+    warnaElemenJudul: string;
+    warnaPresetLabel: string;
+    warnaManualLabel: string;
+    tipografiJudul: string;
+    ukuranTitleLabel: string;
+    ukuranSubtitleLabel: string;
+    ukuranH1Label: string;
+    ukuranH2H3Label: string;
+    ukuranBodyLabel: string;
+    // Pengaturan Pasfoto CV (BUMN & DIN 5008)
+    pasfotoJudul: string;
+    pasfotoStatusOtomatisAktif: string;
+    pasfotoStatusOtomatisNonaktif: string;
+    pasfotoBantuan: string;
+    pasfotoToggleLabel: string;
+    pasfotoUnggah: string;
+    pasfotoGanti: string;
+    pasfotoHapus: string;
+    pasfotoPlaceholder: string;
+    pasfotoPosisiLabel: string;
+    pasfotoKanan: string;
+    pasfotoKiri: string;
     // Aksi
     hapusItem: string;
     cetakPdf: string;

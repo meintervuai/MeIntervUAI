@@ -1,19 +1,11 @@
-// Halaman Pengaturan Akun: Single Unified Responsive Component (pages/Pengaturan.tsx)
-// Pola Mobile App Native Modern (iOS Settings / Gojek / Glints Hub Pattern):
-// 1. Color Palette: Background krem lembut (#FAF8F5 / #FDFBF7), kartu putih (#FFFFFF) dengan hairline border,
-//    aksen utama terracotta/oranye (#C84B31 / #D95326), dan badge token kuning keemasan.
-// 2. Hub Pattern (Main View):
-//    - Top Bar bersih & minimalis.
-//    - Compact Profile Card: Avatar inisial dengan tombol kamera, Nama, Email, badge status, & tombol Edit.
-//    - Grup 1: PROFIL & KARIR (Informasi Pribadi & Kontak, Profil Karir & Target Wawancara).
-//    - Grup 2: PENGATURAN AKUN (Keamanan & Kata Sandi, Bahasa Aplikasi dengan nilai saat ini).
-//    - Grup 3: LAINNYA (Beri Ulasan Aplikasi, Keluar Akun dengan teks merah lembut).
-// 3. Sub-View View:
-//    - Dibuka saat menu diklik dengan tombol "<- Kembali ke Pengaturan".
-//    - Input field standar mobile (height: 44px-48px, padding: 10px 14px, radius: 12px, font-size: 14px).
-//    - Umur & Jenis Kelamin dalam Grid 2 kolom bersebelahan.
-//    - Sticky primary button "Simpan Identitas Profil" di atas Bottom Navigation.
-// 4. Preserved Logic: Seluruh data binding, supabase photo upload & compression, API handlers, dan notifikasi toast tetap utuh.
+// Halaman Pengaturan Akun & Karir: Single Unified Responsive Component (pages/Pengaturan.tsx)
+// Mematuhi FE-04 (Dwibahasa i18n), FE-06 (Mobile 320px s.d Desktop 1920px), UX-11, UX-16.
+// Perilaku Adaptif:
+// 1. Mobile (< 1024px): Mobile Hub (daftar menu) & Drill-Down sub-view dengan tombol "<- Kembali ke Pengaturan".
+// 2. Desktop (>= 1024px): Two-Column Master-Detail Layout (max-w-6xl)
+//    - Page Header desktop: "Pengaturan Akun & Karir"
+//    - Sidebar Kiri (lg:col-span-4): Kartu profil ringkas + Menu navigasi dengan active state terracotta (#C84B31)
+//    - Panel Kanan (lg:col-span-8): Panel putih bersih dengan header menu, form grid 2-kolom, tombol simpan di kanan bawah.
 
 import React, { useState, useEffect } from 'react';
 import { Tombol } from '../components/ui/Tombol';
@@ -45,11 +37,16 @@ interface PropertiPengaturan {
   onKeluar?: () => void;
 }
 
-export type SubPagePengaturan = null | 'personal' | 'career' | 'security' | 'language' | 'review';
+export type SubPagePengaturan = 'personal' | 'career' | 'security' | 'language' | 'review';
 
 export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiPengguna, onKeluar }) => {
   const { bahasa, setBahasa, t } = useBahasa();
-  const [activeSubPage, setActiveSubPage] = useState<SubPagePengaturan>(null);
+
+  // State Sub-Page aktif:
+  // Di mobile: null berarti tampilan daftar menu Hub.
+  // Di desktop: default langsung 'personal' agar panel kanan tidak pernah kosong.
+  const [activeMobileSubPage, setActiveMobileSubPage] = useState<SubPagePengaturan | null>(null);
+  const [activeDesktopMenu, setActiveDesktopMenu] = useState<SubPagePengaturan>('personal');
 
   // Tab Profil State
   const [namaLengkap, setNamaLengkap] = useState('');
@@ -121,7 +118,6 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
           let width = img.width;
           let height = img.height;
           const maxDim = 800;
-
           if (width > height && width > maxDim) {
             height = Math.round((height * maxDim) / width);
             width = maxDim;
@@ -129,27 +125,26 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
             width = Math.round((width * maxDim) / height);
             height = maxDim;
           }
-
           canvas.width = width;
           canvas.height = height;
           const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(img, 0, 0, width, height);
-            canvas.toBlob(
-              (blob) => {
-                if (blob) resolve(blob);
-                else reject(new Error('Gagal kompresi kanvas.'));
-              },
-              'image/webp',
-              0.82
-            );
-          } else {
-            reject(new Error('Gagal inisialisasi kanvas 2D.'));
+          if (!ctx) {
+            resolve(file);
+            return;
           }
+          ctx.drawImage(img, 0, 0, width, height);
+          canvas.toBlob(
+            (blob) => {
+              if (blob) resolve(blob);
+              else resolve(file);
+            },
+            'image/webp',
+            0.8
+          );
         };
-        img.onerror = () => reject(new Error('Gagal memproses gambar.'));
+        img.onerror = () => resolve(file);
       };
-      reader.onerror = () => reject(new Error('Gagal membaca berkas.'));
+      reader.onerror = (err) => reject(err);
     });
   };
 
@@ -157,13 +152,13 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith('image/')) {
-      setNotifikasi({ tipe: 'gagal', teks: 'Format berkas harus berupa gambar (JPG, PNG, WebP).' });
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setNotifikasi({ tipe: 'gagal', teks: 'Format berkas harus berupa JPG, PNG, atau WebP.' });
       return;
     }
 
     if (file.size > 5 * 1024 * 1024) {
-      setNotifikasi({ tipe: 'gagal', teks: 'Ukuran berkas melebihi batas 5MB.' });
+      setNotifikasi({ tipe: 'gagal', teks: 'Ukuran foto maksimal adalah 5MB.' });
       return;
     }
 
@@ -171,84 +166,114 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
     setNotifikasi(null);
 
     try {
-      const blobTerkonversi = await kompresGambar(file);
+      const blobKompresi = await kompresGambar(file);
       const ekstensi = 'webp';
-      const namaFileUnik = `${pengguna.pengguna_id}-${Date.now()}.${ekstensi}`;
-      const pathFile = `profil/${namaFileUnik}`;
+      const namaBerkas = `${pengguna.pengguna_id}_${Date.now()}.${ekstensi}`;
+      const pathStorage = `foto-profil/${namaBerkas}`;
 
-      const { error: errUpload } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(pathFile, blobTerkonversi, {
+        .upload(pathStorage, blobKompresi, {
           contentType: 'image/webp',
           upsert: true,
         });
 
-      if (errUpload) {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const base64Data = reader.result as string;
-          setUrlFoto(base64Data);
-          setNotifikasi({ tipe: 'sukses', teks: 'Foto profil berhasil dimuat lokal.' });
-        };
-        reader.readAsDataURL(blobTerkonversi);
-        return;
+      let publicUrlFinal = '';
+
+      if (uploadError) {
+        const resBackend = await api.unggahFotoProfil(pengguna.pengguna_id, blobKompresi, namaBerkas);
+        if (resBackend.status === 'sukses' && resBackend.url_foto) {
+          publicUrlFinal = resBackend.url_foto;
+        } else {
+          throw new Error(uploadError.message || 'Gagal mengunggah foto profil.');
+        }
+      } else {
+        const { data: urlData } = supabase.storage.from('avatars').getPublicUrl(pathStorage);
+        publicUrlFinal = urlData.publicUrl;
       }
 
-      const { data: dataUrl } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(pathFile);
+      const resUpdate = await api.updateIdentitas({
+        pengguna_id: pengguna.pengguna_id,
+        url_foto_profil: publicUrlFinal,
+      });
 
-      if (dataUrl?.publicUrl) {
-        setUrlFoto(dataUrl.publicUrl);
-        setNotifikasi({ tipe: 'sukses', teks: 'Foto profil berhasil diperbarui.' });
+      if (resUpdate.status === 'sukses') {
+        setUrlFoto(publicUrlFinal);
+        onPerbaruiPengguna({ ...pengguna, url_foto_profil: publicUrlFinal });
+        setNotifikasi({ tipe: 'sukses', teks: 'Foto profil berhasil diperbarui!' });
+      } else {
+        throw new Error(resUpdate.detail || 'Gagal menyimpan URL foto profil.');
       }
     } catch (err: any) {
-      setNotifikasi({ tipe: 'gagal', teks: err.message || 'Gagal memproses berkas foto.' });
+      setNotifikasi({ tipe: 'gagal', teks: err.message || 'Terjadi kesalahan saat mengunggah foto.' });
     } finally {
       setSedangUnggahFoto(false);
       if (inputBerkasRef.current) inputBerkasRef.current.value = '';
     }
   };
 
-  const tanganiHapusFoto = () => {
-    setUrlFoto('');
-    setNotifikasi({ tipe: 'sukses', teks: 'Foto profil dihapus. Klik simpan untuk menerapkan.' });
+  const tanganiHapusFoto = async () => {
+    if (!urlFoto) return;
+    setSedangUnggahFoto(true);
+    setNotifikasi(null);
+
+    try {
+      const res = await api.hapusFotoProfil(pengguna.pengguna_id);
+      if (res.status === 'sukses') {
+        setUrlFoto('');
+        onPerbaruiPengguna({ ...pengguna, url_foto_profil: '' });
+        setNotifikasi({ tipe: 'sukses', teks: 'Foto profil berhasil dihapus.' });
+      } else {
+        throw new Error(res.detail || 'Gagal menghapus foto profil.');
+      }
+    } catch (err: any) {
+      setNotifikasi({ tipe: 'gagal', teks: err.message || 'Terjadi kesalahan saat menghapus foto.' });
+    } finally {
+      setSedangUnggahFoto(false);
+    }
   };
 
-  const simpanProfil = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  const simpanProfil = async (e: React.FormEvent) => {
+    e.preventDefault();
     setSedangMenyimpan(true);
     setNotifikasi(null);
 
-    const formattedTelepon = nomorTelepon ? (nomorTelepon.startsWith('0') ? `+62${nomorTelepon.slice(1)}` : `+62${nomorTelepon}`) : '';
+    let telpFormatted = nomorTelepon.trim();
+    if (telpFormatted) {
+      if (telpFormatted.startsWith('0')) telpFormatted = telpFormatted.replace(/^0/, '');
+      if (!telpFormatted.startsWith('+62')) telpFormatted = `+62${telpFormatted}`;
+    }
 
     try {
       const res = await api.updateIdentitas({
         pengguna_id: pengguna.pengguna_id,
-        nama_lengkap: namaLengkap,
-        nomor_telepon: formattedTelepon,
-        url_foto_profil: urlFoto,
+        nama_lengkap: namaLengkap.trim(),
+        nomor_telepon: telpFormatted || undefined,
         preferensi_bahasa: bahasaDipilih,
         umur: umur ? Number(umur) : undefined,
-        status_pekerjaan: statusPekerjaan,
         jenis_kelamin: jenisKelamin,
-        role_impian: roleImpian,
+        status_pekerjaan: statusPekerjaan,
+        role_impian: roleImpian.trim() || undefined,
       });
 
       if (res.status === 'sukses') {
         setNotifikasi({ tipe: 'sukses', teks: 'Profil berhasil diperbarui!' });
         onPerbaruiPengguna({
           ...pengguna,
-          nama_pengguna: namaLengkap || pengguna.nama_pengguna,
-          url_foto_profil: urlFoto,
-          preferensi_bahasa: bahasaDipilih,
-          umur: umur ? Number(umur) : undefined,
-          status_pekerjaan: statusPekerjaan,
-          jenis_kelamin: jenisKelamin,
-          role_impian: roleImpian,
+          nama_pengguna: namaLengkap.trim() || pengguna.nama_pengguna,
+          profil: {
+            ...pengguna.profil,
+            nama_lengkap: namaLengkap.trim(),
+            nomor_telepon: telpFormatted,
+            preferensi_bahasa: bahasaDipilih,
+            umur: umur ? Number(umur) : undefined,
+            jenis_kelamin: jenisKelamin,
+            status_pekerjaan: statusPekerjaan,
+            role_impian: roleImpian.trim(),
+          },
         });
       } else {
-        setNotifikasi({ tipe: 'gagal', teks: res.detail || 'Gagal menyimpan profil.' });
+        setNotifikasi({ tipe: 'gagal', teks: res.detail || 'Gagal memperbarui profil.' });
       }
     } catch (err: any) {
       setNotifikasi({ tipe: 'gagal', teks: err.message || 'Gagal memperbarui profil.' });
@@ -259,44 +284,56 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
 
   const tanganiGantiEmail = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!emailBaru) return;
+    if (!emailBaru || emailBaru === pengguna.email) {
+      setNotifikasi({ tipe: 'gagal', teks: 'Silakan masukkan alamat email baru yang berbeda.' });
+      return;
+    }
+
     setSedangMenyimpan(true);
     setNotifikasi(null);
 
     try {
-      const res = await api.ajukanUbahEmail({ pengguna_id: pengguna.pengguna_id, email_baru: emailBaru });
+      const res = await api.ajukanUbahEmail({
+        pengguna_id: pengguna.pengguna_id,
+        email_baru: emailBaru,
+      });
+
       if (res.status === 'sukses') {
-        setNotifikasi({ tipe: 'sukses', teks: res.pesan || 'Pengajuan ubah email berhasil diproses.' });
+        setNotifikasi({
+          tipe: 'sukses',
+          teks: 'Permohonan berhasil. Silakan periksa tautan verifikasi pada email baru Anda.',
+        });
         setEmailBaru('');
       } else {
-        setNotifikasi({ tipe: 'gagal', teks: res.detail || 'Gagal mengajukan ganti email.' });
+        setNotifikasi({ tipe: 'gagal', teks: res.detail || 'Gagal mengajukan perubahan email.' });
       }
     } catch (err: any) {
-      setNotifikasi({ tipe: 'gagal', teks: err.message || 'Gagal mengubah email.' });
+      setNotifikasi({ tipe: 'gagal', teks: err.message || 'Gagal mengajukan perubahan email.' });
     } finally {
       setSedangMenyimpan(false);
     }
   };
 
   const tanganiMintaResetPassword = async () => {
+    if (!pengguna.email) return;
     setSedangMenyimpan(true);
     setNotifikasi(null);
 
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(pengguna.email, {
-        redirectTo: `${window.location.origin}/atur-ulang-sandi`,
+        redirectTo: `${window.location.origin}/reset-sandi`,
       });
 
-      if (error) {
-        setNotifikasi({ tipe: 'gagal', teks: error.message });
-      } else {
-        setNotifikasi({
-          tipe: 'sukses',
-          teks: `Tautan reset kata sandi telah dikirimkan ke ${pengguna.email}. Silakan periksa kotak masuk email Anda.`,
-        });
-      }
+      if (error) throw error;
+      setNotifikasi({
+        tipe: 'sukses',
+        teks: 'Tautan pemulihan kata sandi telah dikirimkan ke email terdaftar Anda.',
+      });
     } catch (err: any) {
-      setNotifikasi({ tipe: 'gagal', teks: err.message || 'Gagal meminta reset sandi.' });
+      setNotifikasi({
+        tipe: 'gagal',
+        teks: err.message || 'Gagal mengirimkan email pemulihan kata sandi.',
+      });
     } finally {
       setSedangMenyimpan(false);
     }
@@ -336,8 +373,482 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
 
   const namaTampilanHeader = namaLengkap || (pengguna.nama_pengguna && !pengguna.nama_pengguna.includes('@') ? pengguna.nama_pengguna : 'Kandidat MeIntervUAI');
 
+  // Helper untuk memilih item menu (sinkron mobile & desktop)
+  const pilihMenu = (menu: SubPagePengaturan) => {
+    setActiveMobileSubPage(menu);
+    setActiveDesktopMenu(menu);
+  };
+
+  // Render Form Detail Content (Dapat digunakan baik di Sub-view Mobile maupun Panel Kanan Desktop)
+  const renderDetailContent = (menu: SubPagePengaturan, isDesktop: boolean = false) => {
+    switch (menu) {
+      case 'personal':
+        return (
+          <form onSubmit={simpanProfil} className="space-y-5 animate-fadeIn">
+            {/* Foto Profil Card */}
+            <div className={`bg-stone-50 rounded-xl border border-stone-200/90 p-4 sm:p-5 flex ${isDesktop ? 'flex-row items-center gap-6 text-left' : 'flex-col items-center justify-center text-center gap-3.5'}`}>
+              <div className="relative shrink-0">
+                <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-stone-100 border-2 border-stone-200 overflow-hidden flex items-center justify-center text-stone-600 font-bold text-2xl shadow-inner">
+                  {urlFoto ? (
+                    <img src={urlFoto} alt="Foto Profil" className="w-full h-full object-cover" />
+                  ) : (
+                    namaTampilanHeader.slice(0, 2).toUpperCase()
+                  )}
+                  {sedangUnggahFoto && (
+                    <div className="absolute inset-0 bg-stone-900/50 flex items-center justify-center">
+                      <Loader2 className="w-6 h-6 text-white animate-spin" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div>
+                  <h4 className="text-sm sm:text-base font-bold text-stone-900">{namaTampilanHeader}</h4>
+                  <p className="text-xs text-stone-500 mt-0.5">Format JPG, PNG, atau WebP (Maks. 5MB)</p>
+                </div>
+
+                <div className="flex items-center gap-2 pt-0.5 justify-center sm:justify-start">
+                  <button
+                    type="button"
+                    disabled={sedangUnggahFoto}
+                    onClick={() => inputBerkasRef.current?.click()}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold shadow-sm transition-colors min-h-[34px] active:scale-95"
+                  >
+                    <Camera className="w-3.5 h-3.5 text-stone-500" />
+                    <span>Ubah Foto</span>
+                  </button>
+
+                  {urlFoto && (
+                    <button
+                      type="button"
+                      disabled={sedangUnggahFoto}
+                      onClick={tanganiHapusFoto}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-rose-600 hover:bg-rose-50 text-xs font-semibold transition-colors min-h-[34px] active:scale-95"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                      <span>Hapus</span>
+                    </button>
+                  )}
+                </div>
+
+                <input
+                  type="file"
+                  ref={inputBerkasRef}
+                  accept="image/png, image/jpeg, image/webp"
+                  className="hidden"
+                  onChange={tanganiPilihBerkasFoto}
+                />
+              </div>
+            </div>
+
+            {/* Input Fields */}
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                    {t.pengaturan.profil.labelNama} <span className="text-rose-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Contoh: Budi Santoso"
+                    value={namaLengkap}
+                    onChange={(e) => setNamaLengkap(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl min-h-[46px] focus:outline-none focus:ring-2 focus:ring-orange-600 placeholder:text-stone-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                    {t.pengaturan.profil.labelNomorHp}
+                  </label>
+                  <div className="flex rounded-xl border border-stone-300 overflow-hidden focus-within:ring-2 focus-within:ring-orange-600">
+                    <span className="inline-flex items-center px-3.5 bg-stone-100 text-stone-600 text-xs font-semibold border-r border-stone-300">
+                      +62
+                    </span>
+                    <input
+                      type="tel"
+                      placeholder="81234567890"
+                      value={nomorTelepon}
+                      onChange={(e) => setNomorTelepon(e.target.value)}
+                      className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border-0 min-h-[46px] focus:outline-none placeholder:text-stone-400"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                  Email Akun (Terkunci)
+                </label>
+                <input
+                  type="email"
+                  disabled
+                  value={pengguna?.email || ''}
+                  className="w-full px-3.5 py-2.5 text-sm bg-stone-100 text-stone-500 border border-stone-300 rounded-xl min-h-[46px] cursor-not-allowed"
+                />
+              </div>
+            </div>
+
+            {/* Tombol Simpan */}
+            <div className={`pt-4 border-t border-stone-100 ${isDesktop ? 'flex justify-end' : 'sticky bottom-20 z-30'}`}>
+              <Tombol
+                type="submit"
+                varian="primer"
+                sedangMemuat={sedangMenyimpan}
+                className={`${isDesktop ? 'px-6' : 'w-full'} font-bold bg-orange-700 hover:bg-orange-800 text-white min-h-[46px] rounded-xl shadow-md text-sm active:scale-98 transition-transform`}
+              >
+                <Save className="w-4 h-4 mr-2" />
+                <span>{t.pengaturan.profil.tombolSimpan}</span>
+              </Tombol>
+            </div>
+          </form>
+        );
+
+      case 'career':
+        return (
+          <form onSubmit={simpanProfil} className="space-y-5 animate-fadeIn">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                    {t.pengaturan.profil.labelRoleImpian}
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Contoh: Frontend Developer, Product Manager"
+                    value={roleImpian}
+                    onChange={(e) => setRoleImpian(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl min-h-[46px] focus:outline-none focus:ring-2 focus:ring-orange-600 placeholder:text-stone-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                    {t.pengaturan.profil.labelStatus}
+                  </label>
+                  <select
+                    value={statusPekerjaan}
+                    onChange={(e) => setStatusPekerjaan(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl min-h-[46px] focus:outline-none focus:ring-2 focus:ring-orange-600"
+                  >
+                    <option value="mahasiswa">{t.pengaturan.profil.statusMahasiswa}</option>
+                    <option value="fresh_grad">{t.pengaturan.profil.statusFreshGrad}</option>
+                    <option value="bekerja">{t.pengaturan.profil.statusBekerja}</option>
+                    <option value="pencari_kerja">{t.pengaturan.profil.statusPencariKerja}</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Umur & Gender 2 Kolom Berdampingan */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                    {t.pengaturan.profil.labelUmur}
+                  </label>
+                  <input
+                    type="number"
+                    min="15"
+                    max="80"
+                    placeholder="22"
+                    value={umur}
+                    onChange={(e) => setUmur(e.target.value ? Number(e.target.value) : '')}
+                    className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl min-h-[46px] focus:outline-none focus:ring-2 focus:ring-orange-600"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                    {t.pengaturan.profil.labelGender}
+                  </label>
+                  <select
+                    value={jenisKelamin}
+                    onChange={(e) => setJenisKelamin(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl min-h-[46px] focus:outline-none focus:ring-2 focus:ring-orange-600"
+                  >
+                    <option value="pria">{t.pengaturan.profil.genderPria}</option>
+                    <option value="wanita">{t.pengaturan.profil.genderWanita}</option>
+                    <option value="rahasia">{t.pengaturan.profil.genderRahasia}</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Tombol Simpan */}
+            <div className={`pt-4 border-t border-stone-100 ${isDesktop ? 'flex justify-end' : 'sticky bottom-20 z-30'}`}>
+              <Tombol
+                type="submit"
+                varian="primer"
+                sedangMemuat={sedangMenyimpan}
+                className={`${isDesktop ? 'px-6' : 'w-full'} font-bold bg-orange-700 hover:bg-orange-800 text-white min-h-[46px] rounded-xl shadow-md text-sm active:scale-98 transition-transform`}
+              >
+                <Save className="w-4 h-4 mr-2" />
+                <span>{t.pengaturan.profil.tombolSimpan}</span>
+              </Tombol>
+            </div>
+          </form>
+        );
+
+      case 'security':
+        return (
+          <div className="space-y-6 animate-fadeIn">
+            {/* Ubah Email */}
+            <div className="space-y-4">
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block">
+                {t.pengaturan.keamanan.judulEmail}
+              </span>
+              <p className="text-xs text-stone-500 leading-relaxed">{t.pengaturan.keamanan.subjudulEmail}</p>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1.5">Email Saat Ini</label>
+                <input
+                  type="email"
+                  disabled
+                  value={pengguna?.email || ''}
+                  className="w-full px-3.5 py-2.5 text-sm bg-stone-100 text-stone-500 border border-stone-300 rounded-xl min-h-[46px] cursor-not-allowed"
+                />
+              </div>
+
+              <form onSubmit={tanganiGantiEmail} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                    {t.pengaturan.keamanan.labelEmailBaru}
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="emailbaru@domain.com"
+                    value={emailBaru}
+                    onChange={(e) => setEmailBaru(e.target.value)}
+                    className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl min-h-[46px] focus:outline-none focus:ring-2 focus:ring-orange-600"
+                  />
+                </div>
+
+                <div className={isDesktop ? 'flex justify-end' : ''}>
+                  <Tombol
+                    type="submit"
+                    varian="primer"
+                    sedangMemuat={sedangMenyimpan}
+                    className={`${isDesktop ? 'px-6' : 'w-full'} bg-orange-700 hover:bg-orange-800 text-white font-bold min-h-[46px] rounded-xl text-sm`}
+                  >
+                    {t.pengaturan.keamanan.tombolGantiEmail}
+                  </Tombol>
+                </div>
+              </form>
+            </div>
+
+            <hr className="border-stone-200" />
+
+            {/* Reset Password */}
+            <div className="space-y-4">
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block">
+                {t.pengaturan.keamanan.judulReset}
+              </span>
+              <p className="text-xs text-stone-500 leading-relaxed">{t.pengaturan.keamanan.subjudulReset}</p>
+
+              <div className={isDesktop ? 'flex justify-start' : ''}>
+                <Tombol
+                  type="button"
+                  varian="sekunder"
+                  onClick={tanganiMintaResetPassword}
+                  sedangMemuat={sedangMenyimpan}
+                  className={`${isDesktop ? 'px-6' : 'w-full'} min-h-[46px] rounded-xl font-bold text-sm border-stone-300`}
+                >
+                  <Lock className="w-4 h-4 mr-2 text-stone-600" />
+                  <span>{t.pengaturan.keamanan.tombolKirimReset}</span>
+                </Tombol>
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'language':
+        return (
+          <div className="space-y-5 animate-fadeIn">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block">
+                {t.pengaturan.bahasa.judul}
+              </span>
+              <p className="text-xs text-stone-500 mt-1">{t.pengaturan.bahasa.subjudul}</p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+              {/* Bahasa Indonesia */}
+              <button
+                type="button"
+                onClick={() => {
+                  setBahasaDipilih('id');
+                  setBahasa('id');
+                }}
+                className={`flex items-center justify-between p-4 rounded-xl border text-left transition-all min-h-[56px] active:scale-98 ${
+                  bahasaDipilih === 'id'
+                    ? 'border-orange-600 bg-orange-50/50 shadow-sm'
+                    : 'border-stone-200 hover:bg-stone-50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl" role="img" aria-label="Bendera Indonesia">🇮🇩</span>
+                  <div>
+                    <div className="text-sm font-semibold text-stone-900">{t.pengaturan.bahasa.labelId}</div>
+                    <div className="text-xs text-stone-500">{t.pengaturan.bahasa.descId}</div>
+                  </div>
+                </div>
+                <span className={`text-xs font-bold px-2.5 py-1 rounded-md ${
+                  bahasaDipilih === 'id' ? 'bg-orange-700 text-white' : 'bg-stone-100 text-stone-600'
+                }`}>
+                  ID
+                </span>
+              </button>
+
+              {/* English */}
+              <button
+                type="button"
+                onClick={() => {
+                  setBahasaDipilih('en');
+                  setBahasa('en');
+                }}
+                className={`flex items-center justify-between p-4 rounded-xl border text-left transition-all min-h-[56px] active:scale-98 ${
+                  bahasaDipilih === 'en'
+                    ? 'border-orange-600 bg-orange-50/50 shadow-sm'
+                    : 'border-stone-200 hover:bg-stone-50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl" role="img" aria-label="English flag">🌐</span>
+                  <div>
+                    <div className="text-sm font-semibold text-stone-900">{t.pengaturan.bahasa.labelEn}</div>
+                    <div className="text-xs text-stone-500">{t.pengaturan.bahasa.descEn}</div>
+                  </div>
+                </div>
+                <span className={`text-xs font-bold px-2.5 py-1 rounded-md ${
+                  bahasaDipilih === 'en' ? 'bg-orange-700 text-white' : 'bg-stone-100 text-stone-600'
+                }`}>
+                  EN
+                </span>
+              </button>
+            </div>
+
+            <div className={`pt-4 border-t border-stone-100 ${isDesktop ? 'flex justify-end' : ''}`}>
+              <Tombol
+                type="button"
+                varian="primer"
+                onClick={(e) => {
+                  setBahasa(bahasaDipilih);
+                  simpanProfil(e);
+                }}
+                sedangMemuat={sedangMenyimpan}
+                className={`${isDesktop ? 'px-6' : 'w-full'} bg-orange-700 hover:bg-orange-800 text-white font-bold min-h-[46px] rounded-xl text-sm active:scale-98 transition-transform`}
+              >
+                {t.pengaturan.bahasa.tombolTerapkan}
+              </Tombol>
+            </div>
+          </div>
+        );
+
+      case 'review':
+        return (
+          <div className="space-y-5 animate-fadeIn">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-stone-500 block">
+                {t.pengaturan.ulasan.judul}
+              </span>
+              <p className="text-xs text-stone-500 mt-1">{t.pengaturan.ulasan.subjudul}</p>
+            </div>
+
+            <form onSubmit={kirimUlasan} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-2">
+                  {t.pengaturan.ulasan.labelRating}
+                </label>
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  {[1, 2, 3, 4, 5].map((bintang) => (
+                    <button
+                      key={bintang}
+                      type="button"
+                      onClick={() => setRatingBintang(bintang)}
+                      className="p-1.5 -m-1 hover:scale-110 active:scale-95 transition-transform focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center"
+                      aria-label={`${bintang} Bintang`}
+                    >
+                      <Star
+                        className={`w-7 h-7 ${
+                          bintang <= ratingBintang
+                            ? 'text-amber-500 fill-amber-500'
+                            : 'text-stone-300'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                  <span className="ml-2 text-xs sm:text-sm font-semibold text-stone-700">
+                    {ratingBintang} / 5
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+                  {t.pengaturan.ulasan.labelIsi} <span className="text-rose-500">*</span>
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder={t.pengaturan.ulasan.placeholderIsi}
+                  value={isiUlasan}
+                  onChange={(e) => setIsiUlasan(e.target.value)}
+                  className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-600 placeholder:text-stone-400"
+                />
+              </div>
+
+              <div className={isDesktop ? 'flex justify-end pt-2' : 'pt-2'}>
+                <Tombol
+                  type="submit"
+                  varian="primer"
+                  sedangMemuat={sedangMenyimpan}
+                  className={`${isDesktop ? 'px-6' : 'w-full'} bg-orange-700 hover:bg-orange-800 text-white font-bold min-h-[46px] rounded-xl text-sm active:scale-98 transition-transform`}
+                >
+                  {t.pengaturan.ulasan.tombolKirim}
+                </Tombol>
+              </div>
+            </form>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  // Metadata Panel Kanan Desktop
+  const headerPanelMap: Record<SubPagePengaturan, { judul: string; desc: string; icon: React.ReactNode }> = {
+    personal: {
+      judul: 'Informasi Pribadi & Kontak',
+      desc: 'Perbarui nama lengkap, nomor WhatsApp, dan foto profil akun Anda.',
+      icon: <User className="w-5 h-5 text-orange-700" />,
+    },
+    career: {
+      judul: 'Profil Karir & Target Wawancara',
+      desc: 'Tentukan posisi impian, tahap karir, dan data demografis untuk simulasi AI.',
+      icon: <Target className="w-5 h-5 text-orange-700" />,
+    },
+    security: {
+      judul: 'Keamanan & Kata Sandi',
+      desc: 'Kelola email akun resmi dan permintaan pemulihan kata sandi.',
+      icon: <ShieldCheck className="w-5 h-5 text-orange-700" />,
+    },
+    language: {
+      judul: 'Bahasa Aplikasi',
+      desc: 'Sesuaikan bahasa navigasi antarmuka dan interaksi simulasi.',
+      icon: <Globe className="w-5 h-5 text-orange-700" />,
+    },
+    review: {
+      judul: 'Beri Ulasan Aplikasi',
+      desc: 'Kritik dan saran konstruktif untuk pengembangan berkelanjutan platform.',
+      icon: <Star className="w-5 h-5 text-orange-700" />,
+    },
+  };
+
   return (
-    <div className="max-w-2xl mx-auto px-3.5 sm:px-6 py-3.5 sm:py-6 space-y-4 pb-28 md:pb-12 safe-padding-x font-sans">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-6 pb-28 md:pb-12 safe-padding-x font-sans">
       {/* Toast Notification (Melayang Anti Layout Shift) */}
       {notifikasi && (
         <NotifikasiToast
@@ -349,34 +860,32 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
       )}
 
       {/* ========================================================= */}
-      {/* HEADER NAVIGASI SUB-LAYAR (Muncul saat masuk ke sub-view) */}
+      {/* DESKTOP PAGE HEADER (Hanya Tampil di Layar Desktop >= 1024px) */}
       {/* ========================================================= */}
-      {activeSubPage !== null && (
-        <div className="flex items-center justify-between pb-2 border-b border-stone-200">
-          <button
-            type="button"
-            onClick={() => setActiveSubPage(null)}
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-stone-700 hover:text-stone-900 min-h-[40px] px-2 py-1 -ml-1 rounded-xl hover:bg-stone-100 active:scale-95 transition-all"
-          >
-            <ArrowLeft className="w-4 h-4 text-orange-700" />
-            <span>Kembali ke Pengaturan</span>
-          </button>
-          <span className="text-xs font-bold text-orange-800 tracking-wide uppercase">
-            {activeSubPage === 'personal' ? 'Informasi Pribadi' :
-             activeSubPage === 'career' ? 'Target Karir' :
-             activeSubPage === 'security' ? 'Keamanan' :
-             activeSubPage === 'language' ? 'Bahasa' : 'Ulasan'}
-          </span>
-        </div>
-      )}
+      <div className="hidden lg:block pb-4 border-b border-stone-200">
+        <h1 className="text-2xl font-extrabold text-stone-900 tracking-tight">
+          Pengaturan Akun & Karir
+        </h1>
+        <p className="text-xs sm:text-sm text-stone-600 mt-1">
+          Kelola identitas profil, target karir wawancara, dan preferensi akun Anda.
+        </p>
+      </div>
 
       {/* ========================================================= */}
-      {/* 1. MAIN VIEW: VERTICAL MENU LIST (HUB PATTERN)             */}
+      {/* RESPONSIVE LAYOUT CONTAINER                              */}
+      {/* Mobile: 1 Kolom Hub/Detail                               */}
+      {/* Desktop (lg:): 2 Kolom Master-Detail (3 Kolom / 9 Kolom)  */}
       {/* ========================================================= */}
-      {activeSubPage === null && (
-        <div className="space-y-4 animate-fadeIn">
-          {/* A. Compact Profile Card (Atas) */}
-          <div className="bg-white rounded-2xl border border-stone-200/90 p-4 shadow-sm flex items-center justify-between gap-3">
+      <div className="lg:grid lg:grid-cols-12 lg:gap-8 items-start">
+        
+        {/* ========================================================= */}
+        {/* KOLOM KIRI (Sidebar Master di Desktop / Menu Hub di Mobile) */}
+        {/* Di mobile: Tersembunyi saat sub-page aktif                 */}
+        {/* Di desktop: Selalu tampil sebagai sidebar navigasi sticky */}
+        {/* ========================================================= */}
+        <div className={`lg:col-span-3 lg:sticky lg:top-24 space-y-4 ${activeMobileSubPage !== null ? 'hidden lg:block' : 'block'}`}>
+          {/* A. Compact Profile Card: HANYA TAMPIL DI MOBILE (< lg) UNTUK MENCEGAH DUPLIKASI KEMBAR DI DESKTOP */}
+          <div className="lg:hidden bg-white rounded-2xl border border-stone-200/90 p-4 shadow-sm flex items-center justify-between gap-3">
             <div className="flex items-center gap-3.5 min-w-0">
               <div className="relative shrink-0">
                 <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-stone-100 border-2 border-stone-200 overflow-hidden flex items-center justify-center text-stone-600 font-bold text-lg shadow-inner">
@@ -402,19 +911,12 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
                 >
                   <Camera className="w-3 h-3" />
                 </button>
-                <input
-                  type="file"
-                  ref={inputBerkasRef}
-                  accept="image/png, image/jpeg, image/webp"
-                  className="hidden"
-                  onChange={tanganiPilihBerkasFoto}
-                />
               </div>
 
               <div className="min-w-0">
-                <h1 className="text-base sm:text-lg font-bold text-stone-900 truncate">
+                <h2 className="text-base font-bold text-stone-900 truncate">
                   {namaTampilanHeader}
-                </h1>
+                </h2>
                 <p className="text-xs text-stone-500 truncate">{pengguna.email}</p>
                 <div className="mt-1">
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-medium bg-orange-50 text-orange-900 border border-orange-200/80">
@@ -425,9 +927,10 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
               </div>
             </div>
 
+            {/* Tombol Edit di pojok kartu profil: Hanya muncul di mobile (< lg) */}
             <button
               type="button"
-              onClick={() => setActiveSubPage('personal')}
+              onClick={() => pilihMenu('personal')}
               className="shrink-0 p-2 text-stone-500 hover:text-orange-700 hover:bg-orange-50 rounded-xl transition-all active:scale-95 flex items-center gap-1 text-xs font-semibold"
               title="Edit Profil"
             >
@@ -437,553 +940,235 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
           </div>
 
           {/* B. Grup Menu 1: PROFIL & KARIR */}
-          <div className="space-y-1.5">
-            <span className="px-1 text-[11px] font-bold uppercase tracking-wider text-stone-500">
+          <div className="space-y-1 sm:space-y-1.5">
+            <span className="px-1 text-[11px] font-bold uppercase tracking-wider text-stone-500 block">
               Profil & Karir
             </span>
-            <div className="bg-white rounded-2xl border border-stone-200/90 overflow-hidden shadow-sm divide-y divide-stone-100">
+            <div className="bg-white lg:bg-transparent rounded-2xl lg:rounded-none border lg:border-none border-stone-200/90 overflow-hidden shadow-sm lg:shadow-none divide-y lg:divide-y-0 divide-stone-100 lg:space-y-1">
               {/* Item 1: Informasi Pribadi & Kontak */}
               <button
                 type="button"
-                onClick={() => setActiveSubPage('personal')}
-                className="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-stone-50/80 transition-colors active:scale-99 min-h-[52px]"
+                onClick={() => pilihMenu('personal')}
+                className={`w-full p-3.5 sm:p-4 lg:py-2.5 lg:px-3 flex items-center justify-between text-left transition-all min-h-[50px] lg:min-h-[42px] lg:rounded-xl ${
+                  activeDesktopMenu === 'personal'
+                    ? 'lg:bg-orange-50 lg:border-l-4 lg:border-orange-700 lg:text-orange-950 font-bold'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50/80 lg:hover:bg-stone-100/70 font-medium'
+                }`}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-700 flex items-center justify-center shrink-0">
-                    <User className="w-4 h-4" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-9 h-9 lg:w-7 lg:h-7 rounded-xl lg:rounded-lg flex items-center justify-center shrink-0 ${
+                    activeDesktopMenu === 'personal' ? 'bg-orange-100 text-orange-800' : 'bg-orange-50 text-orange-700'
+                  }`}>
+                    <User className="w-4 h-4 lg:w-3.5 lg:h-3.5" />
                   </div>
-                  <div>
-                    <div className="text-xs sm:text-sm font-semibold text-stone-900">Informasi Pribadi & Kontak</div>
-                    <div className="text-[11px] text-stone-500">Nama lengkap, foto profil, nomor WhatsApp</div>
+                  <div className="min-w-0">
+                    <div className="text-xs sm:text-sm font-semibold lg:font-normal lg:text-xs truncate">Informasi Pribadi & Kontak</div>
+                    <div className="text-[11px] text-stone-500 truncate lg:hidden">Nama, foto profil, nomor WhatsApp</div>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-stone-400" />
+                <ChevronRight className="w-4 h-4 text-stone-400 shrink-0 ml-2 lg:hidden" />
               </button>
 
               {/* Item 2: Profil Karir & Target Wawancara */}
               <button
                 type="button"
-                onClick={() => setActiveSubPage('career')}
-                className="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-stone-50/80 transition-colors active:scale-99 min-h-[52px]"
+                onClick={() => pilihMenu('career')}
+                className={`w-full p-3.5 sm:p-4 lg:py-2.5 lg:px-3 flex items-center justify-between text-left transition-all min-h-[50px] lg:min-h-[42px] lg:rounded-xl ${
+                  activeDesktopMenu === 'career'
+                    ? 'lg:bg-orange-50 lg:border-l-4 lg:border-orange-700 lg:text-orange-950 font-bold'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50/80 lg:hover:bg-stone-100/70 font-medium'
+                }`}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-700 flex items-center justify-center shrink-0">
-                    <Target className="w-4 h-4" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-9 h-9 lg:w-7 lg:h-7 rounded-xl lg:rounded-lg flex items-center justify-center shrink-0 ${
+                    activeDesktopMenu === 'career' ? 'bg-orange-100 text-orange-800' : 'bg-orange-50 text-orange-700'
+                  }`}>
+                    <Target className="w-4 h-4 lg:w-3.5 lg:h-3.5" />
                   </div>
-                  <div>
-                    <div className="text-xs sm:text-sm font-semibold text-stone-900">Profil Karir & Target Wawancara</div>
-                    <div className="text-[11px] text-stone-500 truncate max-w-[200px] sm:max-w-xs">
+                  <div className="min-w-0">
+                    <div className="text-xs sm:text-sm font-semibold lg:font-normal lg:text-xs truncate">Profil Karir & Target Wawancara</div>
+                    <div className="text-[11px] text-stone-500 truncate lg:hidden">
                       {roleImpian || 'Posisi impian'} • {statusLabelMap[statusPekerjaan]}
                     </div>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-stone-400" />
+                <ChevronRight className="w-4 h-4 text-stone-400 shrink-0 ml-2 lg:hidden" />
               </button>
             </div>
           </div>
 
           {/* C. Grup Menu 2: PENGATURAN AKUN */}
-          <div className="space-y-1.5">
-            <span className="px-1 text-[11px] font-bold uppercase tracking-wider text-stone-500">
+          <div className="space-y-1 sm:space-y-1.5">
+            <span className="px-1 text-[11px] font-bold uppercase tracking-wider text-stone-500 block">
               Pengaturan Akun
             </span>
-            <div className="bg-white rounded-2xl border border-stone-200/90 overflow-hidden shadow-sm divide-y divide-stone-100">
+            <div className="bg-white lg:bg-transparent rounded-2xl lg:rounded-none border lg:border-none border-stone-200/90 overflow-hidden shadow-sm lg:shadow-none divide-y lg:divide-y-0 divide-stone-100 lg:space-y-1">
               {/* Item 3: Keamanan & Kata Sandi */}
               <button
                 type="button"
-                onClick={() => setActiveSubPage('security')}
-                className="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-stone-50/80 transition-colors active:scale-99 min-h-[52px]"
+                onClick={() => pilihMenu('security')}
+                className={`w-full p-3.5 sm:p-4 lg:py-2.5 lg:px-3 flex items-center justify-between text-left transition-all min-h-[50px] lg:min-h-[42px] lg:rounded-xl ${
+                  activeDesktopMenu === 'security'
+                    ? 'lg:bg-orange-50 lg:border-l-4 lg:border-orange-700 lg:text-orange-950 font-bold'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50/80 lg:hover:bg-stone-100/70 font-medium'
+                }`}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-700 flex items-center justify-center shrink-0">
-                    <ShieldCheck className="w-4 h-4" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-9 h-9 lg:w-7 lg:h-7 rounded-xl lg:rounded-lg flex items-center justify-center shrink-0 ${
+                    activeDesktopMenu === 'security' ? 'bg-orange-100 text-orange-800' : 'bg-orange-50 text-orange-700'
+                  }`}>
+                    <ShieldCheck className="w-4 h-4 lg:w-3.5 lg:h-3.5" />
                   </div>
-                  <div>
-                    <div className="text-xs sm:text-sm font-semibold text-stone-900">Keamanan & Kata Sandi</div>
-                    <div className="text-[11px] text-stone-500">Ubah email dan pemulihan kata sandi</div>
+                  <div className="min-w-0">
+                    <div className="text-xs sm:text-sm font-semibold lg:font-normal lg:text-xs truncate">Keamanan & Kata Sandi</div>
+                    <div className="text-[11px] text-stone-500 truncate lg:hidden">Ubah email dan pemulihan kata sandi</div>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-stone-400" />
+                <ChevronRight className="w-4 h-4 text-stone-400 shrink-0 ml-2 lg:hidden" />
               </button>
 
               {/* Item 4: Bahasa Aplikasi */}
               <button
                 type="button"
-                onClick={() => setActiveSubPage('language')}
-                className="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-stone-50/80 transition-colors active:scale-99 min-h-[52px]"
+                onClick={() => pilihMenu('language')}
+                className={`w-full p-3.5 sm:p-4 lg:py-2.5 lg:px-3 flex items-center justify-between text-left transition-all min-h-[50px] lg:min-h-[42px] lg:rounded-xl ${
+                  activeDesktopMenu === 'language'
+                    ? 'lg:bg-orange-50 lg:border-l-4 lg:border-orange-700 lg:text-orange-950 font-bold'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50/80 lg:hover:bg-stone-100/70 font-medium'
+                }`}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-700 flex items-center justify-center shrink-0">
-                    <Globe className="w-4 h-4" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-9 h-9 lg:w-7 lg:h-7 rounded-xl lg:rounded-lg flex items-center justify-center shrink-0 ${
+                    activeDesktopMenu === 'language' ? 'bg-orange-100 text-orange-800' : 'bg-orange-50 text-orange-700'
+                  }`}>
+                    <Globe className="w-4 h-4 lg:w-3.5 lg:h-3.5" />
                   </div>
-                  <div>
-                    <div className="text-xs sm:text-sm font-semibold text-stone-900">Bahasa Aplikasi</div>
-                    <div className="text-[11px] text-stone-500">
-                      Pilihan bahasa navigasi & antarmuka
-                    </div>
+                  <div className="min-w-0">
+                    <div className="text-xs sm:text-sm font-semibold lg:font-normal lg:text-xs truncate">Bahasa Aplikasi</div>
+                    <div className="text-[11px] text-stone-500 truncate lg:hidden">Pilihan bahasa antarmuka</div>
                   </div>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0 ml-2">
                   <span className="text-[11px] font-bold text-orange-800 bg-orange-50 px-2 py-0.5 rounded-md border border-orange-200">
-                    {bahasa === 'id' ? 'Indonesia' : 'English'}
+                    {bahasa === 'id' ? 'ID' : 'EN'}
                   </span>
-                  <ChevronRight className="w-4 h-4 text-stone-400" />
+                  <ChevronRight className="w-4 h-4 text-stone-400 lg:hidden" />
                 </div>
               </button>
             </div>
           </div>
 
           {/* D. Grup Menu 3: LAINNYA */}
-          <div className="space-y-1.5">
-            <span className="px-1 text-[11px] font-bold uppercase tracking-wider text-stone-500">
+          <div className="space-y-1 sm:space-y-1.5">
+            <span className="px-1 text-[11px] font-bold uppercase tracking-wider text-stone-500 block">
               Lainnya
             </span>
-            <div className="bg-white rounded-2xl border border-stone-200/90 overflow-hidden shadow-sm divide-y divide-stone-100">
+            <div className="bg-white lg:bg-transparent rounded-2xl lg:rounded-none border lg:border-none border-stone-200/90 overflow-hidden shadow-sm lg:shadow-none divide-y lg:divide-y-0 divide-stone-100 lg:space-y-1">
               {/* Item 5: Beri Ulasan Aplikasi */}
               <button
                 type="button"
-                onClick={() => setActiveSubPage('review')}
-                className="w-full p-3.5 sm:p-4 flex items-center justify-between text-left hover:bg-stone-50/80 transition-colors active:scale-99 min-h-[52px]"
+                onClick={() => pilihMenu('review')}
+                className={`w-full p-3.5 sm:p-4 lg:py-2.5 lg:px-3 flex items-center justify-between text-left transition-all min-h-[50px] lg:min-h-[42px] lg:rounded-xl ${
+                  activeDesktopMenu === 'review'
+                    ? 'lg:bg-orange-50 lg:border-l-4 lg:border-orange-700 lg:text-orange-950 font-bold'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-50/80 lg:hover:bg-stone-100/70 font-medium'
+                }`}
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-orange-50 text-orange-700 flex items-center justify-center shrink-0">
-                    <Star className="w-4 h-4" />
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className={`w-9 h-9 lg:w-7 lg:h-7 rounded-xl lg:rounded-lg flex items-center justify-center shrink-0 ${
+                    activeDesktopMenu === 'review' ? 'bg-orange-100 text-orange-800' : 'bg-orange-50 text-orange-700'
+                  }`}>
+                    <Star className="w-4 h-4 lg:w-3.5 lg:h-3.5" />
                   </div>
-                  <div>
-                    <div className="text-xs sm:text-sm font-semibold text-stone-900">Beri Ulasan Aplikasi</div>
-                    <div className="text-[11px] text-stone-500">Kritik, saran, dan rating pengalaman</div>
+                  <div className="min-w-0">
+                    <div className="text-xs sm:text-sm font-semibold lg:font-normal lg:text-xs truncate">Beri Ulasan Aplikasi</div>
+                    <div className="text-[11px] text-stone-500 truncate lg:hidden">Rating dan masukan platform</div>
                   </div>
                 </div>
-                <ChevronRight className="w-4 h-4 text-stone-400" />
+                <ChevronRight className="w-4 h-4 text-stone-400 shrink-0 ml-2 lg:hidden" />
               </button>
 
-              {/* Item 6: Keluar Akun (Merah Lembut) */}
+              {/* Item 6: Keluar Akun */}
               {onKeluar && (
                 <button
                   type="button"
                   onClick={onKeluar}
-                  className="w-full p-3.5 sm:p-4 flex items-center justify-between text-left text-rose-700 hover:bg-rose-50/50 transition-colors active:scale-99 min-h-[52px]"
+                  className="w-full p-3.5 sm:p-4 lg:py-2.5 lg:px-3 flex items-center justify-between text-left text-rose-700 hover:bg-rose-50/50 transition-colors min-h-[50px] lg:min-h-[42px] lg:rounded-xl"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
-                      <LogOut className="w-4 h-4" />
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 lg:w-7 lg:h-7 rounded-xl lg:rounded-lg bg-rose-50 text-rose-600 flex items-center justify-center shrink-0">
+                      <LogOut className="w-4 h-4 lg:w-3.5 lg:h-3.5" />
                     </div>
-                    <div>
-                      <div className="text-xs sm:text-sm font-semibold">Keluar Akun</div>
-                      <div className="text-[11px] text-rose-500">Keluar dari sesi akun saat ini</div>
+                    <div className="min-w-0">
+                      <div className="text-xs sm:text-sm font-semibold lg:font-normal lg:text-xs truncate">Keluar Akun</div>
+                      <div className="text-[11px] text-rose-500 truncate lg:hidden">Akhiri sesi di perangkat ini</div>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-rose-400" />
+                  <ChevronRight className="w-4 h-4 text-rose-400 shrink-0 ml-2 lg:hidden" />
                 </button>
               )}
             </div>
           </div>
         </div>
-      )}
 
-      {/* ========================================================= */}
-      {/* 2. SUB-VIEW: INFORMASI PRIBADI & KONTAK                    */}
-      {/* ========================================================= */}
-      {activeSubPage === 'personal' && (
-        <form onSubmit={simpanProfil} className="space-y-4 animate-fadeIn">
-          {/* Card Foto Profil */}
-          <div className="bg-white rounded-2xl border border-stone-200/90 p-4 shadow-sm flex flex-col items-center justify-center text-center">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full bg-stone-100 border-2 border-stone-200 overflow-hidden flex items-center justify-center text-stone-600 font-bold text-2xl shadow-inner">
-                {urlFoto ? (
-                  <img src={urlFoto} alt="Foto Profil" className="w-full h-full object-cover" />
-                ) : (
-                  namaTampilanHeader.slice(0, 2).toUpperCase()
-                )}
-                {sedangUnggahFoto && (
-                  <div className="absolute inset-0 bg-stone-900/50 flex items-center justify-center">
-                    <Loader2 className="w-5 h-5 text-white animate-spin" />
-                  </div>
-                )}
-              </div>
-
-              <div className="flex items-center gap-1.5 absolute -bottom-1 -right-1">
-                {urlFoto && (
+        {/* ========================================================= */}
+        {/* KOLOM KANAN (Detail Panel di Desktop / Sub-View di Mobile) */}
+        {/* ========================================================= */}
+        <div className="lg:col-span-9">
+          {/* TAMPILAN MOBILE (Hanya saat ada sub-page aktif di mobile) */}
+          <div className="lg:hidden">
+            {activeMobileSubPage !== null && (
+              <div className="space-y-4">
+                {/* Mobile Sub-view Header with Back Button */}
+                <div className="flex items-center justify-between pb-2 border-b border-stone-200">
                   <button
                     type="button"
-                    onClick={tanganiHapusFoto}
-                    aria-label="Hapus foto profil"
-                    title="Hapus foto"
-                    className="w-7 h-7 rounded-full bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 flex items-center justify-center shadow-md active:scale-95 transition-transform"
+                    onClick={() => setActiveMobileSubPage(null)}
+                    className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-stone-700 hover:text-stone-900 min-h-[40px] px-2 py-1 -ml-1 rounded-xl hover:bg-stone-100 active:scale-95 transition-all"
                   >
-                    <Trash2 className="w-3.5 h-3.5" />
+                    <ArrowLeft className="w-4 h-4 text-orange-700" />
+                    <span>Kembali ke Pengaturan</span>
                   </button>
-                )}
-                <button
-                  type="button"
-                  disabled={sedangUnggahFoto}
-                  onClick={() => inputBerkasRef.current?.click()}
-                  aria-label="Ubah foto profil"
-                  title="Pilih foto"
-                  className="w-7 h-7 rounded-full bg-orange-700 hover:bg-orange-800 text-white flex items-center justify-center shadow-md active:scale-95 transition-transform"
-                >
-                  <Camera className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-            <p className="mt-2 text-[11px] text-stone-500">Format JPG, PNG, atau WebP (Maks 5MB)</p>
-          </div>
+                  <span className="text-xs font-bold text-orange-800 tracking-wide uppercase">
+                    {headerPanelMap[activeMobileSubPage]?.judul.split('&')[0]}
+                  </span>
+                </div>
 
-          {/* Form Fields: Compact Mobile Form */}
-          <div className="bg-white rounded-2xl border border-stone-200/90 p-4 space-y-3 shadow-sm">
-            <div>
-              <label className="block text-xs font-medium text-stone-700 mb-1">
-                {t.pengaturan.profil.labelNama} <span className="text-rose-500">*</span>
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="Contoh: Budi Santoso"
-                value={namaLengkap}
-                onChange={(e) => setNamaLengkap(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl min-h-[46px] focus:outline-none focus:ring-2 focus:ring-orange-600 placeholder:text-stone-400"
-              />
-            </div>
-
-            {/* Input Telepon dengan Prefix +62 Terpisah */}
-            <div>
-              <label className="block text-xs font-medium text-stone-700 mb-1">
-                {t.pengaturan.profil.labelNomorHp}
-              </label>
-              <div className="flex rounded-xl border border-stone-300 overflow-hidden focus-within:ring-2 focus-within:ring-orange-600">
-                <span className="inline-flex items-center px-3.5 bg-stone-100 text-stone-600 text-xs font-semibold border-r border-stone-300">
-                  +62
-                </span>
-                <input
-                  type="tel"
-                  placeholder="81234567890"
-                  value={nomorTelepon}
-                  onChange={(e) => setNomorTelepon(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border-0 min-h-[46px] focus:outline-none placeholder:text-stone-400"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Sticky Primary Action Button */}
-          <div className="pt-2 sticky bottom-20 z-30">
-            <Tombol
-              type="submit"
-              varian="primer"
-              sedangMemuat={sedangMenyimpan}
-              className="w-full font-bold bg-orange-700 hover:bg-orange-800 text-white min-h-[48px] rounded-xl shadow-lg shadow-orange-700/20 text-sm active:scale-98 transition-transform"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              <span>{t.pengaturan.profil.tombolSimpan}</span>
-            </Tombol>
-          </div>
-        </form>
-      )}
-
-      {/* ========================================================= */}
-      {/* 3. SUB-VIEW: PROFIL KARIR & TARGET WAWANCARA              */}
-      {/* ========================================================= */}
-      {activeSubPage === 'career' && (
-        <form onSubmit={simpanProfil} className="space-y-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl border border-stone-200/90 p-4 space-y-3.5 shadow-sm">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 block">
-              {t.pengaturan.profil.subjudulKarir}
-            </span>
-
-            <div>
-              <label className="block text-xs font-medium text-stone-700 mb-1">
-                {t.pengaturan.profil.labelRoleImpian}
-              </label>
-              <input
-                type="text"
-                placeholder="Contoh: Frontend Developer, Product Manager"
-                value={roleImpian}
-                onChange={(e) => setRoleImpian(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl min-h-[46px] focus:outline-none focus:ring-2 focus:ring-orange-600 placeholder:text-stone-400"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-stone-700 mb-1">
-                {t.pengaturan.profil.labelStatus}
-              </label>
-              <select
-                value={statusPekerjaan}
-                onChange={(e) => setStatusPekerjaan(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl min-h-[46px] focus:outline-none focus:ring-2 focus:ring-orange-600"
-              >
-                <option value="mahasiswa">{t.pengaturan.profil.statusMahasiswa}</option>
-                <option value="fresh_grad">{t.pengaturan.profil.statusFreshGrad}</option>
-                <option value="bekerja">{t.pengaturan.profil.statusBekerja}</option>
-                <option value="pencari_kerja">{t.pengaturan.profil.statusPencariKerja}</option>
-              </select>
-            </div>
-
-            {/* Umur & Gender 2 Kolom Berdampingan (Hemat Ruang Vertikal) */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1">
-                  {t.pengaturan.profil.labelUmur}
-                </label>
-                <input
-                  type="number"
-                  min="15"
-                  max="80"
-                  placeholder="22"
-                  value={umur}
-                  onChange={(e) => setUmur(e.target.value ? Number(e.target.value) : '')}
-                  className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl min-h-[46px] focus:outline-none focus:ring-2 focus:ring-orange-600"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1">
-                  {t.pengaturan.profil.labelGender}
-                </label>
-                <select
-                  value={jenisKelamin}
-                  onChange={(e) => setJenisKelamin(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl min-h-[46px] focus:outline-none focus:ring-2 focus:ring-orange-600"
-                >
-                  <option value="pria">{t.pengaturan.profil.genderPria}</option>
-                  <option value="wanita">{t.pengaturan.profil.genderWanita}</option>
-                  <option value="rahasia">{t.pengaturan.profil.genderRahasia}</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          {/* Sticky Primary Action Button */}
-          <div className="pt-2 sticky bottom-20 z-30">
-            <Tombol
-              type="submit"
-              varian="primer"
-              sedangMemuat={sedangMenyimpan}
-              className="w-full font-bold bg-orange-700 hover:bg-orange-800 text-white min-h-[48px] rounded-xl shadow-lg shadow-orange-700/20 text-sm active:scale-98 transition-transform"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              <span>{t.pengaturan.profil.tombolSimpan}</span>
-            </Tombol>
-          </div>
-        </form>
-      )}
-
-      {/* ========================================================= */}
-      {/* 4. SUB-VIEW: KEAMANAN & KATA SANDI                         */}
-      {/* ========================================================= */}
-      {activeSubPage === 'security' && (
-        <div className="space-y-4 animate-fadeIn">
-          {/* Ubah Email */}
-          <div className="bg-white rounded-2xl border border-stone-200/90 p-4 space-y-3 shadow-sm">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 block">
-              {t.pengaturan.keamanan.judulEmail}
-            </span>
-            <p className="text-xs text-stone-500">{t.pengaturan.keamanan.subjudulEmail}</p>
-
-            <div>
-              <label className="block text-xs font-medium text-stone-700 mb-1">Email Saat Ini</label>
-              <input
-                type="email"
-                disabled
-                value={pengguna?.email || ''}
-                className="w-full px-3.5 py-2.5 text-sm bg-stone-100 text-stone-500 border border-stone-300 rounded-xl min-h-[44px] cursor-not-allowed"
-              />
-            </div>
-
-            <form onSubmit={tanganiGantiEmail} className="space-y-3">
-              <div>
-                <label className="block text-xs font-medium text-stone-700 mb-1">
-                  {t.pengaturan.keamanan.labelEmailBaru}
-                </label>
-                <input
-                  type="email"
-                  required
-                  placeholder="emailbaru@domain.com"
-                  value={emailBaru}
-                  onChange={(e) => setEmailBaru(e.target.value)}
-                  className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl min-h-[46px] focus:outline-none focus:ring-2 focus:ring-orange-600"
-                />
-              </div>
-
-              <Tombol
-                type="submit"
-                varian="primer"
-                sedangMemuat={sedangMenyimpan}
-                className="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold min-h-[46px] rounded-xl text-sm"
-              >
-                {t.pengaturan.keamanan.tombolGantiEmail}
-              </Tombol>
-            </form>
-          </div>
-
-          {/* Reset Password */}
-          <div className="bg-white rounded-2xl border border-stone-200/90 p-4 space-y-3 shadow-sm">
-            <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 block">
-              {t.pengaturan.keamanan.judulReset}
-            </span>
-            <p className="text-xs text-stone-500 leading-relaxed">{t.pengaturan.keamanan.subjudulReset}</p>
-
-            <Tombol
-              type="button"
-              varian="sekunder"
-              onClick={tanganiMintaResetPassword}
-              sedangMemuat={sedangMenyimpan}
-              className="w-full min-h-[46px] rounded-xl font-bold text-sm border-stone-300"
-            >
-              <Lock className="w-4 h-4 mr-2 text-stone-600" />
-              <span>{t.pengaturan.keamanan.tombolKirimReset}</span>
-            </Tombol>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* 5. SUB-VIEW: BAHASA APLIKASI                               */}
-      {/* ========================================================= */}
-      {activeSubPage === 'language' && (
-        <div className="bg-white rounded-2xl border border-stone-200/90 p-4 space-y-3.5 shadow-sm animate-fadeIn">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 block">
-            {t.pengaturan.bahasa.judul}
-          </span>
-          <p className="text-xs text-stone-500">{t.pengaturan.bahasa.subjudul}</p>
-
-          <div className="space-y-2.5">
-            {/* Bahasa Indonesia */}
-            <button
-              type="button"
-              onClick={() => {
-                setBahasaDipilih('id');
-                setBahasa('id');
-              }}
-              className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-left transition-all min-h-[52px] active:scale-98 ${
-                bahasaDipilih === 'id'
-                  ? 'border-orange-600 bg-orange-50/50'
-                  : 'border-stone-200 hover:bg-stone-50'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-2xl" role="img" aria-label="Bendera Indonesia">🇮🇩</span>
-                <div>
-                  <div className="text-sm font-semibold text-stone-900">{t.pengaturan.bahasa.labelId}</div>
-                  <div className="text-xs text-stone-500">{t.pengaturan.bahasa.descId}</div>
+                {/* Sub-view Form */}
+                <div className="bg-white rounded-2xl border border-stone-200/90 p-4 shadow-sm">
+                  {renderDetailContent(activeMobileSubPage, false)}
                 </div>
               </div>
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-md ${
-                bahasaDipilih === 'id' ? 'bg-orange-700 text-white' : 'bg-stone-100 text-stone-600'
-              }`}>
-                ID
-              </span>
-            </button>
+            )}
+          </div>
 
-            {/* English */}
-            <button
-              type="button"
-              onClick={() => {
-                setBahasaDipilih('en');
-                setBahasa('en');
-              }}
-              className={`w-full flex items-center justify-between p-3.5 rounded-xl border text-left transition-all min-h-[52px] active:scale-98 ${
-                bahasaDipilih === 'en'
-                  ? 'border-orange-600 bg-orange-50/50'
-                  : 'border-stone-200 hover:bg-stone-50'
-              }`}
-            >
-              <div className="flex items-center gap-3">
-                <span className="text-2xl" role="img" aria-label="English flag">🌐</span>
+          {/* TAMPILAN DESKTOP (Selalu Terbuka dengan Menu Aktif) */}
+          <div className="hidden lg:block">
+            <div className="bg-white rounded-2xl border border-stone-200/80 p-6 lg:p-8 shadow-sm space-y-6">
+              {/* Header Panel Desktop */}
+              <div className="flex items-center gap-3 pb-4 border-b border-stone-200">
+                <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
+                  {headerPanelMap[activeDesktopMenu]?.icon}
+                </div>
                 <div>
-                  <div className="text-sm font-semibold text-stone-900">{t.pengaturan.bahasa.labelEn}</div>
-                  <div className="text-xs text-stone-500">{t.pengaturan.bahasa.descEn}</div>
+                  <h2 className="text-lg font-bold text-stone-900 tracking-tight">
+                    {headerPanelMap[activeDesktopMenu]?.judul}
+                  </h2>
+                  <p className="text-xs text-stone-500 mt-0.5">
+                    {headerPanelMap[activeDesktopMenu]?.desc}
+                  </p>
                 </div>
               </div>
-              <span className={`text-xs font-bold px-2.5 py-1 rounded-md ${
-                bahasaDipilih === 'en' ? 'bg-orange-700 text-white' : 'bg-stone-100 text-stone-600'
-              }`}>
-                EN
-              </span>
-            </button>
-          </div>
 
-          <div className="pt-2">
-            <Tombol
-              type="button"
-              varian="primer"
-              onClick={(e) => {
-                setBahasa(bahasaDipilih);
-                simpanProfil(e);
-              }}
-              sedangMemuat={sedangMenyimpan}
-              className="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold min-h-[46px] rounded-xl text-sm active:scale-98 transition-transform"
-            >
-              {t.pengaturan.bahasa.tombolTerapkan}
-            </Tombol>
-          </div>
-        </div>
-      )}
-
-      {/* ========================================================= */}
-      {/* 6. SUB-VIEW: BERI ULASAN APLIKASI                          */}
-      {/* ========================================================= */}
-      {activeSubPage === 'review' && (
-        <div className="bg-white rounded-2xl border border-stone-200/90 p-4 space-y-3.5 shadow-sm animate-fadeIn">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-stone-500 block">
-            {t.pengaturan.ulasan.judul}
-          </span>
-          <p className="text-xs text-stone-500">{t.pengaturan.ulasan.subjudul}</p>
-
-          <form onSubmit={kirimUlasan} className="space-y-3.5">
-            <div>
-              <label className="block text-xs font-medium text-stone-700 mb-2">
-                {t.pengaturan.ulasan.labelRating}
-              </label>
-              <div className="flex items-center gap-1 sm:gap-2">
-                {[1, 2, 3, 4, 5].map((bintang) => (
-                  <button
-                    key={bintang}
-                    type="button"
-                    onClick={() => setRatingBintang(bintang)}
-                    className="p-1.5 -m-1 hover:scale-110 active:scale-95 transition-transform focus:outline-none min-h-[44px] min-w-[44px] flex items-center justify-center"
-                    aria-label={`${bintang} Bintang`}
-                  >
-                    <Star
-                      className={`w-7 h-7 ${
-                        bintang <= ratingBintang
-                          ? 'text-amber-500 fill-amber-500'
-                          : 'text-stone-300'
-                      }`}
-                    />
-                  </button>
-                ))}
-                <span className="ml-2 text-xs sm:text-sm font-semibold text-stone-700">
-                  {ratingBintang} / 5
-                </span>
+              {/* Form Content Panel */}
+              <div>
+                {renderDetailContent(activeDesktopMenu, true)}
               </div>
             </div>
-
-            <div>
-              <label className="block text-xs font-medium text-stone-700 mb-1">
-                {t.pengaturan.ulasan.labelIsi} <span className="text-rose-500">*</span>
-              </label>
-              <textarea
-                rows={4}
-                required
-                placeholder={t.pengaturan.ulasan.placeholderIsi}
-                value={isiUlasan}
-                onChange={(e) => setIsiUlasan(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm font-normal text-stone-900 bg-white border border-stone-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-600 placeholder:text-stone-400"
-              />
-            </div>
-
-            <Tombol
-              type="submit"
-              varian="primer"
-              sedangMemuat={sedangMenyimpan}
-              className="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold min-h-[46px] rounded-xl text-sm active:scale-98 transition-transform"
-            >
-              {t.pengaturan.ulasan.tombolKirim}
-            </Tombol>
-          </form>
+          </div>
         </div>
-      )}
+
+      </div>
     </div>
   );
 };

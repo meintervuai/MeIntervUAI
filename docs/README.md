@@ -31,7 +31,8 @@ d:\MeIntervUAI\
 │   │   ├── i18n/                 # Modul lokalisasi dwibahasa terpusat (types.ts, hook useBahasa, id.ts, en.ts)
 │   │   ├── components/ui/        # Komponen standar (Tombol, KotakInput + aksiKanan, Kartu, DialogModal, IndikatorToken)
 │   │   ├── components/tata_letak/# Navbar responsif, Footer & Drawer
-│   │   ├── pages/                # CSMPublik, MasukDaftar, Beranda, Pengaturan, cv/CVBuilder
+│   │   ├── pages/                # CSMPublik, MasukDaftar, Beranda, Pengaturan, cv/
+│   │   │   └── cv/               # CVBuilder (Orkestrator), komponen/ (FormKontak, Edukasi, Pengalaman, Proyek, Keahlian, PengaturanCV, PratinjauKertasATS)
 │   │   ├── services/             # supabase.ts (Supabase OAuth & Auth) dan api.ts (Klien backend)
 │   │   └── index.css             # Desain token terpusat & fluid typography
 │   ├── package.json
@@ -49,3 +50,7 @@ d:\MeIntervUAI\
 - [Standar Basis Data (DB-01 - DB-06)](database.md)
 - [Standar Pengujian & Keamanan (OT-01 - OT-02)](others.md)
 - [ADR-001: Alur Autentikasi & Verifikasi OTP](adr-auth-otp.md)
+- [Spesifikasi 5 Template CV ATS & Kustomisasi Styling](cv-templates-ats.md)
+- [Standar Pasfoto CV & Resume Formal (Nasional & Internasional)](cv-photo-standards.md)
+- [Matriks Riset Isian Form Dinamis 5 Template CV Resmi](cv-form-field-matrix.md)
+

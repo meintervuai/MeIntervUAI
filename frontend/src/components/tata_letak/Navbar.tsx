@@ -15,8 +15,7 @@ import {
   Briefcase, 
   Video, 
   Settings, 
-  LogOut,
-  Globe
+  LogOut
 } from 'lucide-react';
 
 interface PropertiNavbar {
@@ -26,7 +25,7 @@ interface PropertiNavbar {
 
 export const Navbar: React.FC<PropertiNavbar> = ({ pengguna, onKeluar }) => {
   const location = useLocation();
-  const { bahasa, setBahasa, t } = useBahasa();
+  const { t } = useBahasa();
 
   const isActive = (path: string) => location.pathname === path;
 
@@ -48,9 +47,9 @@ export const Navbar: React.FC<PropertiNavbar> = ({ pengguna, onKeluar }) => {
       {/* 1. TOP HEADER (Desktop full nav, Mobile clean utility header) */}
       <header className="sticky top-0 z-40 bg-[#fdfbf7] border-b border-stone-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-14 sm:h-16">
-            {/* Brand Logo (Desktop) / Page Title (Mobile) */}
-            <div className="flex items-center gap-3 sm:gap-6 lg:gap-8">
+          <div className="flex items-center justify-between h-14 sm:h-16 relative">
+            {/* Left: Brand Logo (Desktop) / Page Title (Mobile) */}
+            <div className="flex items-center gap-3">
               {/* Mobile View: Clean App Header */}
               <div className="flex md:hidden items-center gap-2">
                 <div className="w-7 h-7 rounded-lg bg-orange-700 text-white flex items-center justify-center font-black text-xs shadow-sm">
@@ -70,7 +69,7 @@ export const Navbar: React.FC<PropertiNavbar> = ({ pengguna, onKeluar }) => {
               </div>
 
               {/* Desktop View: Full Brand Logo */}
-              <Link to="/" className="hidden md:flex items-center gap-2 group">
+              <Link to="/" className="hidden md:flex items-center gap-2 group shrink-0">
                 <div className="w-8 h-8 rounded-xl bg-orange-700 text-white flex items-center justify-center font-black text-sm shadow-sm group-hover:bg-orange-800 transition-colors">
                   MI
                 </div>
@@ -78,66 +77,42 @@ export const Navbar: React.FC<PropertiNavbar> = ({ pengguna, onKeluar }) => {
                   MeIntervU<span className="text-orange-700">AI</span>
                 </span>
               </Link>
-
-              {/* Desktop Menu Tabs (≥ 768px) */}
-              {pengguna && (
-                <nav className="hidden md:flex items-center gap-1">
-                  {menuNavigasi.map((item) => {
-                    const Icon = item.icon;
-                    const aktif = isActive(item.path);
-                    return (
-                      <Link
-                        key={item.path}
-                        to={item.path}
-                        className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center gap-1.5 min-h-[36px] ${
-                          aktif
-                            ? 'text-white bg-orange-700 shadow-sm shadow-orange-700/25'
-                            : 'text-stone-700 hover:text-stone-950 hover:bg-stone-200/60'
-                        }`}
-                      >
-                        <Icon className="w-3.5 h-3.5" />
-                        <span>{item.label}</span>
-                      </Link>
-                    );
-                  })}
-                </nav>
-              )}
             </div>
 
-            {/* Right Controls: Token, Switcher Bahasa, Logout / Auth CTA */}
-            <div className="flex items-center gap-2 sm:gap-3">
-              {/* Dual-Language Switcher [ ID | EN ] (Hanya di Tablet/Desktop, di Mobile ada di menu Bahasa) */}
-              <div className="hidden sm:inline-flex items-center gap-0.5 bg-white border border-stone-200 rounded-lg p-0.5 shadow-sm">
-                <Globe className="w-3.5 h-3.5 text-stone-500 ml-1 hidden sm:block" />
-                <button
-                  type="button"
-                  onClick={() => setBahasa('id')}
-                  className={`px-2 py-0.5 sm:py-1 text-xs font-bold rounded min-h-[26px] sm:min-h-[28px] transition-colors ${
-                    bahasa === 'id'
-                      ? 'bg-orange-700 text-white shadow-sm'
-                      : 'text-stone-600 hover:text-stone-900'
-                  }`}
-                  aria-pressed={bahasa === 'id'}
-                >
-                  ID
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setBahasa('en')}
-                  className={`px-2 py-0.5 sm:py-1 text-xs font-bold rounded min-h-[26px] sm:min-h-[28px] transition-colors ${
-                    bahasa === 'en'
-                      ? 'bg-orange-700 text-white shadow-sm'
-                      : 'text-stone-600 hover:text-stone-900'
-                  }`}
-                  aria-pressed={bahasa === 'en'}
-                >
-                  EN
-                </button>
-              </div>
+            {/* Center: Desktop Menu Tabs (≥ 768px, Posisi Tengah Sempurna) */}
+            {pengguna && (
+              <nav className="hidden md:flex items-center justify-center gap-1 sm:gap-1.5 absolute left-1/2 -translate-x-1/2">
+                {menuNavigasi.map((item) => {
+                  const Icon = item.icon;
+                  const aktif = isActive(item.path);
+                  return (
+                    <Link
+                      key={item.path}
+                      to={item.path}
+                      className={`px-3 sm:px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 min-h-[38px] relative whitespace-nowrap shrink-0 ${
+                        aktif
+                          ? 'text-orange-950 bg-orange-100/70 shadow-sm border border-orange-200/60 font-bold'
+                          : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100/80'
+                      }`}
+                    >
+                      <Icon className={`w-4 h-4 shrink-0 ${aktif ? 'text-orange-700 stroke-[2.2px]' : 'text-stone-500'}`} />
+                      <span className="whitespace-nowrap">{item.label}</span>
+                      {aktif && (
+                        <span className="absolute -bottom-[9px] sm:-bottom-[13px] left-3 right-3 h-[2.5px] bg-orange-700 rounded-full" />
+                      )}
+                    </Link>
+                  );
+                })}
+              </nav>
+            )}
 
+            {/* Right: Right Controls (Token, Logout / Auth CTA) */}
+            <div className="flex items-center gap-2 sm:gap-3 shrink-0 whitespace-nowrap">
               {pengguna ? (
                 <>
-                  <IndikatorToken saldo={pengguna.saldo_token || 100} />
+                  <div className="shrink-0 whitespace-nowrap">
+                    <IndikatorToken saldo={pengguna.saldo_token || 100} />
+                  </div>
 
                   {/* Desktop Logout Button */}
                   <button
@@ -160,6 +135,7 @@ export const Navbar: React.FC<PropertiNavbar> = ({ pengguna, onKeluar }) => {
               )}
             </div>
           </div>
+
         </div>
       </header>
 
