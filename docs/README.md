@@ -20,7 +20,7 @@ d:\MeIntervUAI\
 │   ├── app/
 │   │   ├── main.py               # Gateway FastAPI & middleware CORS/SlowAPI
 │   │   ├── config.py             # Parser environment & setting rate-limit
-│   │   ├── routers/              # Endpoint auth, csm_publik, profil, pengaturan
+│   │   ├── routers/              # Endpoint auth, csm_publik, profil, pengaturan, cv
 │   │   └── services/             # Client Supabase & generator ID terstruktur
 │   ├── tests/                    # Pengujian unit otomatis (pytest)
 │   └── requirements.txt
@@ -31,7 +31,7 @@ d:\MeIntervUAI\
 │   │   ├── i18n/                 # Modul lokalisasi dwibahasa terpusat (types.ts, hook useBahasa, id.ts, en.ts)
 │   │   ├── components/ui/        # Komponen standar (Tombol, KotakInput + aksiKanan, Kartu, DialogModal, IndikatorToken)
 │   │   ├── components/tata_letak/# Navbar responsif, Footer & Drawer
-│   │   ├── pages/                # CSMPublik (Landing terpadu), MasukDaftar (Mobile-first Auth), Beranda, Pengaturan
+│   │   ├── pages/                # CSMPublik, MasukDaftar, Beranda, Pengaturan, cv/CVBuilder
 │   │   ├── services/             # supabase.ts (Supabase OAuth & Auth) dan api.ts (Klien backend)
 │   │   └── index.css             # Desain token terpusat & fluid typography
 │   ├── package.json

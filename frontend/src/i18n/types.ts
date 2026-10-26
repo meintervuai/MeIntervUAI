@@ -282,6 +282,69 @@ export interface PusatBantuanKonten {
     tokenPerSesi: string;
     durasiSesi: string;
     evaluasiStarInstan: string;
+    analisisCardJudul: string;
+    analisisCardDesc: string;
+    analisisSkorLabel: string;
+    analisisBiayaBadge: string;
+    analisisTombolProses: string;
+    analisisSedangMemproses: string;
+    rekomendasiJudul: string;
+    poinKelebihan: string;
+    poinPerbaikan: string;
+    kataKunciDisarankan: string;
+    statusBelumDianalisis: string;
+  };
+  cvBuilder: {
+    judulHalaman: string;
+    subjudulHalaman: string;
+    tombolSimpanDraf: string;
+    sedangMenyimpan: string;
+    drafTersimpan: string;
+    tabEditor: string;
+    tabPratinjau: string;
+    targetRoleLabel: string;
+    targetRolePlaceholder: string;
+    judulCvLabel: string;
+    judulCvPlaceholder: string;
+    // Bagian 1
+    bagianKontak: string;
+    namaLengkap: string;
+    email: string;
+    telepon: string;
+    linkedin: string;
+    domisili: string;
+    ringkasan: string;
+    ringkasanPlaceholder: string;
+    // Bagian 2
+    bagianEdukasi: string;
+    tambahEdukasi: string;
+    namaKampus: string;
+    jurusan: string;
+    gelar: string;
+    tahunLulus: string;
+    nilaiIpk: string;
+    // Bagian 3
+    bagianPengalaman: string;
+    tambahPengalaman: string;
+    namaPerusahaan: string;
+    posisiJabatan: string;
+    periodeWaktu: string;
+    deskripsiPekerjaan: string;
+    deskripsiPlaceholder: string;
+    // Bagian 4
+    bagianProyek: string;
+    tambahProyek: string;
+    namaProyek: string;
+    teknologiDigunakan: string;
+    deskripsiProyek: string;
+    // Bagian 5
+    bagianKeahlian: string;
+    tambahKeahlian: string;
+    keahlianPlaceholder: string;
+    // Aksi
+    hapusItem: string;
+    cetakPdf: string;
+    kembaliKeBeranda: string;
   };
   galat: {
     statusLabel: string;

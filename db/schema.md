@@ -110,4 +110,21 @@ CREATE TABLE IF NOT EXISTS ulasan_aplikasi (
 
 CREATE INDEX IF NOT EXISTS idx_ulasan_pengguna_id ON ulasan_aplikasi(pengguna_id);
 CREATE INDEX IF NOT EXISTS idx_ulasan_rating ON ulasan_aplikasi(bintang_rating);
+
+-- 7. Tabel CV Pengguna (CV ATS Builder & Analyzer)
+CREATE TABLE IF NOT EXISTS cv_pengguna (
+    cv_id VARCHAR(32) PRIMARY KEY,
+    pengguna_id VARCHAR(32) NOT NULL REFERENCES pengguna(pengguna_id) ON DELETE CASCADE,
+    judul_cv VARCHAR(255) DEFAULT 'CV ATS Utama',
+    target_role VARCHAR(150),
+    skor_ats INTEGER DEFAULT 0,
+    status_terverifikasi BOOLEAN DEFAULT FALSE,
+    konten_json JSONB, -- Berisi data_kontak, riwayat_edukasi, pengalaman_kerja, proyek_portofolio, keahlian
+    rekomendasi_ai JSONB, -- Poin evaluasi kata kunci, format STAR, dan saran perbaikan
+    dibuat_pada TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    diperbarui_pada TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_cv_pengguna_id ON cv_pengguna(pengguna_id);
+CREATE INDEX IF NOT EXISTS idx_cv_skor_ats ON cv_pengguna(skor_ats);
 ```

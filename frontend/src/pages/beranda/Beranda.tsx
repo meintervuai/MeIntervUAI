@@ -3,7 +3,7 @@
 // tanpa duplikasi file terpisah, bebas emoji slop, bebas glassmorphism berlebihan, dan ergonomis di mobile (320px) s.d desktop (1920px).
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Kartu } from '../../components/ui/Kartu';
 import { Tombol } from '../../components/ui/Tombol';
 import { DataAwal } from './DataAwal';
@@ -33,6 +33,7 @@ interface PropertiBeranda {
 
 export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
   const { t } = useBahasa();
+  const navigate = useNavigate();
 
   // State Onboarding Modal
   const [modalOnboarding, setModalOnboarding] = useState(false);
@@ -44,6 +45,10 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
   // Status CV & Saldo Token
   const [cvTersedia, setCvTersedia] = useState(false);
   const [saldoToken, setSaldoToken] = useState(100);
+  const [dataCvPengguna, setDataCvPengguna] = useState<any>(null);
+  const [skorAts, setSkorAts] = useState<number | null>(null);
+  const [rekomendasiAi, setRekomendasiAi] = useState<any>(null);
+  const [sedangAnalisis, setSedangAnalisis] = useState(false);
 
   // Mode Simulasi Pilihan Kandidat
   const [modeSimulasi, setModeSimulasi] = useState<'teks' | 'suara' | 'video'>('video');
@@ -51,7 +56,7 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
   // Toggle Accordion Roadmap Mobile
   const [bukaRoadmapMobile, setBukaRoadmapMobile] = useState(false);
 
-  useEffect(() => {
+  const muatDataStatus = () => {
     if (pengguna && pengguna.pengguna_id) {
       api.getProfil(pengguna.pengguna_id).then((res) => {
         if (res.status === 'sukses') {
@@ -72,7 +77,24 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
       }).catch(() => {
         setModalOnboarding(true);
       });
+
+      api.ambilStatusCV(pengguna.pengguna_id).then((res) => {
+        if (res.status === 'sukses' && res.ada_cv && res.cv) {
+          setDataCvPengguna(res.cv);
+          setSkorAts(res.cv.skor_ats !== undefined ? res.cv.skor_ats : null);
+          setRekomendasiAi(res.cv.rekomendasi_ai || null);
+          if (res.cv.status_terverifikasi) {
+            setCvTersedia(true);
+          }
+        }
+      }).catch((err) => {
+        console.error('Gagal mengambil status CV:', err);
+      });
     }
+  };
+
+  useEffect(() => {
+    muatDataStatus();
   }, [pengguna]);
 
   const tanganiSelesaiDataAwal = (dataProfil: {
@@ -96,6 +118,28 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
 
   const tanganiMulaiSimulasi = () => {
     alert(`Memulai simulasi mode ${modeSimulasi.toUpperCase()}. Mengalokasikan ${biayaMode[modeSimulasi]} token.`);
+  };
+
+  const tanganiJalankanAnalisisAts = async () => {
+    if (!pengguna?.pengguna_id) return;
+    setSedangAnalisis(true);
+    try {
+      const res = await api.analisisSkorCV({ pengguna_id: pengguna.pengguna_id });
+      if (res.status === 'sukses') {
+        setSkorAts(res.skor_ats);
+        setRekomendasiAi(res.rekomendasi_ai);
+        setCvTersedia(true);
+        if (res.sisa_saldo_token !== undefined) {
+          setSaldoToken(res.sisa_saldo_token);
+        }
+      } else {
+        alert(res.pesan || 'Gagal memproses analisis CV.');
+      }
+    } catch (err: any) {
+      alert(`Terjadi kesalahan sistem: ${err.message || 'Koneksi terputus'}`);
+    } finally {
+      setSedangAnalisis(false);
+    }
   };
 
   return (
@@ -301,8 +345,8 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
             </div>
           </Kartu>
 
-          {/* Card 2: ATS CV Workspace */}
-          <Kartu className="p-5 sm:p-7">
+          {/* Card 2: ATS CV Workspace & Live AI Audit */}
+          <Kartu className="p-5 sm:p-7 space-y-5">
             <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-center">
               <div className="md:col-span-8 space-y-3">
                 <div className="flex items-start justify-between gap-4">
@@ -341,8 +385,8 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
                     <strong className="text-stone-800 text-[11px]">Daftar Keahlian</strong>
                   </div>
                   <div className="p-2 rounded-lg bg-orange-50 border border-orange-200 text-xs flex flex-col justify-center">
-                    <span className="text-orange-800 font-bold text-[10px]">5 Format Standar</span>
-                    <span className="text-orange-950 font-bold text-[11px]">Ekspor PDF/DOCX</span>
+                    <span className="text-orange-800 font-bold text-[10px]">Standar 1 Kolom</span>
+                    <span className="text-orange-950 font-bold text-[11px]">Ekspor PDF / Cetak</span>
                   </div>
                 </div>
 
@@ -350,19 +394,20 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
                   <Tombol
                     varian="primer"
                     ukuran="md"
-                    onClick={() => alert('Modul Pembuat CV siap dibuka pada tahap berikutnya!')}
+                    onClick={() => navigate('/cv')}
                     className="flex-1 bg-orange-700 hover:bg-orange-800 font-bold text-xs min-h-[44px]"
                   >
                     <FileText className="w-3.5 h-3.5 mr-1.5" />
-                    <span>{cvTersedia ? t.beranda.tombolPerbaruiCV : t.beranda.tombolBuatCV}</span>
+                    <span>{dataCvPengguna ? t.beranda.tombolPerbaruiCV : t.beranda.tombolBuatCV}</span>
                   </Tombol>
 
                   <button
-                    disabled={!cvTersedia}
-                    onClick={() => alert('Analisis CV AI sedang mengevaluasi kata kunci industri Anda.')}
-                    className="px-3.5 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-[44px]"
+                    disabled={!dataCvPengguna || sedangAnalisis}
+                    onClick={tanganiJalankanAnalisisAts}
+                    className="px-3.5 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-[44px] flex items-center justify-center gap-1.5"
                   >
-                    {t.beranda.atsSkorTombol}
+                    <Coins className="w-3.5 h-3.5 text-amber-500" />
+                    <span>{sedangAnalisis ? t.beranda.analisisSedangMemproses : t.beranda.analisisTombolProses}</span>
                   </button>
                 </div>
               </div>
@@ -376,8 +421,82 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
                 />
               </div>
             </div>
+
+            {/* Live ATS AI Analysis Feedback Card */}
+            <div className="p-4 rounded-xl bg-stone-50 border border-stone-200/90 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-stone-200">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-orange-700" />
+                  <h3 className="text-xs sm:text-sm font-bold text-stone-900">
+                    {t.beranda.analisisCardJudul}
+                  </h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] font-mono text-amber-800 bg-amber-100 px-2 py-0.5 rounded font-bold">
+                    {t.beranda.analisisBiayaBadge}
+                  </span>
+                  {skorAts !== null && (
+                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${
+                      skorAts >= 70 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {t.beranda.analisisSkorLabel}: {skorAts}/100
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {rekomendasiAi ? (
+                <div className="space-y-2.5 text-xs">
+                  {rekomendasiAi.poin_positif && rekomendasiAi.poin_positif.length > 0 && (
+                    <div>
+                      <strong className="text-emerald-800 block text-[11px] mb-1 font-bold">
+                        {t.beranda.poinKelebihan}
+                      </strong>
+                      <ul className="list-disc list-inside space-y-0.5 text-stone-700">
+                        {rekomendasiAi.poin_positif.map((p: string, idx: number) => (
+                          <li key={idx}>{p}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {rekomendasiAi.poin_perbaikan && rekomendasiAi.poin_perbaikan.length > 0 && (
+                    <div>
+                      <strong className="text-amber-800 block text-[11px] mb-1 font-bold">
+                        {t.beranda.poinPerbaikan}
+                      </strong>
+                      <ul className="list-disc list-inside space-y-0.5 text-stone-700">
+                        {rekomendasiAi.poin_perbaikan.map((p: string, idx: number) => (
+                          <li key={idx}>{p}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {rekomendasiAi.saran_kata_kunci && rekomendasiAi.saran_kata_kunci.length > 0 && (
+                    <div>
+                      <strong className="text-stone-800 block text-[11px] mb-1 font-bold">
+                        {t.beranda.kataKunciDisarankan}
+                      </strong>
+                      <div className="flex flex-wrap gap-1">
+                        {rekomendasiAi.saran_kata_kunci.map((kw: string, idx: number) => (
+                          <span key={idx} className="px-2 py-0.5 rounded bg-white border border-stone-200 text-[11px] font-mono text-stone-700">
+                            {kw}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-stone-500 leading-relaxed italic">
+                  {dataCvPengguna ? t.beranda.statusBelumDianalisis : 'Silakan buat draf CV terlebih dahulu sebelum menjalankan audit AI.'}
+                </p>
+              )}
+            </div>
           </Kartu>
         </div>
+
 
         {/* Kolom Kanan: Timeline Kesiapan & Rekomendasi Karir */}
         <div className="lg:col-span-5 space-y-6">

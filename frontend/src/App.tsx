@@ -6,6 +6,7 @@ import { Beranda } from './pages/beranda/Beranda';
 import { CSMPublik } from './pages/CSMPublik';
 import { Pengaturan } from './pages/Pengaturan';
 import { HalamanGalat } from './pages/HalamanGalat';
+import { CVBuilder } from './pages/cv/CVBuilder';
 import { Masuk } from './pages/auth/Masuk';
 import { Daftar } from './pages/auth/Daftar';
 import { OTP } from './pages/auth/OTP';
@@ -217,12 +218,12 @@ export const App: React.FC = () => {
             }
           />
 
-          {/* Rute CV ATS (Navigasi Disiapkan) */}
+          {/* Rute CV ATS */}
           <Route
             path="/cv"
             element={
               pengguna ? (
-                <SegeraHadir judul="Modul Pembuat CV ATS" />
+                <CVBuilder pengguna={pengguna} />
               ) : (
                 <Navigate to="/masuk" replace />
               )

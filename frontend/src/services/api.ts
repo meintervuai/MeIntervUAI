@@ -158,4 +158,34 @@ export const api = {
     });
     return res.json();
   },
+
+  // CV ATS
+  async ambilStatusCV(pengguna_id: string): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/cv/status/${pengguna_id}`);
+    return res.json();
+  },
+
+  async simpanDrafCV(data: {
+    pengguna_id: string;
+    judul_cv: string;
+    target_role: string;
+    konten_json: any;
+  }): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/cv/simpan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  async analisisSkorCV(data: { pengguna_id: string }): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/cv/analisis`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
 };
+
