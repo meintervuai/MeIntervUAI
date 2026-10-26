@@ -112,7 +112,7 @@ export const CSMPublik: React.FC = () => {
   return (
     <div className="min-h-screen bg-[#fdfbf7] text-stone-900 font-sans selection:bg-orange-200 selection:text-orange-950 flex flex-col">
       {/* 1. HEADER MANDIRI (STANDALONE TOPBAR TANPA MENU JUALAN / NAVIGASI) */}
-      <header className="sticky top-0 z-50 bg-[#fffbf7]/95 backdrop-blur-md border-b border-orange-200/90 shadow-[0_1px_3px_rgba(234,88,12,0.06)]">
+      <header className="sticky top-0 z-50 bg-[#fdfbf7] border-b border-stone-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16 sm:h-20">
             {/* Logo Brand Mandiri */}

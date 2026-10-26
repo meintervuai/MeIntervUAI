@@ -28,7 +28,7 @@ export const BaseAuth: React.FC<PropsBaseAuth> = ({ children }) => {
 
         {/* Ilustrasi & Highlight Nilai Utama */}
         <div className="relative z-10 my-auto py-4 space-y-5 max-w-md">
-          <div className="bg-white/10 backdrop-blur-sm p-4 rounded-2xl border border-white/15">
+          <div className="bg-orange-900/60 p-4 rounded-2xl border border-orange-600/50 shadow-sm">
             <img
               src="/illustrations/interview.svg"
               alt="Simulasi Wawancara AI"

@@ -24,6 +24,12 @@ export interface PusatBantuanKonten {
     logoText: string;
     ctaMasuk: string;
     ctaMulai: string;
+    beranda: string;
+    cv: string;
+    lowongan: string;
+    simulasi: string;
+    pengaturan: string;
+    keluar: string;
   };
   hero: {
     kicker: string;
@@ -251,6 +257,31 @@ export interface PusatBantuanKonten {
     riwayatKosong: string;
     tipsJudul: string;
     tipsDesc: string;
+    modeTeksJudul: string;
+    modeTeksDesc: string;
+    modeSuaraJudul: string;
+    modeSuaraDesc: string;
+    modeVideoJudul: string;
+    modeVideoDesc: string;
+    simulasiTerkunci: string;
+    simulasiTerkunciDesc: string;
+    atsTahap1: string;
+    atsTahap1Desc: string;
+    atsSkorTombol: string;
+    targetKarirJudul: string;
+    ubahProfil: string;
+    posisiImpian: string;
+    posisiBelum: string;
+    posisiDesc: string;
+    cariLowongan: string;
+    csmJudul: string;
+    csmDesc: string;
+    csmTautan: string;
+    roadmapJudul: string;
+    roadmapDesc: string;
+    tokenPerSesi: string;
+    durasiSesi: string;
+    evaluasiStarInstan: string;
   };
   galat: {
     statusLabel: string;

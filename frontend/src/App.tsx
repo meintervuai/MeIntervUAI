@@ -44,7 +44,8 @@ const KerangkaAplikasi: React.FC<{
     <div className="min-h-screen flex flex-col bg-[#fdfbf7] text-stone-900 font-sans">
       <Navbar pengguna={pengguna} onKeluar={onKeluar} />
       <main className="flex-1">{children}</main>
-      <footer className="bg-[#fffbf7] border-t border-orange-200/80 py-8 px-6 text-center text-xs text-stone-600">
+      {/* Footer hanya untuk desktop (≥ 768px). Di mobile dihilangkan agar tidak bertabrakan dengan Bottom Navigation Bar */}
+      <footer className="hidden md:block bg-[#fffbf7] border-t border-orange-200/80 py-8 px-6 text-center text-xs text-stone-600">
         <div className="max-w-xl mx-auto px-4">
           <p className="leading-relaxed max-w-[70ch] mx-auto">
             © 2026 MeIntervUAI. Platform Simulasi Wawancara Adaptif & CV ATS. Seluruh hak cipta dilindungi.
@@ -260,6 +261,7 @@ export const App: React.FC = () => {
                 <Pengaturan
                   pengguna={pengguna}
                   onPerbaruiPengguna={perbaruiPengguna}
+                  onKeluar={tanganiKeluar}
                 />
               ) : (
                 <Navigate to="/masuk" replace />

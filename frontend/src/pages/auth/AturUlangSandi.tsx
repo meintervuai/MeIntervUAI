@@ -14,8 +14,7 @@ import {
   KeyRound,
   ShieldCheck,
   ArrowRight,
-  ChevronLeft,
-  Sparkles
+  ChevronLeft
 } from 'lucide-react';
 
 export const AturUlangSandi: React.FC = () => {
@@ -150,12 +149,12 @@ export const AturUlangSandi: React.FC = () => {
         </div>
 
         {/* Hero Card di Mobile dengan Ilustrasi */}
-        <div className="relative z-10 flex items-center gap-4 bg-white/10 backdrop-blur-md p-4 rounded-2xl border border-white/15">
-          <div className="w-20 h-20 shrink-0 bg-white/15 rounded-xl p-2 flex items-center justify-center">
+        <div className="relative z-10 flex items-center gap-4 bg-orange-900/60 p-4 rounded-2xl border border-orange-600/50">
+          <div className="w-20 h-20 shrink-0 bg-white/10 rounded-xl p-2 flex items-center justify-center">
             <img
               src="/illustrations/forgot-password.svg"
               alt="Keamanan Akun"
-              className="w-full h-full object-contain filter drop-shadow-sm animate-pulse"
+              className="w-full h-full object-contain filter drop-shadow-sm"
             />
           </div>
           <div className="space-y-1">
@@ -185,7 +184,7 @@ export const AturUlangSandi: React.FC = () => {
         </div>
 
         <div className="relative z-10 my-auto py-4 space-y-6 max-w-md">
-          <div className="bg-white/10 backdrop-blur-md p-6 rounded-3xl border border-white/15 shadow-2xl transition-transform hover:scale-[1.01] duration-300">
+          <div className="bg-orange-900/60 p-6 rounded-2xl border border-orange-600/50 shadow-sm transition-transform hover:scale-[1.01] duration-300">
             <img
               src="/illustrations/forgot-password.svg"
               alt="Keamanan Akun MeIntervUAI"
@@ -194,7 +193,7 @@ export const AturUlangSandi: React.FC = () => {
           </div>
 
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/15 backdrop-blur-sm border border-white/20 text-orange-100 text-xs font-semibold">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-600/40 border border-orange-500/40 text-orange-100 text-xs font-semibold">
               <ShieldCheck className="w-3.5 h-3.5 text-orange-200" />
               Perlindungan Akun Terenkripsi
             </div>
@@ -344,7 +343,7 @@ export const AturUlangSandi: React.FC = () => {
               </div>
 
               <div className="p-3 bg-orange-50/70 border border-orange-200/60 rounded-xl text-[11px] text-orange-950/80 flex items-start gap-2">
-                <Sparkles className="w-3.5 h-3.5 text-orange-600 shrink-0 mt-0.5" />
+                <ShieldCheck className="w-3.5 h-3.5 text-orange-700 shrink-0 mt-0.5" />
                 <span className="leading-relaxed">
                   {t.auth.tipsSandi}
                 </span>
