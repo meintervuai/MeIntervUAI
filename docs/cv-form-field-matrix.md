@@ -1,4 +1,4 @@
-# Riset & Matriks Perbedaan Form Isian 5 Template CV Resmi (MeIntervUAI)
+# Riset & Matriks Perbedaan Form Isian 6 Template CV Resmi (MeIntervUAI)
 
 Berdasarkan investigasi terhadap dokumen primer dan panduan resmi institusional:
 1. **Harvard OCS (Office of Career Services)** & **Yale School of Management**
@@ -6,6 +6,7 @@ Berdasarkan investigasi terhadap dokumen primer dan panduan resmi institusional:
 3. **FHCI BUMN (Rekrutmen Bersama BUMN) & Kemnaker RI**
 4. **Europass CV Framework (Decision No 2241/2004/EC & DigComp)**
 5. **DIN 5008 (Deutsches Institut für Normung - Schreib- und Gestaltungsregeln für die Textverarbeitung)**
+6. **Modern Minimalist ATS (W3C Contemporary Resume & Global Startup Standard)**
 
 Terdapat perbedaan mendasar dan spesifik pada kolom isian (*input fields*) dan bagian form (*form sections*) yang dibutuhkan oleh masing-masing template.
 
@@ -13,15 +14,15 @@ Terdapat perbedaan mendasar dan spesifik pada kolom isian (*input fields*) dan b
 
 ## 1. Matriks Perbedaan Bagian & Form Input
 
-| Bagian / Field | 1. Ivy Classic (Harvard/Yale) | 2. Tech Silicon (Jake's Tech) | 3. BUMN & Nasional (FHCI) | 4. Europass Slate (Uni Eropa) | 5. Executive DIN 5008 (Jerman) |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **Pasfoto Formal** | ❌ **Dilarang** (EEOC Anti-Bias) | ❌ **Dilarang** (ATS Safe) | ✅ **Wajib (Kiri Atas)** | ✅ **Wajib (Kanan Atas)** | ✅ **Wajib (Kanan Atas)** |
-| **Data Demografis (TTL)** | ❌ Dilarang (EEOC) | ❌ Dilarang | ✅ **Tempat, Tanggal Lahir (KTP)** | ❌ Opsional | ⚠️ Tanggal & Kota Lahir (*Geburtsdatum*) |
-| **Format Identitas Kontak** | Email, Telp, LinkedIn, Kota/Negara | GitHub, LinkedIn, Portfolio Link, Email, Telp | WhatsApp aktif, Domisili, Alamat KTP | Kebangsaan (*Nationality*), Email, Telp, LinkedIn | Alamat lengkap jalan & nomor rumah (*Straße/Hausnummer*) |
-| **Ringkasan Profil** | ❌ Tidak umum (langsung Edukasi/Pengalaman) | ❌ Tidak umum (langsung Skills/Pengalaman) | ✅ **Ringkasan Komitmen & Nilai Kerja** | ✅ **Profil Profesional Singkat** | ✅ **Executive Summary (Manajerial & Metrik P&L)** |
-| **Struktur Keahlian (Skills)** | Kategori Teks Faktual (Languages, Software) | **Teknis Terstruktur**: *Languages, Frameworks, DevTools, Cloud/DB* | **Hard Skills & Soft Skills BUMN** | **Kerangka Resmi**: *Bahasa Ibu, CEFR (A1-C2), DigComp Digital Skills* | **Tingkat Kemahiran Faktual**: *Sprachkenntnisse, IT-Kenntnisse, Sertifikasi* |
-| **Bagian Khusus Proyek** | Opsional (Academic Research / Coursework) | ⭐ **SANGAT KRUSIAL** (Tech Stack, Demo URL, Metrik Performa) | Pengalaman Organisasi / Kepanitiaan Kampus | Proyek Komunitas / Kolaborasi Lintas Negara | Proyek Transformasi Bisnis / Milestone Strategis |
-| **Riwayat Organisasi & Sertifikasi** | Ekstrakurikuler / Leadership | Kontribusi Open Source / Hackathon | ⭐ **Wajib (BEM, Himpunan, Organisasi Sosial, Sertifikasi BNSP)** | Sertifikasi Bahasa Resmi (IELTS, Goethe, DELF) | Sertifikasi Keahlian Khusus & Tanggal Sumpah/Lisensi |
+| Bagian / Field | 1. Ivy Classic (Harvard/Yale) | 2. Tech Silicon (Jake's Tech) | 3. BUMN & Nasional (FHCI) | 4. Europass Slate (Uni Eropa) | 5. Executive DIN 5008 (Jerman) | 6. Modern ATS (Corporate/Startup) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| **Pasfoto Formal** | ❌ **Dilarang** (EEOC Anti-Bias) | ❌ **Dilarang** (ATS Safe) | ✅ **Wajib (Kiri Atas)** | ✅ **Wajib (Kanan Atas)** | ✅ **Wajib (Kanan Atas)** | ⚠️ **Opsional (Default Nonaktif)** |
+| **Data Demografis (TTL)** | ❌ Dilarang (EEOC) | ❌ Dilarang | ✅ **Tempat, Tanggal Lahir (KTP)** | ❌ Opsional | ⚠️ Tanggal & Kota Lahir (*Geburtsdatum*) | ❌ Opsional |
+| **Format Identitas Kontak** | Email, Telp, LinkedIn, Kota/Negara | GitHub, LinkedIn, Portfolio Link, Email, Telp | WhatsApp aktif, Domisili, Alamat KTP | Kebangsaan (*Nationality*), Email, Telp, LinkedIn | Alamat lengkap jalan & nomor rumah (*Straße/Hausnummer*) | Email, Telp, LinkedIn, Portfolio, Domisili |
+| **Ringkasan Profil** | ❌ Tidak umum (langsung Edukasi/Pengalaman) | ❌ Tidak umum (langsung Skills/Pengalaman) | ✅ **Ringkasan Komitmen & Nilai Kerja** | ✅ **Profil Profesional Singkat** | ✅ **Executive Summary (Manajerial & Metrik P&L)** | ✅ **Ringkasan Profesional Dinamis** |
+| **Struktur Keahlian (Skills)** | Kategori Teks Faktual (Languages, Software) | **Teknis Terstruktur**: *Languages, Frameworks, DevTools, Cloud/DB* | **Hard Skills & Soft Skills BUMN** | **Kerangka Resmi**: *Bahasa Ibu, CEFR (A1-C2), DigComp Digital Skills* | **Tingkat Kemahiran Faktual**: *Sprachkenntnisse, IT-Kenntnisse, Sertifikasi* | **Kompetensi Inti & Tech Stack Fleksibel** |
+| **Bagian Khusus Proyek** | Opsional (Academic Research / Coursework) | ⭐ **SANGAT KRUSIAL** (Tech Stack, Demo URL, Metrik Performa) | Pengalaman Organisasi / Kepanitiaan Kampus | Proyek Komunitas / Kolaborasi Lintas Negara | Proyek Transformasi Bisnis / Milestone Strategis | Proyek Portofolio & Dampak Metrik Bisnis |
+| **Riwayat Organisasi & Sertifikasi** | Ekstrakurikuler / Leadership | Kontribusi Open Source / Hackathon | ⭐ **Wajib (BEM, Himpunan, Organisasi Sosial, Sertifikasi BNSP)** | Sertifikasi Bahasa Resmi (IELTS, Goethe, DELF) | Sertifikasi Keahlian Khusus & Tanggal Sumpah/Lisensi | Sertifikasi Keahlian & Penghargaan |
 
 ---
 
@@ -69,3 +70,10 @@ Terdapat perbedaan mendasar dan spesifik pada kolom isian (*input fields*) dan b
   - Pasfoto Formal (*Bewerbungsfoto*) di sudut kanan atas.
   - Ringkasan Eksekutif: Metrik kepemimpinan senior, anggaran yang dikelola (P&L), dan jumlah anggota tim yang dipimpin.
   - Tempat, Tanggal, dan Baris Tanda Tangan (*Ort, Datum & Unterschrift*).
+
+### F. Template 6: `modern_ats` (Corporate & Creative Executive - Two-Column Split)
+* **Filosofi**: Desain modern split dua kolom (sidebar gelap elegan di kiri + kanvas putih bersih dengan *timeline experience* di kanan).
+* **Field Wajib / Karakteristik**:
+  - Pasfoto: **Pasfoto melingkar (*circular headshot*)** di bagian atas sidebar kiri.
+  - Sidebar Kiri: Menampung foto profil, kontak lengkap (Telepon, Email, Domisili, LinkedIn), riwayat pendidikan formal, dan keahlian faktual (*bulleted skills*).
+  - Kanvas Kanan: Menampung nama kandidat berukuran *display bold*, peran target, narasi ringkasan profesional, riwayat pengalaman kerja dengan garis timeline (*dot & line indicator*), serta proyek portofolio unggulan.

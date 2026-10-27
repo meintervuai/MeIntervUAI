@@ -12,11 +12,17 @@ export type TemplateId =
 export type UkuranKertas = 'a4' | 'letter';
 export type UkuranMargin = 'kompak' | 'standar' | 'lega';
 
+export type JenisFontCV = 'inter' | 'roboto' | 'times' | 'georgia' | 'garamond';
+
 export interface KonfigurasiVisualCV {
   templateId: TemplateId;
   ukuranKertas: UkuranKertas;
   margin: UkuranMargin;
   warnaAksen: string; // Hex color e.g. '#111827', '#1E3A8A', '#C84B31'
+  warnaHeading?: string; // Warna spesifik untuk heading H1/H2 (opsional, fallback ke warnaAksen)
+  warnaTeks?: string; // Warna teks isi/body (opsional, default #1f2937 atau #111827)
+  warnaGaris?: string; // Warna garis pembatas / divider (opsional, fallback ke border stone atau warnaAksen)
+  jenisFont?: JenisFontCV; // Font family terpilih
   ukuranTitle: number; // px, range 20 - 28 (default 24)
   ukuranSubtitle: number; // px, range 12 - 16 (default 14)
   ukuranH1: number; // px, range 13 - 18 (default 14)
@@ -32,6 +38,10 @@ export const DEFAULT_KONFIGURASI_VISUAL: KonfigurasiVisualCV = {
   ukuranKertas: 'a4',
   margin: 'standar',
   warnaAksen: '#111827',
+  warnaHeading: '#111827',
+  warnaTeks: '#1f2937',
+  warnaGaris: '#d1d5db',
+  jenisFont: 'times',
   ukuranTitle: 24,
   ukuranSubtitle: 14,
   ukuranH1: 14,

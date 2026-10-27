@@ -87,3 +87,13 @@
 .animate-auth-fade {
   animation: authFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
+
+/* Hide scrollbar utility (tetap bisa di-scroll tapi track & thumb tidak terlihat) */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+

@@ -288,13 +288,13 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
         </div>
       )}
 
-      {/* Workspace Grid Layout: 2 Kolom di Desktop (lg:grid-cols-12) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+      {/* Workspace Grid Layout: Form Dominan Lega (lg:col-span-8) & Preview Ramping Kompak (lg:col-span-4) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
         {/* ========================================================================= */}
-        {/* KOLOM KIRI: FORM BUILDER TABBED (Horizontal Stepper / Tab Navigasi)       */}
+        {/* KOLOM KIRI: FORM BUILDER TABBED (Lega untuk Seluruh Inputan Formulir)     */}
         {/* ========================================================================= */}
-        <div className={`lg:col-span-6 space-y-4 print:hidden ${tabTampilanMobile === 'pratinjau' ? 'hidden lg:block' : 'block'}`}>
+        <div className={`lg:col-span-8 space-y-4 print:hidden ${tabTampilanMobile === 'pratinjau' ? 'hidden lg:block' : 'block'}`}>
           
           {/* Horizontal Tab Navigation (Scrollable di Mobile, Clean di Desktop) */}
           <div className="bg-stone-100/80 p-1.5 rounded-2xl border border-stone-200/80 flex items-center gap-1 overflow-x-auto no-scrollbar">
@@ -391,7 +391,7 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
         {/* ========================================================================= */}
         {/* KOLOM KANAN: PRATINJAU KERTAS ATS 1-KOLOM (Paper Preview Sticky di Desktop)*/}
         {/* ========================================================================= */}
-        <div className={`lg:col-span-6 lg:sticky lg:top-24 ${tabTampilanMobile === 'editor' ? 'hidden lg:block' : 'block'}`}>
+        <div className={`lg:col-span-4 lg:sticky lg:top-24 ${tabTampilanMobile === 'editor' ? 'hidden lg:block' : 'block'}`}>
           <PratinjauKertasATS
             namaLengkap={namaLengkap}
             targetRole={targetRole}

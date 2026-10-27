@@ -1,12 +1,12 @@
 # Pedoman Kerja Agent: MeIntervUAI
 
-File ini adalah instruksi operasional utama bagi seluruh AI coding agent yang bekerja di repositori MeIntervUAI. Agent wajib mematuhi aturan membaca rujukan dan memperbarui dokumentasi.
+File ini adalah instruksi operasional utama bagi seluruh AI coding agent yang bekerja di repositori MeIntervUAI. Agent wajib mematuhi aturan membaca rujukan dan memperbarui dokumentasi secara menyeluruh (semua dokumen terkait, bukan sebagian).
 
 ---
 
-## 1. Aturan Wajib Baca (Read First)
+## 1. Aturan Wajib Baca Seluruh Dokumen Rujukan (Read All Relevant Docs First)
 
-Sebelum menganalisis, merancang, atau memodifikasi kode, Agent **WAJIB** membaca dokumen rujukan yang sesuai di direktori `docs/`:
+Sebelum menganalisis, merancang, atau memodifikasi kode, Agent **WAJIB** membaca dan merujuk dokumen di direktori `docs/` secara utuh:
 
 | Bidang Pekerjaan | Dokumen Rujukan Utama |
 | :--- | :--- |
@@ -18,16 +18,21 @@ Sebelum menganalisis, merancang, atau memodifikasi kode, Agent **WAJIB** membaca
 | **UI/UX, Mobile-First, Rotasi & Aksesibilitas** | [docs/ui-ux.md](file:///d:/MeIntervUAI/docs/ui-ux.md) |
 | **Basis Data & Format ID Terstruktur** | [docs/database.md](file:///d:/MeIntervUAI/docs/database.md) |
 | **Keputusan Arsitektur Sebelumnya** | [docs/adr-auth-otp.md](file:///d:/MeIntervUAI/docs/adr-auth-otp.md) |
+| **Spesifikasi 6 Template CV ATS & Styling** | [docs/cv-templates-ats.md](file:///d:/MeIntervUAI/docs/cv-templates-ats.md) |
+| **Standar Pasfoto CV Formal (Nasional & Global)** | [docs/cv-photo-standards.md](file:///d:/MeIntervUAI/docs/cv-photo-standards.md) |
+| **Matriks Isian Form Dinamis 6 Template CV** | [docs/cv-form-field-matrix.md](file:///d:/MeIntervUAI/docs/cv-form-field-matrix.md) |
+| **Pengujian & Keamanan File Sensitif** | [docs/others.md](file:///d:/MeIntervUAI/docs/others.md) |
 
 ---
 
-## 2. Aturan Wajib Perbarui (Update on Change)
+## 2. Aturan Wajib Perbarui Dokumentasi Menyeluruh (Update All on Change - Tanpa Kecuali)
 
-Setiap kali ada instruksi, perubahan arsitektur, penambahan endpoint/fitur, atau keputusan baru dari chat pengguna:
+Setiap kali ada instruksi, perubahan fitur, perbaikan bug, penambahan template/endpoint, atau keputusan baru dari pengguna:
 
-1. **Sinkronisasi Dokumen Terkait**:
-   - Jika mengubah konfigurasi server/port atau alur sistem, perbarui dokumen terkait di `docs/` serta `README.md` utama.
-   - Jangan biarkan dokumentasi menjadi usang (*stale*).
+1. **Sinkronisasi Menyeluruh (Semua Dokumen Terkait, Bukan Sebagian)**:
+   - Dilarang hanya memperbarui kode tanpa memperbarui dokumen `.md`.
+   - Dilarang hanya memperbarui satu dokumen jika perubahan berdampak pada dokumen lain. Seluruh dokumen terkait (`docs/*.md`, `docs/README.md`, `README.md`) wajib disinkronkan pada sesi yang sama.
+   - Jika ada penambahan opsi/template (misal 6 template CV), seluruh dokumen spesifikasi (`docs/cv-templates-ats.md`, `docs/cv-form-field-matrix.md`, `docs/cv-photo-standards.md`, `docs/README.md`) wajib memuat opsi baru tersebut.
 2. **Pencatatan Keputusan Arsitektur (ADR)**:
    - Jika perubahan menyangkut keputusan penting yang mengubah arsitektur atau alur data permanen, catat sebagai file baru `docs/adr-<topik>.md` dan daftarkan tautannya di `docs/README.md`.
 3. **Prinsip Ringkas & Bersih (*Antislop* & *Writing for Agents*)**:
@@ -48,12 +53,12 @@ Setiap kali ada instruksi, perubahan arsitektur, penambahan endpoint/fitur, atau
 ## 4. Aturan Wajib Dwibahasa (Mandatory Dual-Language Rule: FE-04)
 
 Setiap pembuatan atau pembaruan komponen tampilan (UI/UX) di frontend:
-1. **Dilarang Menulis Teks Mentah (Hardcoded Text)**: Seluruh teks antarmuka (judul, tombol, placeholder, label form, pesan error, notifikasi toast) wajib didaftarkan ke modul lokalisasi `src/i18n/`:
+1. **Dilarang Menulis Teks Mentah (Hardcoded Text)**: Seluruh teks antarmuka (judul, tombol, placeholder, label form, pesan error, notifikasi toast, tips, empty states) wajib didaftarkan ke modul lokalisasi `src/i18n/`:
    - Definisi tipe di `src/i18n/types.ts`
    - Terjemahan Bahasa Indonesia di `src/i18n/locales/id.ts`
    - Terjemahan Bahasa Inggris di `src/i18n/locales/en.ts`
 2. **Konsumsi Melalui Hook `useBahasa()`**: Komponen tampilan wajib mengonsumsi teks melalui `const { t } = useBahasa()` sehingga otomatis berganti bahasa saat switcher `[ ID | EN ]` ditekan.
-3. **Pengaturan Preferensi Bahasa**: Setiap kali menambahkan halaman baru, pastikan teks di dalamnya langsung tersedia dalam versi ID dan EN secara simetris dan natural (bukan hasil translasi mesin mentah).
+3. **Pengaturan Preferensi Bahasa**: Setiap kali menambahkan halaman atau komponen baru, pastikan teks di dalamnya langsung tersedia dalam versi ID dan EN secara simetris dan natural (bukan hasil translasi mesin mentah).
 
 ---
 
@@ -78,6 +83,7 @@ Setiap pembuatan atau refactoring tampilan antarmuka (UI/UX):
    - Dilarang sekadar mengecilkan ukuran layout desktop ke mobile. Komponen mobile wajib didesain melalui riset kenyamanan penggunaan satu tangan (*thumb-driven ergonomics*).
    - **Tipografi Khusus Mobile**: Body text minimal 14px (`text-sm`), dilarang teks mikro `< 12px`. Skala heading mobile proporsional (`text-xl` s.d `text-2xl`), bukan ukuran raksasa desktop yang memakan layar.
    - **Elemen & Interaksi Sentuh**: Tombol aksi utama (*primary CTA*) diposisikan di zona jangkauan ibu jari (*sticky bottom bar* atau *floating footer* dengan safe-area padding). Modal kaku digantikan dengan *Bottom Sheet* atau drawer geser yang nyaman disentuh. Input form wajib minimal 16px untuk mencegah zoom otomatis Safari.
+
 
 
 

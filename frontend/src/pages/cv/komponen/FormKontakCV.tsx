@@ -1,7 +1,7 @@
 import React from 'react';
 import { Kartu } from '../../../components/ui/Kartu';
 import { useBahasa } from '../../../i18n';
-import { User, Mail, Phone, MapPin, Globe, Camera, Info } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Globe, Camera, Info, Target, FileText, Code2, ExternalLink } from 'lucide-react';
 import { KonfigurasiVisualCV } from '../tipePengaturanCV';
 
 interface PropertiFormKontakCV {
@@ -60,7 +60,8 @@ export const FormKontakCV: React.FC<PropertiFormKontakCV> = ({
   const isTemplateFormal = 
     konfigurasiVisual.templateId === 'bumn_nasional' || 
     konfigurasiVisual.templateId === 'europass_slate' || 
-    konfigurasiVisual.templateId === 'executive_din';
+    konfigurasiVisual.templateId === 'executive_din' ||
+    konfigurasiVisual.templateId === 'modern_ats';
 
   const inputFotoRef = React.useRef<HTMLInputElement>(null);
 
@@ -163,36 +164,7 @@ export const FormKontakCV: React.FC<PropertiFormKontakCV> = ({
             </span>
           </div>
 
-          {/* Pengaturan Posisi Foto (Kiri vs Kanan) */}
-          <div className="pt-2 border-t border-stone-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <span className="text-xs font-semibold text-stone-700">
-              {t.cvBuilder.pasfotoPosisiLabel}
-            </span>
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setKonfigurasiVisual((prev) => ({ ...prev, posisiFoto: 'kiri' }))}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                  konfigurasiVisual.posisiFoto === 'kiri'
-                    ? 'bg-orange-50 border-orange-300 text-orange-900 shadow-xs'
-                    : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
-                }`}
-              >
-                👈 {t.cvBuilder.pasfotoKiri}
-              </button>
-              <button
-                type="button"
-                onClick={() => setKonfigurasiVisual((prev) => ({ ...prev, posisiFoto: 'kanan' }))}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all cursor-pointer ${
-                  (konfigurasiVisual.posisiFoto || 'kanan') === 'kanan'
-                    ? 'bg-orange-50 border-orange-300 text-orange-900 shadow-xs'
-                    : 'bg-white border-stone-200 text-stone-600 hover:bg-stone-50'
-                }`}
-              >
-                👉 {t.cvBuilder.pasfotoKanan}
-              </button>
-            </div>
-          </div>
+
 
           {/* Notif Status Resmi Template */}
           <div className="p-2.5 rounded-xl border text-[11px] flex items-center gap-2 bg-amber-50/70 border-amber-200/80 text-amber-900">
@@ -224,8 +196,8 @@ export const FormKontakCV: React.FC<PropertiFormKontakCV> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1 flex items-center gap-1">
-              <span className="text-orange-700 font-bold">🎯</span>
+            <label className="block text-xs font-semibold text-stone-700 mb-1 flex items-center gap-1.5">
+              <Target className="w-3.5 h-3.5 text-stone-500" />
               <span>{t.cvBuilder.targetRoleLabel}</span>
               <span className="text-rose-500">*</span>
             </label>
@@ -239,7 +211,7 @@ export const FormKontakCV: React.FC<PropertiFormKontakCV> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1 flex items-center gap-1">
+            <label className="block text-xs font-semibold text-stone-700 mb-1 flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5 text-stone-500" />
               <span>{t.cvBuilder.email}</span>
               <span className="text-rose-500">*</span>
@@ -253,7 +225,7 @@ export const FormKontakCV: React.FC<PropertiFormKontakCV> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1 flex items-center gap-1">
+            <label className="block text-xs font-semibold text-stone-700 mb-1 flex items-center gap-1.5">
               <Phone className="w-3.5 h-3.5 text-stone-500" />
               <span>{t.cvBuilder.telepon}</span>
             </label>
@@ -267,7 +239,7 @@ export const FormKontakCV: React.FC<PropertiFormKontakCV> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-stone-700 mb-1 flex items-center gap-1">
+            <label className="block text-xs font-semibold text-stone-700 mb-1 flex items-center gap-1.5">
               <MapPin className="w-3.5 h-3.5 text-stone-500" />
               <span>{t.cvBuilder.domisili}</span>
             </label>
@@ -283,8 +255,9 @@ export const FormKontakCV: React.FC<PropertiFormKontakCV> = ({
           {/* Kolom Khusus: Tempat, Tanggal Lahir (KTP) - Wajib Standar Nasional BUMN */}
           {konfigurasiVisual.templateId === 'bumn_nasional' && setTempatTanggalLahir && (
             <div className="sm:col-span-2 p-3 rounded-xl bg-orange-50/60 border border-orange-200/80 space-y-1">
-              <label className="block text-xs font-bold text-orange-950 flex items-center gap-1">
-                <span>🇮🇩 {t.cvBuilder.tempatTanggalLahir}</span>
+              <label className="block text-xs font-bold text-orange-950 flex items-center gap-1.5">
+                <FileText className="w-3.5 h-3.5 text-orange-700" />
+                <span>{t.cvBuilder.tempatTanggalLahir}</span>
                 <span className="text-rose-500">*</span>
                 <span className="text-[10px] font-normal text-orange-800 ml-auto">Standar Seleksi BKN / BUMN</span>
               </label>
@@ -303,8 +276,9 @@ export const FormKontakCV: React.FC<PropertiFormKontakCV> = ({
             <>
               {setGithubKontak && (
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 mb-1 flex items-center gap-1">
-                    <span>💻 {t.cvBuilder.github}</span>
+                  <label className="block text-xs font-bold text-stone-800 mb-1 flex items-center gap-1.5">
+                    <Code2 className="w-3.5 h-3.5 text-stone-600" />
+                    <span>{t.cvBuilder.github}</span>
                     <span className="text-[10px] font-normal text-stone-500 ml-auto">Tech Stack Repo</span>
                   </label>
                   <input
@@ -318,8 +292,9 @@ export const FormKontakCV: React.FC<PropertiFormKontakCV> = ({
               )}
               {setPortofolioKontak && (
                 <div>
-                  <label className="block text-xs font-bold text-stone-800 mb-1 flex items-center gap-1">
-                    <span>🚀 {t.cvBuilder.portofolio}</span>
+                  <label className="block text-xs font-bold text-stone-800 mb-1 flex items-center gap-1.5">
+                    <ExternalLink className="w-3.5 h-3.5 text-stone-600" />
+                    <span>{t.cvBuilder.portofolio}</span>
                   </label>
                   <input
                     type="text"

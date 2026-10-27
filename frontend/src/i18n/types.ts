@@ -343,6 +343,19 @@ export interface PusatBantuanKonten {
     keahlianPlaceholder: string;
     keahlianTip: string;
     keahlianKosong: string;
+    // Kategori Keahlian Dinamis Sesuai Template
+    kategoriTechLanguages: string;
+    kategoriTechFrameworks: string;
+    kategoriTechDevTools: string;
+    kategoriTechCloudDb: string;
+    kategoriEuropassBahasa: string;
+    kategoriEuropassDigital: string;
+    kategoriBumnHardSkills: string;
+    kategoriBumnSoftSkills: string;
+    kategoriBumnBahasa: string;
+    kategoriGeneralTechnical: string;
+    kategoriGeneralLanguages: string;
+    kategoriGeneralTools: string;
     // Tab Navigasi Horizontal
     tabKontak: string;
     tabEdukasi: string;
@@ -364,6 +377,27 @@ export interface PusatBantuanKonten {
     pengaturanCvDesc: string;
     targetRoleBantuan: string;
     judulCvBantuan: string;
+    // Sub-Tab Pengaturan CV
+    subTabTemplate: string;
+    subTabKertas: string;
+    subTabWarna: string;
+    subTabTipografi: string;
+    subTabTerkunciInfo: string;
+    // Pilihan Jenis Font Family
+    jenisFontLabel: string;
+    jenisFontBantuan: string;
+    fontTerkunciOtomatis: string;
+    fontInter: string;
+    fontRoboto: string;
+    fontTimes: string;
+    fontGeorgia: string;
+    fontGaramond: string;
+    // Detail Kustomisasi Warna Elemen
+    warnaHeadingLabel: string;
+    warnaGarisLabel: string;
+    warnaTeksLabel: string;
+    warnaTerkunciMonokrom: string;
+    warnaTerkunciDesc: string;
     // Kustomisasi Template, Kertas, Warna & Tipografi
     pilihTemplateJudul: string;
     templateIvyClassic: string;
@@ -407,10 +441,42 @@ export interface PusatBantuanKonten {
     pasfotoPosisiLabel: string;
     pasfotoKanan: string;
     pasfotoKiri: string;
-    // Aksi
+    // Aksi & Pesan Status Form
     hapusItem: string;
     cetakPdf: string;
     kembaliKeBeranda: string;
+    edukasiKosong: string;
+    pengalamanKosong: string;
+    proyekKosong: string;
+    proyekDeskripsiPlaceholder: string;
+    tipTechSilicon: string;
+    tipBumnNasional: string;
+    tipEuropassSlate: string;
+    tipExecutiveDin: string;
+    arsitekturScannerAtsBadge: string;
+    standarKertasSubjudul: string;
+    pilihPresetWarnaSubjudul: string;
+    mendukungHexPicker: string;
+    pengaturanFontPixelSubjudul: string;
+    catatanBatasMinAts: string;
+    // Heading Kertas ATS Cetak
+    atsHeadingKeahlianTeknis: string;
+    atsHeadingRingkasanEksekutif: string;
+    atsHeadingRingkasanProfesional: string;
+    atsHeadingPengalamanKerja: string;
+    atsHeadingProyekUnggulan: string;
+    atsHeadingPendidikanBumn: string;
+    atsHeadingPendidikanFormal: string;
+    atsHeadingKeahlianKompetensi: string;
+    atsNamaLengkapPlaceholder: string;
+    atsPosisiPlaceholder: string;
+    atsNamaProyekPlaceholder: string;
+    atsInstitusiPlaceholder: string;
+    // Kontrol Zoom Pratinjau Kertas
+    zoomInLabel: string;
+    zoomOutLabel: string;
+    zoomResetLabel: string;
+    zoomFitLabel: string;
   };
   galat: {
     statusLabel: string;
