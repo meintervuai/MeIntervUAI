@@ -84,6 +84,54 @@ Setiap pembuatan atau refactoring tampilan antarmuka (UI/UX):
    - **Tipografi Khusus Mobile**: Body text minimal 14px (`text-sm`), dilarang teks mikro `< 12px`. Skala heading mobile proporsional (`text-xl` s.d `text-2xl`), bukan ukuran raksasa desktop yang memakan layar.
    - **Elemen & Interaksi Sentuh**: Tombol aksi utama (*primary CTA*) diposisikan di zona jangkauan ibu jari (*sticky bottom bar* atau *floating footer* dengan safe-area padding). Modal kaku digantikan dengan *Bottom Sheet* atau drawer geser yang nyaman disentuh. Input form wajib minimal 16px untuk mencegah zoom otomatis Safari.
 
+---
+
+## 6. Aturan Transisi Layar & Pemuatan Data: Wajib Skeleton Loading (FE-07 & UX-17)
+
+Setiap transisi perpindahan menu, pergantian tab/halaman, atau saat fetching data awal:
+1. **Dilarang Menggunakan Loading Spinner Tunggal di Tengah Layar (*Anti Full-Page Spinner Loop*)**:
+   - Dilarang menampilkan layar kosong dengan spinner memutar di tengah (`animate-spin w-8 h-8 rounded-full border-orange-600`) saat berpindah halaman atau memuat konten utama. Pola ini memicu pergeseran tata letak (*Cumulative Layout Shift* / CLS) dan membuat aplikasi terasa lambat/kaku.
+   - Pengecualian: Spinner putar (`animate-spin`) berukuran kecil ($\le 16\text{px}$) HANYA diperbolehkan di dalam tombol aksi (misal tombol *Submit* atau *Kirim*) sebagai feedback mikro instan.
+2. **Wajib Menggunakan Skeleton Shimmer Loading (Bentuk Proporsional Konten Asli)**:
+   - Transisi halaman, inisialisasi menu, dan pergantian tab wajib menyajikan kerangka *Skeleton* animasi berdenyut (`animate-pulse bg-stone-200/80 rounded-*`) yang merefleksikan geometri layout asli (header, kartu form, tab pills, dan tombol).
+   - Menghasilkan pengalaman pengguna yang instan, prediktif, dan modern tanpa kedipan visual yang mengganggu (*zero jarring layout jump*).
+3. **Wajib Menerapkan Client-Side Caching (Stale-While-Revalidate untuk Beban Data Berat)**:
+   - Seluruh halaman modul utama (Beranda, CV Builder, Pengaturan, Profil) wajib menerapkan cache lokal browser (`localStorage` dengan kunci unik per user `*_cache_${pengguna_id}`).
+   - **Prinsip Render Instan (0 ms)**: Begitu halaman dibuka, baca data dari cache lokal terlebih dahulu agar form dan konten langsung terbuka seketika tanpa memblokir layar dengan loading jaringan yang lama (3-10 detik).
+   - **Background Sync yang Senyap**: Permintaan data ke database (Supabase/API) tetap diproses di latar belakang secara senyap. Jika ada versi terbaru, perbarui state tanpa memicu pergeseran tata letak (*zero jarring layout shift*).
+
+
+---
+
+## 7. Aturan Notifikasi Antarmuka: Wajib NotifikasiToast Mengambang (FE-02, UX-03, UX-16)
+
+Setiap umpan balik aksi pengguna (sukses simpan, error API, info sistem):
+1. **Dilarang Menulis Kotak Alert Statis Inline di Tengah Layout Form**:
+   - Dilarang membuat tag `<div className="bg-emerald-50 border ...">` manual di tengah-tengah form atau header. Pola ini memicu dorongan tata letak mendadak (*layout push*) yang merusak ritme visual dan menggeser posisi inputan pengguna.
+2. **Wajib Menggunakan Komponen Standar Reusable `NotifikasiToast`**:
+   - Seluruh halaman dan komponen wajib mengimpor dan memakai `NotifikasiToast` dari `src/components/ui/NotifikasiToast.tsx`.
+   - **Posisi Mengambang & Non-Intrusif (Ergonomi Multi-Device)**:
+     - **Desktop & Tablet (`≥ 768px`)**: Melayang di **Pojok Kanan Bawah (`md:bottom-6 md:right-6`)** seperti pola snackbar modern agar tidak menutupi tombol simpan, header, atau aksi di bagian atas.
+     - **Ponsel Mobile (`< 768px`)**: Melayang di **Bagian Atas (`top-16 inset-x-0 flex justify-center`)** di bawah header agar tidak bertabrakan dengan *Bottom App Navigation Bar* dan zona jangkauan jempol bawah.
+     - Memiliki timer penutupan otomatis (*auto-dismiss* 4 detik) dan tombol tutup manual (`X`).
+
+---
+
+## 8. Aturan Anti Slop AI: Larangan Visual Klise & Wajib Integrasi Skills Desain (UX-02, Copy-01)
+
+1. **Larangan Elemen Visual Klise AI (*Strictly Forbidden AI Visual Slop*)**:
+   - **Dilarang Menambahkan Titik/Pill Berkedip (*Pulsing Dot Slop*)**: Dilarang menggunakan `<span className="... rounded-full bg-amber-300 animate-pulse ...">` atau badge bulat berdenyut di dalam tombol, header, atau kartu. Pola ini terlihat murahan dan merupakan ciri khas artifaktual AI coding.
+   - **Dilarang Menggunakan Karakter Em-Dash (*Anti Em-Dash* —)**: Jangan pernah menggunakan karakter em-dash (`—`) pada teks UI, dokumentasi, maupun pesan sistem. Gunakan tanda hubung strip biasa (`-`), titik dua (`:`), atau struktur kalimat yang alami.
+2. **Kewajiban Menjalankan Skills Khusus Saat Pengerjaan Frontend & UI/UX**:
+   - Seluruh coding agent wajib mengaktifkan dan mematuhi panduan dari 4 skill utama berikut sebelum dan selama memodifikasi UI/UX, tata letak, dan salinan teks (*copywriting*):
+     - **`impeccable`**: Standar estetika visual tingkat tinggi, hierarki visual ketat, dan mikro-interaksi premium.
+     - **`antislop-human`**: Standar aksesibilitas (kontras WCAG AA, fokus keyboard, target sentuh ergonomis).
+     - **`antislop`**: Filter penyaring seluruh pola klise dan kode generik AI.
+     - **`antislop-copywriting`**: Penulisan teks UI, label, dan pesan sistem yang natural, tegas, dan manusiawi (bebas kata-kata hiperbolis atau basa-basi robotik).
+
+
+
+
 
 
 

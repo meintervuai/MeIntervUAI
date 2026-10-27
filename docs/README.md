@@ -10,8 +10,8 @@ d:\MeIntervUAI\
 │   ├── principles.md             # Prinsip dasar & tingkatan aturan (Hard, Purpose, Quality)
 │   ├── workflow.md               # Alur kerja WF-01 s.d WF-09 (baca dokumen & perbarui saat kode berubah)
 │   ├── backend.md                # Aturan backend BE-01 s.d BE-02 (Rate limit & Keamanan)
-│   ├── frontend.md               # Aturan frontend FE-01 s.d FE-05 (Render, DRY, Tokens, i18n, Form Mobile)
-│   ├── ui-ux.md                  # Aturan UI/UX UX-01 s.d UX-13 (Mobile-first, Rotasi, Kontras, Input Usability)
+│   ├── frontend.md               # Aturan frontend FE-01 s.d FE-07 (Render, DRY, Tokens, i18n, Form Mobile, Skeleton Loading)
+│   ├── ui-ux.md                  # Aturan UI/UX UX-01 s.d UX-17 (Mobile-first, Rotasi, Kontras, Input Usability, Skeleton Shimmer)
 │   ├── database.md               # Aturan basis data DB-01 s.d DB-06 (Skema, ID, Indeks)
 │   └── others.md                 # Aturan testing OT-01 dan gitignore OT-02
 ├── db/

@@ -299,6 +299,8 @@ export interface PusatBantuanKonten {
     subjudulHalaman: string;
     tombolSimpanDraf: string;
     sedangMenyimpan: string;
+    statusTersimpan: string;
+    memuatDrafLokal: string;
     drafTersimpan: string;
     tabEditor: string;
     tabPratinjau: string;

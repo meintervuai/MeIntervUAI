@@ -89,3 +89,8 @@ Tata letak wajib diuji dan bertahan pada seluruh ukuran standar:
   - **Segmented Control & Pill Carousel**: Ganti deretan tombol horizontal panjang dengan *horizontal scrollable chips/pills* dengan snapping yang mulus.
   - **Input Friendly**: Input form harus mencegah zoom otomatis di iOS Safari (`font-size >= 16px` pada input field mobile).
 
+### UX-17: Standar Transisi Antarmuka & Skeleton Shimmer (Anti Full-Page Spinner Loop)
+- **Pengalaman Transisi Instan**: Saat berpindah antar-menu atau memuat formulir kompleks, dilarang menampilkan layar putih kosong dengan satu ikon spinner di tengah yang memutar tanpa kepastian tata letak.
+- **Kerangka Skeleton Proporsional**: Wajib menggunakan blok skeleton shimmer abu-abu netral (`bg-stone-200 animate-pulse rounded-*`) yang mengikuti proporsi persis dari navigasi, kartu, input teks, dan tombol asli. Pola ini memangkas persepsi waktu tunggu (*perceived latency*) dan menghilangkan lonjakan visual mendadak (*Cumulative Layout Shift*).
+
+

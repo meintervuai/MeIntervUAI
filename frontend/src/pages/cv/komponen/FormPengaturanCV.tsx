@@ -317,7 +317,7 @@ export const FormPengaturanCV: React.FC<PropertiFormPengaturanCV> = ({
             <Info className="w-4 h-4 text-orange-700 shrink-0 mt-0.5" />
             <div className="flex-1 min-w-0">
               <span className="block text-xs font-bold text-orange-950">
-                {templateTerpilih.nama} — {templateTerpilih.badge}
+                {templateTerpilih.nama} - {templateTerpilih.badge}
               </span>
               <p className="text-[11px] text-stone-700 mt-0.5 leading-relaxed">
                 {templateTerpilih.desc}

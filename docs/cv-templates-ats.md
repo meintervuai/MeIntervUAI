@@ -35,32 +35,32 @@ Berdasarkan regulasi dan acuan standar resmi di atas, 6 template CV yang disedia
 
 ### Rincian Spesifikasi Template
 
-### 1. `ivy_classic` — Standar Harvard & Yale (Ivy League OCS)
+### 1. `ivy_classic` - Standar Harvard & Yale (Ivy League OCS)
 - **Acuan Resmi**: *Harvard College Office of Career Services (OCS) Resume Guide* & *Yale School of Management*.
 - **Karakter**: Header tengah (*centered*), pembatas garis horizontal hitam tegas (`1px solid`), tipografi *Serif* klasik.
 - **Rekomendasi**: Perbankan (Investment Banking), Firma Hukum, Manajemen Konsultan (MBB), Lembaga Multinasional (UN/World Bank), Beasiswa Luar Negeri (LPDP, Chevening).
 
-### 2. `tech_silicon` — Standar Industri Teknologi (Jake's Resume / Silicon Valley)
+### 2. `tech_silicon` - Standar Industri Teknologi (Jake's Resume / Silicon Valley)
 - **Acuan Resmi**: Standar format rekrutmen FAANG / Big Tech (model teruji *Jake's Resume / LaTeX* yang digunakan >50.000 engineer global).
 - **Karakter**: Rata kiri (*left-aligned*), tipografi *Sans-Serif* modern (*Inter/Roboto*), kontak 1-baris hemat spasi, bagian *Keahlian Teknis* diletakkan strategis untuk pemindaian instan parser tech stack.
 - **Rekomendasi**: Software Engineer, Data Scientist, AI/ML Specialist, Product Manager, DevOps.
 
-### 3. `bumn_nasional` — Standar Nasional (FHCI BUMN & Kemnaker ATS)
+### 3. `bumn_nasional` - Standar Nasional (FHCI BUMN & Kemnaker ATS)
 - **Acuan Resmi**: *Pedoman Seleksi Administrasi Rekrutmen Bersama BUMN (RBB - FHCI)* dan panduan penulisan CV Kemnaker RI.
 - **Karakter**: Kronologis bersih terbalik (*Reverse-Chronological*), penegasan riwayat universitas, akreditasi/IPK, pengalaman kerja, serta keikutsertaan organisasi/pelatihan formal yang selaras dengan nilai kerja BUMN.
 - **Rekomendasi**: Rekrutmen Bersama BUMN, Perusahaan Swasta Nasional, Perbankan BUMN (Mandiri, BRI, BNI), ASN / PPPK.
 
-### 4. `europass_slate` — Standar Uni Eropa (Europass Modernized ATS)
+### 4. `europass_slate` - Standar Uni Eropa (Europass Modernized ATS)
 - **Acuan Resmi**: *European Union Europass CV Framework (Decision No 2241/2004/EC)* yang telah disesuaikan agar 100% ramah ATS parser (tanpa tabel bersarang kaku).
 - **Karakter**: Pengelompokan bagian berbasis blok modular yang jelas, penegasan kemampuan bahasa, sertifikasi internasional, dan keahlian digital.
 - **Rekomendasi**: Bekerja di Eropa/Jerman/Belanda/Inggris, magang internasional, institusi riset akademis, visa kerja ekspatriat.
 
-### 5. `executive_din` — Standar Manajerial Presisi (DIN 5008 / ISO 216)
+### 5. `executive_din` - Standar Manajerial Presisi (DIN 5008 / ISO 216)
 - **Acuan Resmi**: Standar industri Jerman *DIN 5008 (Schreib- und Gestaltungsregeln für die Textverarbeitung)* & *ISO 216*.
 - **Karakter**: Margin presisi seragam (18mm - 24mm), kontras tipografi heading vs body terukur rasio emas, dilengkapi blok *Executive Summary* terstruktur untuk kandidat berpengalaman.
 - **Rekomendasi**: Direktur, General Manager, VP, Senior Consultant, Praktisi Industri dengan pengalaman >5 tahun.
 
-### 6. `modern_ats` — Standar Modern Two-Column (Corporate & Creative Executive)
+### 6. `modern_ats` - Standar Modern Two-Column (Corporate & Creative Executive)
 - **Acuan Resmi**: Desain resume kontemporer eksekutif modern (arsitektur *Split Two-Column* dengan sidebar kontras gelap di sisi kiri dan kanvas riwayat kerja berbasis *Timeline Experience* di sisi kanan).
 - **Karakter**:
   * **Sidebar Kiri Gelap (*Dark Slate/Navy Sidebar* ~35%)**: Memuat pasfoto melingkar (*circular headshot*), detail kontak terstruktur, riwayat pendidikan formal, serta daftar keahlian (*bulleted skills*).

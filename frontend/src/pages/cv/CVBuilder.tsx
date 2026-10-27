@@ -6,6 +6,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Tombol } from '../../components/ui/Tombol';
+import { NotifikasiToast, TipeToast } from '../../components/ui/NotifikasiToast';
 import { api } from '../../services/api';
 import { useBahasa } from '../../i18n';
 import { FormKontakCV } from './komponen/FormKontakCV';
@@ -73,9 +74,56 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
 
   const [sedangMemuat, setSedangMemuat] = useState(true);
   const [sedangMenyimpan, setSedangMenyimpan] = useState(false);
-  const [pesanNotifikasi, setPesanNotifikasi] = useState<string | null>(null);
+  const [adaPerubahanBelumDisimpan, setAdaPerubahanBelumDisimpan] = useState(false);
+  const [toastNotifikasi, setToastNotifikasi] = useState<{ tipe: TipeToast; pesan: string } | null>(null);
 
-  // Ambil Data CV Asli dari Database
+  // Kunci unik cache localStorage per akun pengguna
+  const kunciCacheLokal = pengguna?.pengguna_id ? `cv_draft_cache_${pengguna.pengguna_id}` : null;
+
+  // Optimasi Instan (Stale-While-Revalidate): Muat draf lokal seketika saat pertama kali mount (0 ms)
+  useEffect(() => {
+    if (!kunciCacheLokal) return;
+
+    try {
+      const raw = localStorage.getItem(kunciCacheLokal);
+      if (raw) {
+        const drafLokal = JSON.parse(raw);
+        if (drafLokal && drafLokal.konten) {
+          setJudulCv(drafLokal.judul_cv || `CV ${pengguna?.nama_pengguna || 'Profesional'}`);
+          setTargetRole(drafLokal.target_role || '');
+
+          const kontak = drafLokal.konten.data_kontak || {};
+          setNamaLengkap(kontak.nama_lengkap || pengguna?.nama_pengguna || '');
+          setEmailKontak(kontak.email || pengguna?.email || '');
+          setTeleponKontak(kontak.telepon || '');
+          setLinkedinKontak(kontak.linkedin || '');
+          setDomisiliKontak(kontak.domisili || '');
+          setTempatTanggalLahir(kontak.tempat_tanggal_lahir || '');
+          setGithubKontak(kontak.github || '');
+          setPortofolioKontak(kontak.portofolio || '');
+          setRingkasan(drafLokal.konten.ringkasan_eksekutif || '');
+
+          setDaftarEdukasi(Array.isArray(drafLokal.konten.riwayat_edukasi) ? drafLokal.konten.riwayat_edukasi : []);
+          setDaftarPengalaman(Array.isArray(drafLokal.konten.pengalaman_kerja) ? drafLokal.konten.pengalaman_kerja : []);
+          setDaftarProyek(Array.isArray(drafLokal.konten.proyek_portofolio) ? drafLokal.konten.proyek_portofolio : []);
+          setDaftarKeahlian(Array.isArray(drafLokal.konten.keahlian) ? drafLokal.konten.keahlian : []);
+
+          if (drafLokal.konten.konfigurasi_visual) {
+            setKonfigurasiVisual((prev) => ({
+              ...prev,
+              ...drafLokal.konten.konfigurasi_visual,
+            }));
+          }
+          // Langsung buka layar form tanpa skeleton loop
+          setSedangMemuat(false);
+        }
+      }
+    } catch {
+      // Abaikan jika parsing gagal
+    }
+  }, [kunciCacheLokal]);
+
+  // Background Sync: Ambil Data Terbaru dari Database Supabase secara senyap
   useEffect(() => {
     if (!pengguna?.pengguna_id) return;
 
@@ -83,14 +131,38 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
     api.ambilStatusCV(pengguna.pengguna_id)
       .then((res) => {
         if (!mounted) return;
-        if (res.status === 'sukses' && res.cv_tersedia && res.cv) {
-          const cv = res.cv;
-          setJudulCv(cv.judul_cv || '');
-          setTargetRole(cv.target_role || '');
-          setSkorAts(cv.skor_ats || 0);
-          setStatusTerverifikasi(cv.status_terverifikasi || false);
 
-          const konten = cv.konten_json || {};
+        // Ambil timestamp draf lokal
+        let drafLokal: any = null;
+        if (kunciCacheLokal) {
+          try {
+            const raw = localStorage.getItem(kunciCacheLokal);
+            if (raw) drafLokal = JSON.parse(raw);
+          } catch {
+            drafLokal = null;
+          }
+        }
+
+        const serverDataAda = res.status === 'sukses' && res.cv_tersedia && res.cv;
+        const serverCv = serverDataAda ? res.cv : null;
+
+        const waktuServer = serverCv?.diperbarui_pada ? new Date(serverCv.diperbarui_pada).getTime() : 0;
+        const waktuLokal = drafLokal?.timestamp || 0;
+
+        // Jika lokal lebih baru, pertahankan draf lokal
+        if (drafLokal && waktuLokal > waktuServer) {
+          setAdaPerubahanBelumDisimpan(true);
+          return;
+        }
+
+        // Jika server ada dan lebih baru (atau belum ada data lokal), gunakan data server
+        if (serverCv) {
+          setJudulCv(serverCv.judul_cv || '');
+          setTargetRole(serverCv.target_role || '');
+          setSkorAts(serverCv.skor_ats || 0);
+          setStatusTerverifikasi(serverCv.status_terverifikasi || false);
+
+          const konten = serverCv.konten_json || {};
           const kontak = konten.data_kontak || {};
           setNamaLengkap(kontak.nama_lengkap || pengguna.nama_pengguna || '');
           setEmailKontak(kontak.email || pengguna.email || '');
@@ -113,11 +185,12 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
               ...konten.konfigurasi_visual,
             }));
           }
-        } else {
-          // Inisialisasi awal bersih dari profil akun pengguna
+          setAdaPerubahanBelumDisimpan(false);
+        } else if (!drafLokal) {
           setNamaLengkap(pengguna.nama_pengguna || '');
           setEmailKontak(pengguna.email || '');
           setJudulCv(`CV ${pengguna.nama_pengguna || 'Profesional'}`);
+          setAdaPerubahanBelumDisimpan(false);
         }
       })
       .catch((err) => {
@@ -132,12 +205,67 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
     };
   }, [pengguna]);
 
-  // Handler Simpan Draf ke Supabase
+  // Caching Senyap: Simpan setiap perubahan ke localStorage secara instan tanpa mengganggu user
+  useEffect(() => {
+    if (sedangMemuat || !kunciCacheLokal) return;
+
+    const dataDrafLokal = {
+      timestamp: Date.now(),
+      judul_cv: judulCv,
+      target_role: targetRole,
+      konten: {
+        data_kontak: {
+          nama_lengkap: namaLengkap,
+          email: emailKontak,
+          telepon: teleponKontak,
+          linkedin: linkedinKontak,
+          domisili: domisiliKontak,
+          tempat_tanggal_lahir: tempatTanggalLahir,
+          github: githubKontak,
+          portofolio: portofolioKontak,
+        },
+        ringkasan_eksekutif: ringkasan,
+        riwayat_edukasi: daftarEdukasi,
+        pengalaman_kerja: daftarPengalaman,
+        proyek_portofolio: daftarProyek,
+        keahlian: daftarKeahlian,
+        konfigurasi_visual: konfigurasiVisual,
+      },
+    };
+
+    try {
+      localStorage.setItem(kunciCacheLokal, JSON.stringify(dataDrafLokal));
+      setAdaPerubahanBelumDisimpan(true);
+    } catch (e) {
+      console.warn('Gagal menyimpan cache draf lokal:', e);
+    }
+  }, [
+    sedangMemuat,
+    kunciCacheLokal,
+    judulCv,
+    targetRole,
+    namaLengkap,
+    emailKontak,
+    teleponKontak,
+    linkedinKontak,
+    domisiliKontak,
+    tempatTanggalLahir,
+    githubKontak,
+    portofolioKontak,
+    ringkasan,
+    daftarEdukasi,
+    daftarPengalaman,
+    daftarProyek,
+    daftarKeahlian,
+    konfigurasiVisual,
+  ]);
+
+  // Handler Simpan Draf Resmi ke Supabase
   const tanganiSimpan = async () => {
     if (!pengguna?.pengguna_id) return;
 
     setSedangMenyimpan(true);
-    setPesanNotifikasi(null);
+    setToastNotifikasi(null);
 
     const payload = {
       pengguna_id: pengguna.pengguna_id,
@@ -166,13 +294,13 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
     try {
       const res = await api.simpanDrafCV(payload);
       if (res.status === 'sukses') {
-        setPesanNotifikasi(t.cvBuilder.drafTersimpan);
-        setTimeout(() => setPesanNotifikasi(null), 4000);
+        setAdaPerubahanBelumDisimpan(false);
+        setToastNotifikasi({ tipe: 'sukses', pesan: t.cvBuilder.drafTersimpan });
       } else {
-        alert(res.pesan || 'Gagal menyimpan draf CV.');
+        setToastNotifikasi({ tipe: 'gagal', pesan: res.pesan || 'Gagal menyimpan draf CV.' });
       }
     } catch (err: any) {
-      alert(`Terjadi kesalahan sistem: ${err.message || 'Koneksi terputus'}`);
+      setToastNotifikasi({ tipe: 'gagal', pesan: `Terjadi kesalahan sistem: ${err.message || 'Koneksi terputus'}` });
     } finally {
       setSedangMenyimpan(false);
     }
@@ -189,9 +317,82 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
 
   if (sedangMemuat) {
     return (
-      <div className="max-w-5xl mx-auto px-4 py-20 text-center text-stone-500">
-        <div className="animate-spin w-8 h-8 border-4 border-orange-600 border-t-transparent rounded-full mx-auto mb-4" />
-        <p className="text-sm">Memuat data CV Anda dari server...</p>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-5 pb-28 md:pb-12 safe-padding-x font-sans animate-pulse">
+        {/* Skeleton Top Header Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-stone-200" />
+            <div className="space-y-2">
+              <div className="w-48 sm:w-64 h-6 rounded-md bg-stone-200" />
+              <div className="w-32 sm:w-40 h-4 rounded-md bg-stone-100 hidden sm:block" />
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-24 h-10 rounded-xl bg-stone-200 hidden sm:block" />
+            <div className="w-32 h-10 rounded-xl bg-stone-300" />
+          </div>
+        </div>
+
+        {/* Skeleton Workspace Grid (8 cols Editor & 4 cols Preview) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Kolom Kiri: Skeleton Form Editor */}
+          <div className="lg:col-span-8 space-y-4">
+            {/* Skeleton Tab Navigation Bar */}
+            <div className="bg-stone-100/90 p-2 rounded-2xl border border-stone-200/80 flex items-center gap-2 overflow-hidden">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className="h-9 w-24 rounded-xl bg-stone-200/90 shrink-0" />
+              ))}
+            </div>
+
+            {/* Skeleton Form Card */}
+            <div className="bg-white rounded-2xl border border-stone-200/80 p-5 sm:p-7 space-y-5 shadow-2xs">
+              <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+                <div className="w-40 h-5 bg-stone-200 rounded-md" />
+                <div className="w-20 h-8 bg-stone-200 rounded-lg" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="w-24 h-4 bg-stone-200 rounded" />
+                  <div className="w-full h-10 bg-stone-100 rounded-xl border border-stone-200/60" />
+                </div>
+                <div className="space-y-2">
+                  <div className="w-28 h-4 bg-stone-200 rounded" />
+                  <div className="w-full h-10 bg-stone-100 rounded-xl border border-stone-200/60" />
+                </div>
+              </div>
+              <div className="space-y-2 pt-2">
+                <div className="w-36 h-4 bg-stone-200 rounded" />
+                <div className="w-full h-24 bg-stone-100 rounded-xl border border-stone-200/60" />
+              </div>
+            </div>
+          </div>
+
+          {/* Kolom Kanan: Skeleton Preview Kertas CV */}
+          <div className="hidden lg:block lg:col-span-4 space-y-3 sticky top-4">
+            <div className="bg-stone-100/90 p-3 rounded-2xl border border-stone-200/80 flex items-center justify-between">
+              <div className="w-24 h-4 bg-stone-200 rounded" />
+              <div className="flex gap-2">
+                <div className="w-8 h-8 rounded-lg bg-stone-200" />
+                <div className="w-8 h-8 rounded-lg bg-stone-200" />
+              </div>
+            </div>
+            <div className="w-full aspect-[210/297] bg-white rounded-2xl border border-stone-200/90 shadow-2xs p-6 space-y-4">
+              <div className="w-3/4 h-5 bg-stone-200 rounded mx-auto" />
+              <div className="w-1/2 h-3 bg-stone-100 rounded mx-auto" />
+              <div className="w-full h-px bg-stone-200 my-3" />
+              <div className="space-y-2 pt-2">
+                <div className="w-1/3 h-4 bg-stone-200 rounded" />
+                <div className="w-full h-2 bg-stone-100 rounded" />
+                <div className="w-5/6 h-2 bg-stone-100 rounded" />
+              </div>
+              <div className="space-y-2 pt-3">
+                <div className="w-1/3 h-4 bg-stone-200 rounded" />
+                <div className="w-full h-2 bg-stone-100 rounded" />
+                <div className="w-4/5 h-2 bg-stone-100 rounded" />
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -221,8 +422,8 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
               )}
               {statusTerverifikasi && (
                 <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 flex items-center gap-1">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-                  Terverifikasi
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Terverifikasi</span>
                 </span>
               )}
             </div>
@@ -272,20 +473,40 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
             ukuran="md"
             onClick={tanganiSimpan}
             disabled={sedangMenyimpan}
-            className="bg-orange-700 hover:bg-orange-800 text-white font-bold text-xs min-h-[42px] px-4 shadow-sm"
+            className={`font-bold text-xs min-h-[42px] px-4 shadow-sm transition-all duration-300 ${
+              adaPerubahanBelumDisimpan
+                ? 'bg-orange-700 hover:bg-orange-800 text-white ring-2 ring-orange-500/20'
+                : 'bg-emerald-700 hover:bg-emerald-800 text-white'
+            }`}
           >
-            <Save className="w-4 h-4 mr-1.5" />
-            <span>{sedangMenyimpan ? t.cvBuilder.sedangMenyimpan : t.cvBuilder.tombolSimpanDraf}</span>
+            {sedangMenyimpan ? (
+              <span className="flex items-center gap-1.5">
+                <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                <span>{t.cvBuilder.sedangMenyimpan}</span>
+              </span>
+            ) : adaPerubahanBelumDisimpan ? (
+              <span className="flex items-center gap-1.5">
+                <Save className="w-4 h-4 mr-0.5" />
+                <span>{t.cvBuilder.tombolSimpanDraf}</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 mr-0.5" />
+                <span>{t.cvBuilder.statusTersimpan}</span>
+              </span>
+            )}
           </Tombol>
         </div>
       </div>
 
-      {/* Floating Notification Toast */}
-      {pesanNotifikasi && (
-        <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium flex items-center gap-2 print:hidden shadow-sm animate-fade-in">
-          <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-          <span>{pesanNotifikasi}</span>
-        </div>
+      {/* Floating Notification Toast Reusable (FE-02, UX-03, UX-16) */}
+      {toastNotifikasi && (
+        <NotifikasiToast
+          tipe={toastNotifikasi.tipe}
+          pesan={toastNotifikasi.pesan}
+          onTutup={() => setToastNotifikasi(null)}
+          durasiMs={4000}
+        />
       )}
 
       {/* Workspace Grid Layout: Form Dominan Lega (lg:col-span-8) & Preview Ramping Kompak (lg:col-span-4) */}

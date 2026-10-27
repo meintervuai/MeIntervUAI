@@ -55,16 +55,50 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
 
   // Toggle Accordion Roadmap Mobile
   const [bukaRoadmapMobile, setBukaRoadmapMobile] = useState(false);
+  const [sedangMemuatBeranda, setSedangMemuatBeranda] = useState(true);
+
+  const kunciCacheBeranda = pengguna?.pengguna_id ? `beranda_status_cache_${pengguna.pengguna_id}` : null;
+
+  // 1. Caching Instan: Baca status token dan profil beranda dari localStorage seketika (0 ms)
+  useEffect(() => {
+    if (!kunciCacheBeranda) return;
+    try {
+      const cached = localStorage.getItem(kunciCacheBeranda);
+      if (cached) {
+        const d = JSON.parse(cached);
+        if (d) {
+          if (d.saldo_token !== undefined) setSaldoToken(d.saldo_token);
+          if (d.cv_tersedia !== undefined) setCvTersedia(d.cv_tersedia);
+          if (d.skor_ats !== undefined) setSkorAts(d.skor_ats);
+          if (d.rekomendasi_ai) setRekomendasiAi(d.rekomendasi_ai);
+          if (d.umur) setUmur(d.umur);
+          if (d.status_pekerjaan) setStatusPekerjaan(d.status_pekerjaan);
+          if (d.jenis_kelamin) setJenisKelamin(d.jenis_kelamin);
+          if (d.role_impian) setRoleImpian(d.role_impian);
+          setSedangMemuatBeranda(false);
+        }
+      }
+    } catch {}
+  }, [kunciCacheBeranda]);
 
   const muatDataStatus = () => {
     if (pengguna && pengguna.pengguna_id) {
-      api.getProfil(pengguna.pengguna_id).then((res) => {
-        if (res.status === 'sukses') {
-          setCvTersedia(res.cv_tersedia || false);
-          if (res.saldo_token) {
-            setSaldoToken(res.saldo_token.jumlah_saldo);
+      Promise.all([
+        api.getProfil(pengguna.pengguna_id).catch(() => null),
+        api.ambilStatusCV(pengguna.pengguna_id).catch(() => null),
+      ]).then(([resProfil, resCv]) => {
+        let updateCache: any = {};
+
+        if (resProfil && resProfil.status === 'sukses') {
+          const cvAda = resProfil.cv_tersedia || false;
+          setCvTersedia(cvAda);
+          updateCache.cv_tersedia = cvAda;
+
+          if (resProfil.saldo_token) {
+            setSaldoToken(resProfil.saldo_token.jumlah_saldo);
+            updateCache.saldo_token = resProfil.saldo_token.jumlah_saldo;
           }
-          const p = res.profil || {};
+          const p = resProfil.profil || {};
           if (!p.umur || !p.status_pekerjaan) {
             setModalOnboarding(true);
           } else {
@@ -72,30 +106,40 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
             setStatusPekerjaan(p.status_pekerjaan);
             setJenisKelamin(p.jenis_kelamin || 'pria');
             setRoleImpian(p.role_impian || '');
+            updateCache.umur = p.umur;
+            updateCache.status_pekerjaan = p.status_pekerjaan;
+            updateCache.jenis_kelamin = p.jenis_kelamin || 'pria';
+            updateCache.role_impian = p.role_impian || '';
           }
         }
-      }).catch(() => {
-        setModalOnboarding(true);
-      });
 
-      api.ambilStatusCV(pengguna.pengguna_id).then((res) => {
-        if (res.status === 'sukses' && res.ada_cv && res.cv) {
-          setDataCvPengguna(res.cv);
-          setSkorAts(res.cv.skor_ats !== undefined ? res.cv.skor_ats : null);
-          setRekomendasiAi(res.cv.rekomendasi_ai || null);
-          if (res.cv.status_terverifikasi) {
+        if (resCv && resCv.status === 'sukses' && resCv.cv_tersedia && resCv.cv) {
+          setDataCvPengguna(resCv.cv);
+          const ats = resCv.cv.skor_ats !== undefined ? resCv.cv.skor_ats : null;
+          setSkorAts(ats);
+          setRekomendasiAi(resCv.cv.rekomendasi_ai || null);
+          updateCache.skor_ats = ats;
+          updateCache.rekomendasi_ai = resCv.cv.rekomendasi_ai;
+          if (resCv.cv.status_terverifikasi) {
             setCvTersedia(true);
+            updateCache.cv_tersedia = true;
           }
         }
-      }).catch((err) => {
-        console.error('Gagal mengambil status CV:', err);
+
+        if (kunciCacheBeranda && Object.keys(updateCache).length > 0) {
+          try {
+            localStorage.setItem(kunciCacheBeranda, JSON.stringify(updateCache));
+          } catch {}
+        }
+      }).finally(() => {
+        setSedangMemuatBeranda(false);
       });
     }
   };
 
   useEffect(() => {
     muatDataStatus();
-  }, [pengguna]);
+  }, [pengguna, kunciCacheBeranda]);
 
   const tanganiSelesaiDataAwal = (dataProfil: {
     umur?: number;
@@ -142,6 +186,46 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
     }
   };
 
+  if (sedangMemuatBeranda) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-10 pb-28 md:pb-12 safe-padding-x font-sans animate-pulse">
+        {/* Skeleton Header Beranda */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 sm:gap-6 pb-4 sm:pb-6 border-b border-stone-200">
+          <div className="space-y-2">
+            <div className="w-28 h-4 bg-stone-200 rounded" />
+            <div className="w-48 sm:w-64 h-8 bg-stone-300 rounded-lg" />
+            <div className="w-72 h-4 bg-stone-100 rounded hidden sm:block" />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-32 h-11 bg-stone-200 rounded-xl" />
+            <div className="w-36 h-11 bg-stone-200 rounded-xl" />
+          </div>
+        </div>
+
+        {/* Skeleton Grid 2 Kolom Beranda */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+          <div className="lg:col-span-7 space-y-6">
+            <div className="bg-white rounded-2xl border border-stone-200/90 p-6 space-y-4 shadow-2xs">
+              <div className="w-44 h-6 bg-stone-200 rounded" />
+              <div className="grid grid-cols-3 gap-3">
+                <div className="h-24 bg-stone-100 rounded-xl" />
+                <div className="h-24 bg-stone-100 rounded-xl" />
+                <div className="h-24 bg-stone-100 rounded-xl" />
+              </div>
+              <div className="w-full h-12 bg-stone-200 rounded-xl" />
+            </div>
+          </div>
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-white rounded-2xl border border-stone-200/90 p-6 space-y-4 shadow-2xs">
+              <div className="w-36 h-6 bg-stone-200 rounded" />
+              <div className="w-full h-28 bg-stone-100 rounded-xl" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10 space-y-6 sm:space-y-10 pb-28 md:pb-12 safe-padding-x">
       {/* Dialog Profil Awal */}
@@ -186,7 +270,11 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
               ? 'bg-emerald-50 text-emerald-900 border-emerald-200' 
               : 'bg-amber-50 text-amber-900 border-amber-200'
           }`}>
-            <span className={`w-2 h-2 rounded-full shrink-0 ${cvTersedia ? 'bg-emerald-600' : 'bg-amber-600 animate-pulse'}`} />
+            {cvTersedia ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            ) : (
+              <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+            )}
             <span>{cvTersedia ? t.beranda.cvTerverifikasi : t.beranda.cvBelumLengkap}</span>
           </div>
         </div>

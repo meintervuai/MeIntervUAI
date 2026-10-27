@@ -26,9 +26,9 @@ export const HalamanGalat: React.FC<PropsHalamanGalat> = ({
     <div className="min-h-[80vh] flex items-center justify-center px-4 py-16 bg-[#fdfbf7]">
       <div className="w-full max-w-lg text-center space-y-6">
         {/* Lencana Status */}
-        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-100 border border-orange-200 text-orange-800 text-xs font-semibold">
-          <span className="w-2 h-2 rounded-full bg-orange-600 animate-pulse" />
-          {t.galat.statusLabel} {kodeStatus}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-orange-100 border border-orange-200 text-orange-800 text-xs font-semibold">
+          <span className="w-1.5 h-1.5 rounded-full bg-orange-600" />
+          <span>{t.galat.statusLabel} {kodeStatus}</span>
         </div>
 
         {/* Angka Kode Visual */}

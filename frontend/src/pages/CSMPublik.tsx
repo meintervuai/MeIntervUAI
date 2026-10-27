@@ -246,8 +246,8 @@ export const CSMPublik: React.FC = () => {
               <div className="mt-4 pt-4 border-t border-stone-100 flex items-center justify-between text-xs text-stone-600">
                 <span className="font-bold text-stone-800">Sesi Wawancara Adaptif</span>
                 <span className="inline-flex items-center gap-1.5 font-bold text-emerald-800">
-                  <span className="w-2 h-2 rounded-full bg-emerald-600" />
-                  Siap Latihan
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                  <span>Siap Latihan</span>
                 </span>
               </div>
             </div>
@@ -819,7 +819,7 @@ export const CSMPublik: React.FC = () => {
               </p>
               <div className="flex items-center gap-3 pt-1">
                 <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-50 border border-emerald-200 rounded-full text-xs font-bold text-emerald-900">
-                  <span className="w-2 h-2 rounded-full bg-emerald-600" aria-hidden="true" />
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
                   <span>{t.footer.statusSistem}</span>
                 </div>
                 <span className="text-xs font-bold text-stone-500">

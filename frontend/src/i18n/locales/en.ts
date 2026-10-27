@@ -441,6 +441,8 @@ export const kontenEn: PusatBantuanKonten = {
     subjudulHalaman: 'Craft an international standard 1-column CV optimized to pass automated Applicant Tracking Systems.',
     tombolSimpanDraf: 'Save CV Draft',
     sedangMenyimpan: 'Saving...',
+    statusTersimpan: 'Saved',
+    memuatDrafLokal: 'Loaded your latest local draft from this device',
     drafTersimpan: 'Resume draft successfully saved to database!',
     tabEditor: 'CV Data Form',
     tabPratinjau: 'ATS Paper Preview',

@@ -441,6 +441,8 @@ export const kontenId: PusatBantuanKonten = {
     subjudulHalaman: 'Susun CV 1-kolom berstandar internasional yang lolos seleksi otomatis pelacak pelamar (ATS).',
     tombolSimpanDraf: 'Simpan Draf CV',
     sedangMenyimpan: 'Menyimpan...',
+    statusTersimpan: 'Tersimpan',
+    memuatDrafLokal: 'Memuat draf otomatis terbaru dari perangkat Anda',
     drafTersimpan: 'Draf resume berhasil disimpan ke database!',
     tabEditor: 'Formulir Data CV',
     tabPratinjau: 'Pratinjau Kertas ATS',

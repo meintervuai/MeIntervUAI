@@ -33,4 +33,8 @@ Ruang lingkup: Struktur kode frontend, urutan render, pendekatan komponen OOP/DR
   - `*Desktop.tsx` untuk viewport `≥ 768px` (dioptimasi untuk grid lebar, multi-kolom, shortcut, dan hover interaction).
   - `index.tsx` / Wrapper Utama sebagai koordinator yang menyajikan varian yang tepat tanpa duplikasi logika bisnis.
 - **Tujuan Arsitektur**: Memudahkan pemeliharaan (*maintainability*) dan isolasi galat, sehingga perbaikan tata letak di satu jenis perangkat tidak menyebabkan regresi tampilan pada perangkat lainnya.
+ 
++### FE-07: Pemuatan Data & Transisi Menggunakan Skeleton Loading (Anti-Spinner Loop)
++- Pemuatan data halaman awal dan transisi antar menu/tab dilarang menggunakan spinner memutar di tengah layar kosong.
++- Gunakan kerangka *Skeleton Shimmer* (`animate-pulse`) yang mencerminkan struktur layout sebenarnya agar tidak memicu *layout shift*. Spinner putar (`animate-spin`) hanya diizinkan di dalam elemen mikro seperti tombol submit.
 

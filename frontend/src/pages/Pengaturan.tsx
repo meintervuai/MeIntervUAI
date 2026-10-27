@@ -70,13 +70,41 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
   const [isiUlasan, setIsiUlasan] = useState('');
 
   // Notification & Loading
+  const [sedangMemuatData, setSedangMemuatData] = useState(true);
   const [sedangMenyimpan, setSedangMenyimpan] = useState(false);
   const [notifikasi, setNotifikasi] = useState<{ tipe: 'sukses' | 'gagal'; teks: string } | null>(null);
+
+  const kunciCacheProfil = pengguna?.pengguna_id ? `profil_cache_${pengguna.pengguna_id}` : null;
 
   useEffect(() => {
     setBahasaDipilih(bahasa);
   }, [bahasa]);
 
+  // 1. Caching Instan: Baca profil dari localStorage seketika (0 ms)
+  useEffect(() => {
+    if (!kunciCacheProfil) return;
+    try {
+      const cached = localStorage.getItem(kunciCacheProfil);
+      if (cached) {
+        const p = JSON.parse(cached);
+        if (p) {
+          if (p.nama_lengkap) setNamaLengkap(p.nama_lengkap);
+          if (p.nomor_telepon) setNomorTelepon(p.nomor_telepon);
+          if (p.url_foto_profil) setUrlFoto(p.url_foto_profil);
+          if (p.umur) setUmur(p.umur);
+          if (p.jenis_kelamin) setJenisKelamin(p.jenis_kelamin);
+          if (p.status_pekerjaan) setStatusPekerjaan(p.status_pekerjaan);
+          if (p.role_impian) setRoleImpian(p.role_impian);
+          // Langsung buka layar form tanpa skeleton
+          setSedangMemuatData(false);
+        }
+      }
+    } catch {
+      // Abaikan jika parsing gagal
+    }
+  }, [kunciCacheProfil]);
+
+  // 2. Background Revalidation ke Server Supabase
   useEffect(() => {
     if (pengguna && pengguna.pengguna_id) {
       api.getProfil(pengguna.pengguna_id).then((res) => {
@@ -97,13 +125,22 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
           if (p.jenis_kelamin) setJenisKelamin(p.jenis_kelamin);
           if (p.status_pekerjaan) setStatusPekerjaan(p.status_pekerjaan);
           if (p.role_impian) setRoleImpian(p.role_impian);
+
+          // Simpan ke cache lokal
+          if (kunciCacheProfil) {
+            try {
+              localStorage.setItem(kunciCacheProfil, JSON.stringify(p));
+            } catch {}
+          }
         }
       }).catch(() => {
         const namaFallback = pengguna.nama_pengguna && !pengguna.nama_pengguna.includes('@') ? pengguna.nama_pengguna : '';
         setNamaLengkap(namaFallback);
+      }).finally(() => {
+        setSedangMemuatData(false);
       });
     }
-  }, [pengguna]);
+  }, [pengguna, kunciCacheProfil]);
 
   // Utilitas kompresi gambar client-side
   const kompresGambar = (file: File): Promise<Blob> => {
@@ -846,6 +883,52 @@ export const Pengaturan: React.FC<PropertiPengaturan> = ({ pengguna, onPerbaruiP
       icon: <Star className="w-5 h-5 text-orange-700" />,
     },
   };
+
+  if (sedangMemuatData) {
+    return (
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-6 pb-28 md:pb-12 safe-padding-x font-sans animate-pulse">
+        {/* Skeleton Header */}
+        <div className="hidden lg:block pb-4 border-b border-stone-200">
+          <div className="w-56 h-7 bg-stone-200 rounded-lg" />
+          <div className="w-96 h-4 bg-stone-100 rounded-md mt-2" />
+        </div>
+
+        {/* Skeleton Two-Column Grid */}
+        <div className="lg:grid lg:grid-cols-12 lg:gap-8 items-start">
+          {/* Sidebar Kiri */}
+          <div className="lg:col-span-4 space-y-4">
+            <div className="bg-white rounded-2xl border border-stone-200/90 p-5 space-y-4 shadow-2xs">
+              <div className="flex items-center gap-3">
+                <div className="w-14 h-14 rounded-full bg-stone-200" />
+                <div className="space-y-1.5 flex-1">
+                  <div className="w-32 h-4 bg-stone-200 rounded" />
+                  <div className="w-24 h-3 bg-stone-100 rounded" />
+                </div>
+              </div>
+              <div className="space-y-2 pt-2">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <div key={i} className="w-full h-10 bg-stone-100 rounded-xl" />
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Panel Kanan */}
+          <div className="hidden lg:block lg:col-span-8">
+            <div className="bg-white rounded-2xl border border-stone-200/90 p-6 sm:p-8 space-y-6 shadow-2xs">
+              <div className="w-48 h-6 bg-stone-200 rounded" />
+              <div className="w-full h-24 bg-stone-100 rounded-xl" />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="w-full h-12 bg-stone-100 rounded-xl" />
+                <div className="w-full h-12 bg-stone-100 rounded-xl" />
+              </div>
+              <div className="w-32 h-10 bg-stone-300 rounded-xl ml-auto" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 sm:py-8 space-y-6 pb-28 md:pb-12 safe-padding-x font-sans">

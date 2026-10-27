@@ -53,7 +53,7 @@ export const NotifikasiToast: React.FC<PropertiToast> = ({
     <div
       role="status"
       aria-live="polite"
-      className="fixed z-50 pointer-events-none inset-x-0 bottom-20 md:bottom-auto md:top-20 md:right-6 md:left-auto flex justify-center md:justify-end px-4"
+      className="fixed z-50 pointer-events-none inset-x-0 top-16 md:top-auto md:bottom-6 md:right-6 md:left-auto flex justify-center md:justify-end px-4"
     >
       <div
         className={`pointer-events-auto flex items-center gap-3 py-3 px-4 rounded-xl border shadow-xl max-w-sm w-full sm:w-auto transition-all animate-bounce-subtle ${warnaBg}`}
