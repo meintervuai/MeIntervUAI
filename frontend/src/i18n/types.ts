@@ -446,6 +446,9 @@ export interface PusatBantuanKonten {
     // Aksi & Pesan Status Form
     hapusItem: string;
     cetakPdf: string;
+    sedangMengunduhPdf: string;
+    unduhPdfSukses: string;
+    unduhPdfGagal: string;
     kembaliKeBeranda: string;
     edukasiKosong: string;
     pengalamanKosong: string;
@@ -457,6 +460,7 @@ export interface PusatBantuanKonten {
     tipExecutiveDin: string;
     arsitekturScannerAtsBadge: string;
     standarKertasSubjudul: string;
+    marginTerkunciModern: string;
     pilihPresetWarnaSubjudul: string;
     mendukungHexPicker: string;
     pengaturanFontPixelSubjudul: string;

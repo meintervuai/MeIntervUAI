@@ -383,22 +383,29 @@ export const FormPengaturanCV: React.FC<PropertiFormPengaturanCV> = ({
               <label className="block text-xs font-bold text-stone-800">
                 {t.cvBuilder.marginLabel}
               </label>
-              <div className="grid grid-cols-3 gap-1.5">
-                {(['kompak', 'standar', 'lega'] as UkuranMargin[]).map((m) => (
-                  <button
-                    key={m}
-                    type="button"
-                    onClick={() => handleUpdate('margin', m)}
-                    className={`py-2 px-1 text-[11px] sm:text-xs font-semibold rounded-xl border text-center capitalize transition-all min-h-[44px] cursor-pointer ${
-                      konfigurasiVisual.margin === m
-                        ? 'border-orange-600 bg-orange-50 text-orange-800 font-bold'
-                        : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
-                    }`}
-                  >
-                    {m === 'kompak' ? '12 mm' : m === 'standar' ? '18 mm' : '24 mm'}
-                  </button>
-                ))}
-              </div>
+              {konfigurasiVisual.templateId === 'modern_ats' ? (
+                <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 text-xs text-stone-600 flex items-center gap-2">
+                  <Info className="w-4 h-4 text-orange-600 shrink-0" />
+                  <span>{t.cvBuilder.marginTerkunciModern}</span>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-1.5">
+                  {(['kompak', 'standar', 'lega'] as UkuranMargin[]).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => handleUpdate('margin', m)}
+                      className={`py-2 px-1 text-[11px] sm:text-xs font-semibold rounded-xl border text-center capitalize transition-all min-h-[44px] cursor-pointer ${
+                        konfigurasiVisual.margin === m
+                          ? 'border-orange-600 bg-orange-50 text-orange-800 font-bold'
+                          : 'border-stone-200 bg-white text-stone-700 hover:bg-stone-50'
+                      }`}
+                    >
+                      {m === 'kompak' ? '12 mm' : m === 'standar' ? '18 mm' : '24 mm'}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </Kartu>

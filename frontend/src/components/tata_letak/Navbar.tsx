@@ -45,7 +45,7 @@ export const Navbar: React.FC<PropertiNavbar> = ({ pengguna, onKeluar }) => {
   return (
     <>
       {/* 1. TOP HEADER (Desktop full nav, Mobile clean utility header) */}
-      <header className="sticky top-0 z-40 bg-[#fdfbf7] border-b border-stone-200">
+      <header className="sticky top-0 z-40 bg-[#fdfbf7] border-b border-stone-200 print:hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-14 sm:h-16 relative">
             {/* Left: Brand Logo (Desktop) / Page Title (Mobile) */}
@@ -143,7 +143,7 @@ export const Navbar: React.FC<PropertiNavbar> = ({ pengguna, onKeluar }) => {
       {pengguna && (
         <nav 
           aria-label="Navigasi Bawah Aplikasi Mobile"
-          className="fixed md:hidden bottom-0 left-0 right-0 z-50 bg-[#fdfbf7] border-t border-stone-200 shadow-[0_-2px_10px_rgba(0,0,0,0.04)] pb-[env(safe-area-inset-bottom)]"
+          className="fixed md:hidden bottom-0 left-0 right-0 z-50 bg-[#fdfbf7] border-t border-stone-200 shadow-[0_-2px_10px_rgba(0,0,0,0.04)] pb-[env(safe-area-inset-bottom)] print:hidden"
         >
           <div className="grid grid-cols-5 h-16 items-center px-1">
             {menuNavigasi.map((item) => {

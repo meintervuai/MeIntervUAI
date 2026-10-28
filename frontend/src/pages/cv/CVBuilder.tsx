@@ -17,12 +17,12 @@ import { FormKeahlianCV } from './komponen/FormKeahlianCV';
 import { FormPengaturanCV } from './komponen/FormPengaturanCV';
 import { PratinjauKertasATS } from './komponen/PratinjauKertasATS';
 import { KonfigurasiVisualCV, DEFAULT_KONFIGURASI_VISUAL } from './tipePengaturanCV';
-import { 
-  ArrowLeft, 
-  Save, 
-  Printer, 
-  CheckCircle2, 
-  Eye, 
+import {
+  ArrowLeft,
+  Save,
+  Download,
+  CheckCircle2,
+  Eye,
   Edit3,
   Sliders,
   User,
@@ -74,6 +74,7 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
 
   const [sedangMemuat, setSedangMemuat] = useState(true);
   const [sedangMenyimpan, setSedangMenyimpan] = useState(false);
+  const [sedangMengunduh, setSedangMengunduh] = useState(false);
   const [adaPerubahanBelumDisimpan, setAdaPerubahanBelumDisimpan] = useState(false);
   const [toastNotifikasi, setToastNotifikasi] = useState<{ tipe: TipeToast; pesan: string } | null>(null);
 
@@ -184,6 +185,12 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
               ...prev,
               ...konten.konfigurasi_visual,
             }));
+          }
+          // Bersihkan cache draf lokal lama agar selalu selaras dengan database terbaru
+          if (kunciCacheLokal) {
+            try {
+              localStorage.removeItem(kunciCacheLokal);
+            } catch {}
           }
           setAdaPerubahanBelumDisimpan(false);
         } else if (!drafLokal) {
@@ -303,6 +310,96 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
       setToastNotifikasi({ tipe: 'gagal', pesan: `Terjadi kesalahan sistem: ${err.message || 'Koneksi terputus'}` });
     } finally {
       setSedangMenyimpan(false);
+    }
+  };
+
+  const tanganiUnduhPdf = async () => {
+    const elemen = document.getElementById('lembar-cv-target');
+    if (!elemen) {
+      setToastNotifikasi({ tipe: 'gagal', pesan: t.cvBuilder.unduhPdfGagal });
+      return;
+    }
+
+    try {
+      setSedangMengunduh(true);
+
+      const formatKertas = konfigurasiVisual.ukuranKertas === 'letter' ? 'letter' : 'a4';
+      const lebarMm = formatKertas === 'letter' ? 215.9 : 210;
+      const tinggiMm = formatKertas === 'letter' ? 279.4 : 297;
+      const lebarTarget = formatKertas === 'letter' ? '215.9mm' : '210mm';
+      const tinggiTarget = formatKertas === 'letter' ? '279.4mm' : '297mm';
+
+      // Kloning elemen untuk rendering bersih tanpa transform/zoom preview
+      const clone = elemen.cloneNode(true) as HTMLElement;
+      clone.style.transform = 'none';
+      clone.style.margin = '0';
+      clone.style.boxShadow = 'none';
+      clone.style.border = 'none';
+      clone.style.borderRadius = '0';
+      clone.style.width = lebarTarget;
+      clone.style.minWidth = lebarTarget;
+      clone.style.maxWidth = lebarTarget;
+      clone.style.minHeight = tinggiTarget;
+      clone.style.boxSizing = 'border-box';
+
+      const wrapper = document.createElement('div');
+      wrapper.style.position = 'fixed';
+      wrapper.style.left = '-9999px';
+      wrapper.style.top = '0';
+      wrapper.style.width = lebarTarget;
+      wrapper.style.background = '#ffffff';
+      wrapper.style.padding = '0';
+      wrapper.style.margin = '0';
+      wrapper.appendChild(clone);
+      document.body.appendChild(wrapper);
+
+      const html2pdfModule = await import('html2pdf.js');
+      const html2pdfFn = html2pdfModule.default || html2pdfModule;
+
+      const namaFileBersih = (namaLengkap || pengguna?.nama_lengkap || 'CV')
+        .trim()
+        .replace(/[^a-zA-Z0-9_-]/g, '_');
+
+      const opsi = {
+        margin: 0,
+        filename: `CV_${namaFileBersih}.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          letterRendering: true,
+          scrollX: 0,
+          scrollY: 0,
+        },
+        jsPDF: {
+          unit: 'mm' as const,
+          format: [lebarMm, tinggiMm] as [number, number],
+          orientation: 'portrait' as const,
+          compress: true,
+        },
+        pagebreak: { mode: ['css', 'legacy'] as const },
+      };
+
+      // Buat PDF dan pangkas trailing page kosong akibat pembulatan sub-pixel
+      const worker = html2pdfFn().set(opsi).from(clone).toPdf();
+      const pdf = await worker.get('pdf');
+      const totalHalaman = pdf.internal.getNumberOfPages();
+      if (totalHalaman > 1) {
+        // Halaman kedua hanya berisi 0.37mm sub-pixel overflow: pangkas langsung
+        pdf.deletePage(totalHalaman);
+      }
+      await pdf.save(`CV_${namaFileBersih}.pdf`);
+
+      document.body.removeChild(wrapper);
+      setToastNotifikasi({ tipe: 'sukses', pesan: t.cvBuilder.unduhPdfSukses });
+    } catch (err: any) {
+      setToastNotifikasi({
+        tipe: 'gagal',
+        pesan: `${t.cvBuilder.unduhPdfGagal} (${err?.message || 'Error'})`,
+      });
+    } finally {
+      setSedangMengunduh(false);
     }
   };
 
@@ -440,9 +537,8 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
             <button
               type="button"
               onClick={() => setTabTampilanMobile('editor')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all min-h-[38px] ${
-                tabTampilanMobile === 'editor' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-600'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all min-h-[38px] ${tabTampilanMobile === 'editor' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-600'
+                }`}
             >
               <Edit3 className="w-3.5 h-3.5" />
               <span>{t.cvBuilder.tabEditor}</span>
@@ -450,9 +546,8 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
             <button
               type="button"
               onClick={() => setTabTampilanMobile('pratinjau')}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all min-h-[38px] ${
-                tabTampilanMobile === 'pratinjau' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-600'
-              }`}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all min-h-[38px] ${tabTampilanMobile === 'pratinjau' ? 'bg-white text-stone-900 shadow-sm' : 'text-stone-600'
+                }`}
             >
               <Eye className="w-3.5 h-3.5" />
               <span>{t.cvBuilder.tabPratinjau}</span>
@@ -461,11 +556,21 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
 
           <button
             type="button"
-            onClick={() => window.print()}
-            className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-stone-300 text-xs font-bold text-stone-700 hover:bg-stone-50 transition-colors min-h-[42px]"
+            onClick={tanganiUnduhPdf}
+            disabled={sedangMengunduh}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-stone-300 text-xs font-bold text-stone-700 hover:bg-stone-50 transition-colors min-h-[42px] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Printer className="w-4 h-4 text-stone-600" />
-            <span>{t.cvBuilder.cetakPdf}</span>
+            {sedangMengunduh ? (
+              <>
+                <span className="w-3.5 h-3.5 border-2 border-stone-400 border-t-orange-700 rounded-full animate-spin" />
+                <span className="hidden xs:inline sm:inline">{t.cvBuilder.sedangMengunduhPdf}</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4 text-stone-600" />
+                <span className="hidden xs:inline sm:inline">{t.cvBuilder.cetakPdf}</span>
+              </>
+            )}
           </button>
 
           <Tombol
@@ -473,11 +578,10 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
             ukuran="md"
             onClick={tanganiSimpan}
             disabled={sedangMenyimpan}
-            className={`font-bold text-xs min-h-[42px] px-4 shadow-sm transition-all duration-300 ${
-              adaPerubahanBelumDisimpan
+            className={`font-bold text-xs min-h-[42px] px-4 shadow-sm transition-all duration-300 ${adaPerubahanBelumDisimpan
                 ? 'bg-orange-700 hover:bg-orange-800 text-white ring-2 ring-orange-500/20'
                 : 'bg-emerald-700 hover:bg-emerald-800 text-white'
-            }`}
+              }`}
           >
             {sedangMenyimpan ? (
               <span className="flex items-center gap-1.5">
@@ -511,12 +615,12 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
 
       {/* Workspace Grid Layout: Form Dominan Lega (lg:col-span-8) & Preview Ramping Kompak (lg:col-span-4) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        
+
         {/* ========================================================================= */}
         {/* KOLOM KIRI: FORM BUILDER TABBED (Lega untuk Seluruh Inputan Formulir)     */}
         {/* ========================================================================= */}
         <div className={`lg:col-span-8 space-y-4 print:hidden ${tabTampilanMobile === 'pratinjau' ? 'hidden lg:block' : 'block'}`}>
-          
+
           {/* Horizontal Tab Navigation (Scrollable di Mobile, Clean di Desktop) */}
           <div className="bg-stone-100/80 p-1.5 rounded-2xl border border-stone-200/80 flex items-center gap-1 overflow-x-auto no-scrollbar">
             {tabsConfig.map((tab) => {
@@ -527,11 +631,10 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
                   key={tab.id}
                   type="button"
                   onClick={() => setTabFormAktif(tab.id as TabEditor)}
-                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all min-h-[40px] shrink-0 ${
-                    aktif
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all min-h-[40px] shrink-0 ${aktif
                       ? 'bg-white text-orange-950 shadow-sm border border-stone-200/60 font-extrabold'
                       : 'text-stone-600 hover:text-stone-900 hover:bg-white/60'
-                  }`}
+                    }`}
                 >
                   <Icon className={`w-3.5 h-3.5 ${aktif ? 'text-orange-700' : 'text-stone-500'}`} />
                   <span>{tab.label}</span>
@@ -612,7 +715,7 @@ export const CVBuilder: React.FC<PropertiCVBuilder> = ({ pengguna }) => {
         {/* ========================================================================= */}
         {/* KOLOM KANAN: PRATINJAU KERTAS ATS 1-KOLOM (Paper Preview Sticky di Desktop)*/}
         {/* ========================================================================= */}
-        <div className={`lg:col-span-4 lg:sticky lg:top-24 ${tabTampilanMobile === 'editor' ? 'hidden lg:block' : 'block'}`}>
+        <div className={`lg:col-span-4 lg:sticky lg:top-24 print:col-span-12 print:static print:w-full print:block ${tabTampilanMobile === 'editor' ? 'hidden lg:block' : 'block'}`}>
           <PratinjauKertasATS
             namaLengkap={namaLengkap}
             targetRole={targetRole}

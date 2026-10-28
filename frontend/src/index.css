@@ -97,3 +97,48 @@
   scrollbar-width: none;
 }
 
+/* ========================================================================= */
+/* CSS PRINT & EXPORT PDF ATS (FE-06, UX-11, Standar Dokumen Fisik A4 / Letter) */
+/* ========================================================================= */
+@media print {
+  @page {
+    size: auto;
+    margin: 8mm 10mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #111827 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    min-height: 100% !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Sembunyikan semua elemen selain wrapper konten print */
+  header, 
+  nav, 
+  footer,
+  button,
+  .print\:hidden {
+    display: none !important;
+  }
+
+  /* Reset layout kontainer CV ke ukuran penuh tanpa terpotong */
+  [data-cv-sheet="true"] {
+    box-shadow: none !important;
+    border: none !important;
+    border-radius: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    page-break-inside: auto;
+  }
+}
+
+

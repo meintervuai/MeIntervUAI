@@ -21,6 +21,7 @@ Sebelum menganalisis, merancang, atau memodifikasi kode, Agent **WAJIB** membaca
 | **Spesifikasi 6 Template CV ATS & Styling** | [docs/cv-templates-ats.md](file:///d:/MeIntervUAI/docs/cv-templates-ats.md) |
 | **Standar Pasfoto CV Formal (Nasional & Global)** | [docs/cv-photo-standards.md](file:///d:/MeIntervUAI/docs/cv-photo-standards.md) |
 | **Matriks Isian Form Dinamis 6 Template CV** | [docs/cv-form-field-matrix.md](file:///d:/MeIntervUAI/docs/cv-form-field-matrix.md) |
+| **Riset Evaluasi CV Rekruter & Metode Jev** | [docs/research/standar-evaluasi-cv-rekruter.md](file:///d:/MeIntervUAI/docs/research/standar-evaluasi-cv-rekruter.md) |
 | **Pengujian & Keamanan File Sensitif** | [docs/others.md](file:///d:/MeIntervUAI/docs/others.md) |
 
 ---

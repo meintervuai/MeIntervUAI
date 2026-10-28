@@ -53,4 +53,5 @@ d:\MeIntervUAI\
 - [Spesifikasi 6 Template CV ATS & Kustomisasi Styling](cv-templates-ats.md)
 - [Standar Pasfoto CV & Resume Formal (Nasional & Internasional)](cv-photo-standards.md)
 - [Matriks Riset Isian Form Dinamis 6 Template CV Resmi](cv-form-field-matrix.md)
+- [Riset Standar Evaluasi CV: Perspektif Rekruter & Metode Jev](research/standar-evaluasi-cv-rekruter.md)
 

@@ -174,10 +174,12 @@ export const PratinjauKertasATS: React.FC<PropertiPratinjauKertasATS> = ({
               height: `${Math.round(tinggiKertasMm * zoomScale)}mm`,
               minWidth: `${Math.round(lebarKertasMm * zoomScale)}mm`,
             }}
-            className="mx-auto block relative"
+            className="mx-auto block relative print:!w-full print:!min-w-0 print:!h-auto print:!m-0"
           >
             <div 
-              className={`bg-white rounded-2xl border border-stone-200/90 shadow-md print:border-none print:shadow-none print:rounded-none print:p-0 transition-transform origin-top-left ${fontClass} overflow-hidden flex flex-row items-stretch shrink-0`}
+              id="lembar-cv-target"
+              data-cv-sheet="true"
+              className={`bg-white rounded-2xl border border-stone-200/90 shadow-md print:border-none print:shadow-none print:rounded-none print:p-0 transition-transform origin-top-left ${fontClass} overflow-hidden flex flex-row items-stretch shrink-0 print:!transform-none print:!w-full print:!min-w-0 print:!min-h-0 print:!h-auto`}
               style={{
                 fontFamily: fontFamilyStyle,
                 color: warnaTeks,
@@ -434,7 +436,7 @@ export const PratinjauKertasATS: React.FC<PropertiPratinjauKertasATS> = ({
       {/* Kontainer Scrollable/Geser Bebas Otomatis saat Dizoom tanpa scrollbar visual */}
       <div className="w-full overflow-auto no-scrollbar max-h-[calc(100vh-140px)] p-2 bg-stone-50/50 rounded-2xl border border-stone-200/80 print:border-none print:bg-transparent print:p-0 print:overflow-visible print:max-h-none">
         <div 
-          className="mx-auto block relative"
+          className="mx-auto block relative print:!w-full print:!min-w-0 print:!h-auto print:!m-0"
           style={{
             width: `${Math.round(lebarKertasMm * zoomScale)}mm`,
             height: `${Math.round(tinggiKertasMm * zoomScale)}mm`,
@@ -442,7 +444,9 @@ export const PratinjauKertasATS: React.FC<PropertiPratinjauKertasATS> = ({
           }}
         >
         <div 
-          className={`bg-white rounded-2xl border border-stone-200/90 shadow-md space-y-5 ${fontClass} ${paddingClass} print:border-none print:shadow-none print:rounded-none print:p-0 transition-transform origin-top-left shrink-0`}
+          id="lembar-cv-target"
+          data-cv-sheet="true"
+          className={`bg-white rounded-2xl border border-stone-200/90 shadow-md space-y-5 ${fontClass} ${paddingClass} print:border-none print:shadow-none print:rounded-none print:p-0 transition-transform origin-top-left shrink-0 print:!transform-none print:!w-full print:!min-w-0 print:!min-h-0 print:!h-auto`}
           style={{
             fontFamily: fontFamilyStyle,
             color: warnaTeks,

@@ -144,8 +144,11 @@ Berdasarkan pedoman tipografi resume resmi institusional (Harvard OCS, DIN 5008,
 2. **Perilaku Pratinjau Kertas (*Adaptive Page Height*)**:
    - Kertas menggunakan `min-height: 297mm` (A4) atau `min-height: 11in` (Letter).
    - Apabila isian pengalaman atau proyek melebihi 1 halaman, kanvas kertas otomatis memanjang vertikal secara proporsional kelipatan lembar fisik.
-3. **Cetak & Ekspor PDF (`window.print`)**:
-   - Menggunakan aturan CSS cetak standar `@media print`:
-     - Setiap pergantian bagian penting menggunakan `break-inside: avoid` untuk mencegah teks terpotong di tengah baris atau di antara heading dan bullet-point.
-     - Pembagian halaman (*page break*) terpisah secara otomatis dan presisi pada batas kertas 297mm tanpa terpotong di tengah elemen.
+3. **Ekspor & Unduh Langsung PDF Fisik (`html2pdf.js`)**:
+   - Sekali klik pada tombol **"Unduh PDF"**, browser langsung mengunduh file `.pdf` siap kirim (tanpa dialog popup printer `window.print()`).
+   - Merender kanvas presisi 1:1 (*pixel-perfect*) sesuai konfigurasi visual:
+     - Dimensi A4 ISO 216 (210mm x 297mm) atau US Letter (8.5in x 11in).
+     - Margin, sidebar layout Modern ATS 35%, pasfoto, dan aksen garis tersalin utuh.
+     - Penamaan file otomatis rapi: `CV_<Nama_Lengkap>.pdf`.
+   - Tetap mendukung stylesheet cetak printer `@media print` jika pengguna mencetak fisik secara manual.
 
