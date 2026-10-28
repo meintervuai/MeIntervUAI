@@ -53,5 +53,11 @@ d:\MeIntervUAI\
 - [Spesifikasi 6 Template CV ATS & Kustomisasi Styling](cv-templates-ats.md)
 - [Standar Pasfoto CV & Resume Formal (Nasional & Internasional)](cv-photo-standards.md)
 - [Matriks Riset Isian Form Dinamis 6 Template CV Resmi](cv-form-field-matrix.md)
-- [Riset Standar Evaluasi CV: Perspektif Rekruter & Metode Jev](research/standar-evaluasi-cv-rekruter.md)
+- [Folder Indeks Riset Evaluasi CV & Rekrutmen](research/README.md)
+  - [Riset HR: Vina Muliana (Metode CAR & La-Pis-An)](research/hr-vina-muliana.md)
+  - [Riset HR: Eza Hazami (Uji Skimming 6-9 Detik & Validasi Portofolio)](research/hr-eza-hazami.md)
+  - [Riset HR: Yova Beltz & Ridha Poetri (Anti-Overclaiming & Wawancara)](research/hr-yova-ridha.md)
+  - [Riset BUMN: Apri Rokhyadi (Substansi Konten & Seleksi Korporat)](research/hr-apri-rokhyadi.md)
+  - [Riset Global & Evaluasi Atomik Metode Jev](research/standar-evaluasi-cv-rekruter.md)
+  - [Panduan Dialog Wawancara Adaptif (Branching & Probing)](research/panduan-dialog-wawancara-adaptif.md)
 

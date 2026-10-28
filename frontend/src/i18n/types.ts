@@ -293,6 +293,45 @@ export interface PusatBantuanKonten {
     poinPerbaikan: string;
     kataKunciDisarankan: string;
     statusBelumDianalisis: string;
+    // Audit Kurasi Rekruter Nyata & Metode Jev
+    auditTabDual: {
+      tabRingkasan: string;
+      tabDetailJev: string;
+      tabTipsPraktisi: string;
+    };
+    skorHumanAppealLabel: string;
+    skorAtsLabel: string;
+    radarKriteria: {
+      skimmability: string;
+      formulaXYZ: string;
+      antiSlop: string;
+      relevansiRole: string;
+      validasiInterview: string;
+    };
+    tipsPraktisiJudul: string;
+    tipsVinaLabel: string;
+    tipsEzaLabel: string;
+    tipsYovaRidhaLabel: string;
+    tipsApriLabel: string;
+    // Elemen Redesain Baru
+    areaPerbaikanLabel: string;
+    analisisKataKunciJudul: string;
+    kataKunciTerdeteksiLabel: string;
+    kataKunciHilangLabel: string;
+    salinKataKunci: string;
+    tersalinKataKunci: string;
+    sebelumLabel: string;
+    sesudahLabel: string;
+    terapkanKeCv: string;
+    statusPerluRevisi: string;
+    statusLulusStandar: string;
+    statusOptimal: string;
+    labelKontakLengkap: string;
+    labelPortofolioAktif: string;
+    ujiKlaimDiSimulasi: string;
+    prediksiPertanyaanJudul: string;
+    tombolLatihDiSimulasi: string;
+    analisisUlangTombol: string;
   };
   cvBuilder: {
     judulHalaman: string;

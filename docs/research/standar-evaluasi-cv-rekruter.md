@@ -68,9 +68,21 @@ Riset ini mengompilasi kaidah praktis dari praktisi Human Resources dan kreator 
 
 ---
 
-## 4. Implementasi Metode Jev (Decision Primitives)
+## 4. Implementasi Metode Jev (Decision Primitives & Teknologi Open Source)
 
-Untuk menghasilkan evaluasi yang konsisten dan anti-halusinasi, proses penilaian CV tidak menggunakan generasi teks narasi bebas panjang secara serampangan, melainkan mengadopsi prinsip **Jev Decision Primitives** (Evaluasi Kriteria Atomik Terkalibrasi):
+Untuk menghasilkan evaluasi yang konsisten, murah/gratis, dan anti-halusinasi, proses penilaian CV dan pemantauan riset tidak menggunakan prompt teks bebas panjang yang boros token, melainkan mengadopsi 2 implementasi engine **Jev AI (System One Decision Primitives)**:
+
+### Pilihan Engine Jev AI yang Digunakan di MeIntervUAI:
+1. **[logan-markewich/jeff](https://github.com/logan-markewich/jeff) (100% Gratis & Self-Hosted Drop-in)**:
+   - **Teknologi**: Menggunakan model open-weight GLiFormer (`knowledgator/gliformer-large-v1`, ~400M–575M parameter) dari HuggingFace.
+   - **Fitur**: Menyediakan endpoint lokal `POST /v1/systemone` yang 100% cocok dengan `typesafe-sdk`.
+   - **Mendukung 3 Primitives**: `Choice`, `Score`, dan `Noul` (Probabilitas boolean terkalibrasi).
+   - **Keuntungan**: Berjalan 100% offline di laptop/server lokal tanpa API key, tanpa kuota, dan tanpa biaya per panggilan.
+
+2. **[typesafe-ai/system-one-adapter-python](https://github.com/typesafe-ai/system-one-adapter-python) (Adapter Resmi TypeSafe AI)**:
+   - **Teknologi**: Adapter open source resmi dari TypeSafe AI sebagai drop-in replacement `TypeSafeClient`.
+   - **Fitur**: Mengarahkan request Jev Decision Primitives (`Choice`, `Score`, `Noul`) ke model fleksibel (seperti Google Gemini Flash atau model lokal via structured output).
+   - **Keuntungan**: Menghemat biaya operasional karena memanfaatkan kuota gratis Gemini API secara efisien.
 
 ```
                         [ INPUT CV KANDIDAT ]
@@ -79,6 +91,8 @@ Untuk menghasilkan evaluasi yang konsisten dan anti-halusinasi, proses penilaian
          ▼                                                 ▼
 ┌─────────────────────────────────┐       ┌─────────────────────────────────┐
 │     EVALUASI ATOMIK (JEV)       │       │    NARASI REKRUTER (GEMINI)     │
+│  (logan-markewich/jeff ATAU     │       │                                 │
+│  typesafe-ai/system-one-adapter)│       │                                 │
 ├─────────────────────────────────┤       ├─────────────────────────────────┤
 │ 1. Skimmability 6-Detik (Score) │       │ • Menerjemahkan skor atomik     │
 │ 2. Formula CAR/XYZ (Noul/Prob)  │  ───> │   menjadi catatan kurasi        │

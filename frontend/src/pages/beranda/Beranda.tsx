@@ -23,7 +23,13 @@ import {
   HelpCircle,
   ExternalLink,
   Target,
-  ChevronDown
+  ChevronDown,
+  UserCheck,
+  Zap,
+  BookOpen,
+  Copy,
+  Check,
+  Tag
 } from 'lucide-react';
 
 interface PropertiBeranda {
@@ -52,6 +58,15 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
 
   // Mode Simulasi Pilihan Kandidat
   const [modeSimulasi, setModeSimulasi] = useState<'teks' | 'suara' | 'video'>('video');
+  const [tabAudit, setTabAudit] = useState<'ringkasan' | 'jev' | 'praktisi'>('ringkasan');
+  const [accordionJevBuka, setAccordionJevBuka] = useState<string | null>('formula_xyz');
+  const [kataKunciTersalin, setKataKunciTersalin] = useState<string | null>(null);
+
+  const tanganiSalinKataKunci = (kw: string) => {
+    navigator.clipboard?.writeText(kw);
+    setKataKunciTersalin(kw);
+    setTimeout(() => setKataKunciTersalin(null), 2000);
+  };
 
   // Toggle Accordion Roadmap Mobile
   const [bukaRoadmapMobile, setBukaRoadmapMobile] = useState(false);
@@ -492,10 +507,10 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
                   <button
                     disabled={!dataCvPengguna || sedangAnalisis}
                     onClick={tanganiJalankanAnalisisAts}
-                    className="px-3.5 py-2 rounded-xl border border-stone-300 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-[44px] flex items-center justify-center gap-1.5"
+                    className="px-4 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-900 border border-orange-200 text-xs font-bold disabled:opacity-40 disabled:cursor-not-allowed transition-colors min-h-[44px] flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                   >
-                    <Coins className="w-3.5 h-3.5 text-amber-500" />
-                    <span>{sedangAnalisis ? t.beranda.analisisSedangMemproses : t.beranda.analisisTombolProses}</span>
+                    <Zap className="w-3.5 h-3.5 text-orange-600 fill-orange-600" />
+                    <span>{sedangAnalisis ? t.beranda.analisisSedangMemproses : t.beranda.analisisUlangTombol}</span>
                   </button>
                 </div>
               </div>
@@ -510,69 +525,496 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
               </div>
             </div>
 
-            {/* Live ATS AI Analysis Feedback Card */}
-            <div className="p-4 rounded-xl bg-stone-50 border border-stone-200/90 space-y-3">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-stone-200">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-orange-700" />
-                  <h3 className="text-xs sm:text-sm font-bold text-stone-900">
-                    {t.beranda.analisisCardJudul}
-                  </h3>
+            {/* Live ATS AI Analysis Feedback Card: Redesain Actionable & Circular Progress */}
+            <div className="p-4 sm:p-6 rounded-2xl bg-white border border-stone-200/90 shadow-2xs space-y-5">
+              {/* Header Card dengan Circular Progress Semantik */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-stone-100">
+                <div className="flex items-start gap-3">
+                  <div className="p-2.5 rounded-xl bg-orange-50 border border-orange-100 text-orange-700 shrink-0">
+                    <UserCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="text-sm sm:text-base font-extrabold text-stone-900 tracking-tight">
+                        {t.beranda.analisisCardJudul}
+                      </h3>
+                      <span className="text-[10px] font-mono font-bold text-amber-900 bg-amber-50 border border-amber-200 px-2 py-0.5 rounded-md">
+                        {t.beranda.analisisBiayaBadge}
+                      </span>
+                    </div>
+                    <p className="text-xs text-stone-500 mt-0.5 leading-relaxed">
+                      {rekomendasiAi?.ringkasan_status || t.beranda.analisisCardDesc}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-[11px] font-mono text-amber-800 bg-amber-100 px-2 py-0.5 rounded font-bold">
-                    {t.beranda.analisisBiayaBadge}
-                  </span>
-                  {skorAts !== null && (
-                    <span className={`text-xs font-bold px-2 py-0.5 rounded ${
-                      skorAts >= 70 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                    }`}>
-                      {t.beranda.analisisSkorLabel}: {skorAts}/100
-                    </span>
-                  )}
-                </div>
+
+                {/* Circular Gauge / Donut Metric Visualizer */}
+                {skorAts !== null && (
+                  <div className="flex items-center gap-4 sm:gap-6 self-start md:self-auto bg-stone-50/80 p-2.5 sm:p-3 rounded-2xl border border-stone-200/60">
+                    {/* Gauge 1: Keterbacaan Mesin (ATS) */}
+                    <div className="flex items-center gap-2.5">
+                      <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
+                        <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
+                          <path
+                            className="text-stone-200"
+                            strokeWidth="3.5"
+                            stroke="currentColor"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                          <path
+                            className={skorAts >= 85 ? "text-emerald-500" : skorAts >= 65 ? "text-amber-500" : "text-rose-500"}
+                            strokeDasharray={`${skorAts}, 100`}
+                            strokeWidth="3.5"
+                            strokeLinecap="round"
+                            stroke="currentColor"
+                            fill="none"
+                            d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                        </svg>
+                        <span className="absolute text-[11px] font-extrabold font-mono text-stone-900">
+                          {skorAts}
+                        </span>
+                      </div>
+                      <div className="leading-tight">
+                        <span className="text-[11px] font-bold text-stone-800 block">
+                          {t.beranda.skorAtsLabel}
+                        </span>
+                        <span className="text-[10px] text-stone-500 font-mono">
+                          {skorAts}/100
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="w-[1px] h-8 bg-stone-200" />
+
+                    {/* Gauge 2: Daya Pikat Rekruter (Manusia) */}
+                    {rekomendasiAi?.skor_human !== undefined && (
+                      <div className="flex items-center gap-2.5">
+                        <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
+                          <svg className="w-12 h-12 transform -rotate-90" viewBox="0 0 36 36">
+                            <path
+                              className="text-stone-200"
+                              strokeWidth="3.5"
+                              stroke="currentColor"
+                              fill="none"
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                            <path
+                              className={rekomendasiAi.skor_human >= 85 ? "text-emerald-500" : rekomendasiAi.skor_human >= 65 ? "text-amber-500" : "text-rose-500"}
+                              strokeDasharray={`${rekomendasiAi.skor_human}, 100`}
+                              strokeWidth="3.5"
+                              strokeLinecap="round"
+                              stroke="currentColor"
+                              fill="none"
+                              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                            />
+                          </svg>
+                          <span className="absolute text-[11px] font-extrabold font-mono text-stone-900">
+                            {rekomendasiAi.skor_human}
+                          </span>
+                        </div>
+                        <div className="leading-tight">
+                          <span className="text-[11px] font-bold text-stone-800 block">
+                            {t.beranda.skorHumanAppealLabel}
+                          </span>
+                          <span className="text-[10px] text-stone-500 font-mono">
+                            {rekomendasiAi.skor_human}/100
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
 
               {rekomendasiAi ? (
-                <div className="space-y-2.5 text-xs">
-                  {rekomendasiAi.poin_positif && rekomendasiAi.poin_positif.length > 0 && (
-                    <div>
-                      <strong className="text-emerald-800 block text-[11px] mb-1 font-bold">
-                        {t.beranda.poinKelebihan}
-                      </strong>
-                      <ul className="list-disc list-inside space-y-0.5 text-stone-700">
-                        {rekomendasiAi.poin_positif.map((p: string, idx: number) => (
-                          <li key={idx}>{p}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                <div className="space-y-4">
+                  {/* Tab Selector Nav */}
+                  <div className="grid grid-cols-3 gap-1.5 p-1 bg-stone-100 rounded-xl text-center">
+                    <button
+                      type="button"
+                      onClick={() => setTabAudit('ringkasan')}
+                      className={`py-2 px-2 rounded-lg text-xs font-bold transition-all min-h-[40px] flex items-center justify-center gap-1.5 cursor-pointer ${
+                        tabAudit === 'ringkasan' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600 hover:text-stone-900'
+                      }`}
+                    >
+                      <CheckCircle2 className="w-3.5 h-3.5 text-orange-700 hidden sm:inline" />
+                      <span>{t.beranda.auditTabDual.tabRingkasan}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTabAudit('jev')}
+                      className={`py-2 px-2 rounded-lg text-xs font-bold transition-all min-h-[40px] flex items-center justify-center gap-1.5 cursor-pointer ${
+                        tabAudit === 'jev' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600 hover:text-stone-900'
+                      }`}
+                    >
+                      <Zap className="w-3.5 h-3.5 text-orange-600 hidden sm:inline" />
+                      <span>{t.beranda.auditTabDual.tabDetailJev}</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTabAudit('praktisi')}
+                      className={`py-2 px-2 rounded-lg text-xs font-bold transition-all min-h-[40px] flex items-center justify-center gap-1.5 cursor-pointer ${
+                        tabAudit === 'praktisi' ? 'bg-white text-stone-900 shadow-xs' : 'text-stone-600 hover:text-stone-900'
+                      }`}
+                    >
+                      <BookOpen className="w-3.5 h-3.5 text-orange-700 hidden sm:inline" />
+                      <span>{t.beranda.auditTabDual.tabTipsPraktisi}</span>
+                    </button>
+                  </div>
 
-                  {rekomendasiAi.poin_perbaikan && rekomendasiAi.poin_perbaikan.length > 0 && (
-                    <div>
-                      <strong className="text-amber-800 block text-[11px] mb-1 font-bold">
-                        {t.beranda.poinPerbaikan}
-                      </strong>
-                      <ul className="list-disc list-inside space-y-0.5 text-stone-700">
-                        {rekomendasiAi.poin_perbaikan.map((p: string, idx: number) => (
-                          <li key={idx}>{p}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
+                  {/* KONTEN TAB 1: Ulasan Rekruter (2 Kolom Keseimbangan & Keyword Gap Analysis) */}
+                  {tabAudit === 'ringkasan' && (
+                    <div className="space-y-4 text-xs">
+                      {/* Grid 2 Kolom: Kekuatan vs Area Perbaikan */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
+                        {/* Kolom 1: Poin Kekuatan Dokumen (Hijau) */}
+                        <div className="p-3.5 sm:p-4 rounded-xl bg-emerald-50/70 border border-emerald-200/80 space-y-2">
+                          <strong className="text-emerald-900 block text-xs font-bold flex items-center gap-1.5">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                            <span>{t.beranda.poinKelebihan}</span>
+                          </strong>
+                          <ul className="space-y-1.5 text-emerald-950 pl-5 list-disc leading-relaxed text-[11px] sm:text-xs">
+                            {rekomendasiAi.poin_positif?.map((p: string, idx: number) => (
+                              <li key={idx}>{p}</li>
+                            ))}
+                          </ul>
+                        </div>
 
-                  {rekomendasiAi.saran_kata_kunci && rekomendasiAi.saran_kata_kunci.length > 0 && (
-                    <div>
-                      <strong className="text-stone-800 block text-[11px] mb-1 font-bold">
-                        {t.beranda.kataKunciDisarankan}
-                      </strong>
-                      <div className="flex flex-wrap gap-1">
-                        {rekomendasiAi.saran_kata_kunci.map((kw: string, idx: number) => (
-                          <span key={idx} className="px-2 py-0.5 rounded bg-white border border-stone-200 text-[11px] font-mono text-stone-700">
-                            {kw}
-                          </span>
-                        ))}
+                        {/* Kolom 2: Area Perbaikan / Red Flags (Kuning Amber) */}
+                        <div className="p-3.5 sm:p-4 rounded-xl bg-amber-50/70 border border-amber-200/80 space-y-2">
+                          <strong className="text-amber-900 block text-xs font-bold flex items-center gap-1.5">
+                            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                            <span>{t.beranda.areaPerbaikanLabel}</span>
+                          </strong>
+                          <ul className="space-y-1.5 text-amber-950 pl-5 list-disc leading-relaxed text-[11px] sm:text-xs">
+                            {rekomendasiAi.poin_perbaikan?.map((p: string, idx: number) => (
+                              <li key={idx}>{p}</li>
+                            ))}
+                          </ul>
+                        </div>
                       </div>
+
+                      {/* Analisis Gap Kata Kunci Industri (Terdeteksi vs Hilang + Salin) */}
+                      <div className="p-3.5 sm:p-4 rounded-xl bg-stone-50 border border-stone-200 space-y-3">
+                        <strong className="text-stone-900 block text-xs font-bold flex items-center gap-1.5">
+                          <Tag className="w-3.5 h-3.5 text-orange-700" />
+                          <span>{t.beranda.analisisKataKunciJudul}</span>
+                        </strong>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {/* Kata Kunci Terdeteksi */}
+                          <div>
+                            <span className="text-[11px] text-stone-500 font-semibold block mb-1.5">
+                              {t.beranda.kataKunciTerdeteksiLabel}
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {rekomendasiAi.analisis_kata_kunci?.terdeteksi?.map((kw: string, idx: number) => (
+                                <span
+                                  key={idx}
+                                  className="px-2.5 py-1 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-900 text-[11px] font-medium flex items-center gap-1"
+                                >
+                                  <Check className="w-3 h-3 text-emerald-600" />
+                                  <span>{kw}</span>
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Kata Kunci Hilang (+ Tombol Salin) */}
+                          <div>
+                            <span className="text-[11px] text-stone-500 font-semibold block mb-1.5">
+                              {t.beranda.kataKunciHilangLabel}
+                            </span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {rekomendasiAi.analisis_kata_kunci?.hilang?.map((kw: string, idx: number) => (
+                                <button
+                                  key={idx}
+                                  type="button"
+                                  onClick={() => tanganiSalinKataKunci(kw)}
+                                  className="px-2.5 py-1 rounded-lg bg-white hover:bg-amber-50 border border-dashed border-amber-300 text-amber-900 text-[11px] font-medium flex items-center gap-1 transition-colors cursor-pointer group"
+                                  title="Salin kata kunci ini ke clipboard"
+                                >
+                                  {kataKunciTersalin === kw ? (
+                                    <>
+                                      <Check className="w-3 h-3 text-emerald-600" />
+                                      <span className="text-emerald-700 font-bold">{t.beranda.tersalinKataKunci}</span>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <span>+ {kw}</span>
+                                      <Copy className="w-2.5 h-2.5 opacity-40 group-hover:opacity-100 ml-0.5 text-stone-400" />
+                                    </>
+                                  )}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* KONTEN TAB 2: 5 Kriteria Atomik Metode Jev (Warna Brand Seragam & Expandable Accordion) */}
+                  {tabAudit === 'jev' && (
+                    <div className="space-y-2 text-xs">
+                      {/* Accordion Item 1: Skimmability 6-9 Detik */}
+                      <div className="rounded-xl border border-stone-200 overflow-hidden bg-white">
+                        <button
+                          type="button"
+                          onClick={() => setAccordionJevBuka(accordionJevBuka === 'skimmability' ? null : 'skimmability')}
+                          className="w-full p-3 flex items-center justify-between text-left hover:bg-stone-50 transition-colors cursor-pointer"
+                        >
+                          <span className="font-semibold text-stone-900 text-xs">
+                            {t.beranda.radarKriteria.skimmability}
+                          </span>
+                          <div className="flex items-center gap-2.5">
+                            <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800">
+                              {rekomendasiAi.kriteria_jev?.skimmability?.skor || 85}%
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform ${accordionJevBuka === 'skimmability' ? 'rotate-180' : ''}`} />
+                          </div>
+                        </button>
+                        {accordionJevBuka === 'skimmability' && (
+                          <div className="p-3 pt-0 text-[11px] text-stone-600 border-t border-stone-100 bg-stone-50/50 leading-relaxed">
+                            {rekomendasiAi.kriteria_jev?.skimmability?.keterangan || "Estimasi waktu skimming HR: ~7.2 detik. Struktur tajuk linear dan kontak lengkap di bagian atas."}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Accordion Item 2: Formula Dampak CAR/XYZ (Default Terbuka dengan AI Rewrite) */}
+                      <div className="rounded-xl border border-stone-200 overflow-hidden bg-white">
+                        <button
+                          type="button"
+                          onClick={() => setAccordionJevBuka(accordionJevBuka === 'formula_xyz' ? null : 'formula_xyz')}
+                          className="w-full p-3 flex items-center justify-between text-left hover:bg-stone-50 transition-colors cursor-pointer"
+                        >
+                          <span className="font-semibold text-stone-900 text-xs">
+                            {t.beranda.radarKriteria.formulaXYZ}
+                          </span>
+                          <div className="flex items-center gap-2.5">
+                            <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-amber-50 text-amber-800">
+                              {rekomendasiAi.kriteria_jev?.formula_xyz?.skor || 75}%
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform ${accordionJevBuka === 'formula_xyz' ? 'rotate-180' : ''}`} />
+                          </div>
+                        </button>
+                        {accordionJevBuka === 'formula_xyz' && (
+                          <div className="p-3 pt-2 text-[11px] text-stone-600 border-t border-stone-100 bg-stone-50/50 space-y-2.5">
+                            <p className="leading-relaxed">
+                              {rekomendasiAi.kriteria_jev?.formula_xyz?.keterangan}
+                            </p>
+                            {/* Kotak Before vs After AI Rewrite */}
+                            <div className="p-3 rounded-lg bg-white border border-stone-200 space-y-2">
+                              <span className="text-[10px] font-bold text-stone-500 uppercase tracking-wider block">
+                                AI Rewrite (Saran Perbaikan Langsung)
+                              </span>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                <div className="p-2 rounded bg-rose-50 border border-rose-100 text-rose-950 text-[11px]">
+                                  <strong className="block text-rose-800 text-[10px] mb-0.5">{t.beranda.sebelumLabel}:</strong>
+                                  <p>{rekomendasiAi.audit_persona?.vina_muliana?.ai_rewrite?.sebelum}</p>
+                                </div>
+                                <div className="p-2 rounded bg-emerald-50 border border-emerald-100 text-emerald-950 text-[11px] relative">
+                                  <strong className="block text-emerald-800 text-[10px] mb-0.5">{t.beranda.sesudahLabel}:</strong>
+                                  <p className="pr-16">{rekomendasiAi.audit_persona?.vina_muliana?.ai_rewrite?.sesudah}</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      navigator.clipboard?.writeText(rekomendasiAi.audit_persona?.vina_muliana?.ai_rewrite?.sesudah || '');
+                                      alert('Rekomendasi kalimat berhasil disalin ke clipboard! Silakan terapkan di halaman CV Builder.');
+                                    }}
+                                    className="absolute bottom-2 right-2 px-2 py-1 rounded bg-orange-700 hover:bg-orange-800 text-white font-bold text-[10px] shadow-2xs"
+                                  >
+                                    {t.beranda.terapkanKeCv}
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Accordion Item 3: Anti-Slop Keaslian Bahasa */}
+                      <div className="rounded-xl border border-stone-200 overflow-hidden bg-white">
+                        <button
+                          type="button"
+                          onClick={() => setAccordionJevBuka(accordionJevBuka === 'anti_slop' ? null : 'anti_slop')}
+                          className="w-full p-3 flex items-center justify-between text-left hover:bg-stone-50 transition-colors cursor-pointer"
+                        >
+                          <span className="font-semibold text-stone-900 text-xs">
+                            {t.beranda.radarKriteria.antiSlop}
+                          </span>
+                          <div className="flex items-center gap-2.5">
+                            <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800">
+                              {rekomendasiAi.kriteria_jev?.anti_slop?.skor || 90}%
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform ${accordionJevBuka === 'anti_slop' ? 'rotate-180' : ''}`} />
+                          </div>
+                        </button>
+                        {accordionJevBuka === 'anti_slop' && (
+                          <div className="p-3 pt-0 text-[11px] text-stone-600 border-t border-stone-100 bg-stone-50/50 leading-relaxed">
+                            {rekomendasiAi.kriteria_jev?.anti_slop?.keterangan}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Accordion Item 4: Kesesuaian Target Peran */}
+                      <div className="rounded-xl border border-stone-200 overflow-hidden bg-white">
+                        <button
+                          type="button"
+                          onClick={() => setAccordionJevBuka(accordionJevBuka === 'relevansi_role' ? null : 'relevansi_role')}
+                          className="w-full p-3 flex items-center justify-between text-left hover:bg-stone-50 transition-colors cursor-pointer"
+                        >
+                          <span className="font-semibold text-stone-900 text-xs">
+                            {t.beranda.radarKriteria.relevansiRole}
+                          </span>
+                          <div className="flex items-center gap-2.5">
+                            <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800">
+                              {rekomendasiAi.kriteria_jev?.relevansi_role?.skor || 85}%
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform ${accordionJevBuka === 'relevansi_role' ? 'rotate-180' : ''}`} />
+                          </div>
+                        </button>
+                        {accordionJevBuka === 'relevansi_role' && (
+                          <div className="p-3 pt-0 text-[11px] text-stone-600 border-t border-stone-100 bg-stone-50/50 leading-relaxed">
+                            {rekomendasiAi.kriteria_jev?.relevansi_role?.keterangan}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Accordion Item 5: Kesiapan Validasi Wawancara */}
+                      <div className="rounded-xl border border-stone-200 overflow-hidden bg-white">
+                        <button
+                          type="button"
+                          onClick={() => setAccordionJevBuka(accordionJevBuka === 'validasi_interview' ? null : 'validasi_interview')}
+                          className="w-full p-3 flex items-center justify-between text-left hover:bg-stone-50 transition-colors cursor-pointer"
+                        >
+                          <span className="font-semibold text-stone-900 text-xs">
+                            {t.beranda.radarKriteria.validasiInterview}
+                          </span>
+                          <div className="flex items-center gap-2.5">
+                            <span className="font-mono font-bold text-xs px-2 py-0.5 rounded bg-emerald-50 text-emerald-800">
+                              {rekomendasiAi.kriteria_jev?.validasi_interview?.skor || 85}%
+                            </span>
+                            <ChevronDown className={`w-4 h-4 text-stone-400 transition-transform ${accordionJevBuka === 'validasi_interview' ? 'rotate-180' : ''}`} />
+                          </div>
+                        </button>
+                        {accordionJevBuka === 'validasi_interview' && (
+                          <div className="p-3 pt-0 text-[11px] text-stone-600 border-t border-stone-100 bg-stone-50/50 leading-relaxed">
+                            {rekomendasiAi.kriteria_jev?.validasi_interview?.keterangan}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* KONTEN TAB 3: Catatan Praktisi HR (Audit Berbasis Persona Dinamis) */}
+                  {tabAudit === 'praktisi' && (
+                    <div className="space-y-3 text-xs">
+                      {/* Persona 1: Vina Muliana */}
+                      <div className="p-3.5 rounded-xl bg-white border border-stone-200 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <strong className="text-orange-900 font-bold text-xs">
+                            {t.beranda.tipsVinaLabel}
+                          </strong>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
+                            rekomendasiAi.audit_persona?.vina_muliana?.status === 'Lulus Standar' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            {rekomendasiAi.audit_persona?.vina_muliana?.status || t.beranda.statusPerluRevisi}
+                          </span>
+                        </div>
+                        <p className="text-stone-600 text-[11px] leading-relaxed">
+                          {rekomendasiAi.audit_persona?.vina_muliana?.catatan}
+                        </p>
+                      </div>
+
+                      {/* Persona 2: Eza Hazami */}
+                      <div className="p-3.5 rounded-xl bg-white border border-stone-200 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <strong className="text-stone-900 font-bold text-xs">
+                            {t.beranda.tipsEzaLabel}
+                          </strong>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                            {t.beranda.statusLulusStandar}
+                          </span>
+                        </div>
+                        <p className="text-stone-600 text-[11px] leading-relaxed">
+                          {rekomendasiAi.audit_persona?.eza_hazami?.catatan}
+                        </p>
+                        <div className="flex items-center gap-2 pt-1">
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
+                            <Check className="w-3 h-3 text-emerald-600" />
+                            <span>{t.beranda.labelKontakLengkap}</span>
+                          </span>
+                          <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded">
+                            <Check className="w-3 h-3 text-emerald-600" />
+                            <span>{t.beranda.labelPortofolioAktif}</span>
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Persona 3: Yova Beltz & Ridha Poetri */}
+                      <div className="p-3.5 rounded-xl bg-white border border-stone-200 space-y-2">
+                        <strong className="text-stone-900 font-bold text-xs block">
+                          {t.beranda.tipsYovaRidhaLabel}
+                        </strong>
+                        <p className="text-stone-600 text-[11px] leading-relaxed">
+                          {rekomendasiAi.audit_persona?.yova_ridha?.catatan}
+                        </p>
+                        <div className="flex items-center justify-between gap-2 pt-1">
+                          <span className="px-2 py-0.5 rounded bg-stone-100 font-mono text-stone-800 text-[11px]">
+                            {rekomendasiAi.audit_persona?.yova_ridha?.keahlian_diuji || 'Core Skills'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={tanganiMulaiSimulasi}
+                            className="px-3 py-1 rounded-lg bg-orange-700 hover:bg-orange-800 text-white font-bold text-[10px] flex items-center gap-1 shadow-2xs"
+                          >
+                            <span>{t.beranda.ujiKlaimDiSimulasi}</span>
+                            <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Persona 4: Apri Rokhyadi */}
+                      <div className="p-3.5 rounded-xl bg-white border border-stone-200 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <strong className="text-stone-900 font-bold text-xs">
+                            {t.beranda.tipsApriLabel}
+                          </strong>
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">
+                            {rekomendasiAi.audit_persona?.apri_rokhyadi?.status || t.beranda.statusOptimal}
+                          </span>
+                        </div>
+                        <p className="text-stone-600 text-[11px] leading-relaxed">
+                          {rekomendasiAi.audit_persona?.apri_rokhyadi?.catatan}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Banner Quick Win: Prediksi Pertanyaan Jebakan dari CV Anda */}
+                  {rekomendasiAi.pertanyaan_jebakan && (
+                    <div className="p-3.5 sm:p-4 rounded-xl bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                      <div className="space-y-1">
+                        <span className="text-[11px] font-bold text-orange-900 flex items-center gap-1.5">
+                          <Target className="w-3.5 h-3.5 text-orange-700 shrink-0" />
+                          <span>{t.beranda.prediksiPertanyaanJudul}</span>
+                        </span>
+                        <p className="text-xs text-stone-700 italic leading-relaxed">
+                          "{rekomendasiAi.pertanyaan_jebakan}"
+                        </p>
+                      </div>
+                      <Tombol
+                        varian="primer"
+                        ukuran="sm"
+                        onClick={tanganiMulaiSimulasi}
+                        className="bg-orange-700 hover:bg-orange-800 text-white font-bold text-xs shrink-0 whitespace-nowrap min-h-[38px] shadow-2xs"
+                      >
+                        <span>{t.beranda.tombolLatihDiSimulasi}</span>
+                        <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                      </Tombol>
                     </div>
                   )}
                 </div>

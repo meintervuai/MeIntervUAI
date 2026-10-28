@@ -21,7 +21,13 @@ Sebelum menganalisis, merancang, atau memodifikasi kode, Agent **WAJIB** membaca
 | **Spesifikasi 6 Template CV ATS & Styling** | [docs/cv-templates-ats.md](file:///d:/MeIntervUAI/docs/cv-templates-ats.md) |
 | **Standar Pasfoto CV Formal (Nasional & Global)** | [docs/cv-photo-standards.md](file:///d:/MeIntervUAI/docs/cv-photo-standards.md) |
 | **Matriks Isian Form Dinamis 6 Template CV** | [docs/cv-form-field-matrix.md](file:///d:/MeIntervUAI/docs/cv-form-field-matrix.md) |
-| **Riset Evaluasi CV Rekruter & Metode Jev** | [docs/research/standar-evaluasi-cv-rekruter.md](file:///d:/MeIntervUAI/docs/research/standar-evaluasi-cv-rekruter.md) |
+| **Indeks Riset Praktisi HR & Metode Jev** | [docs/research/README.md](file:///d:/MeIntervUAI/docs/research/README.md) |
+| - *Riset HR: Vina Muliana* | [docs/research/hr-vina-muliana.md](file:///d:/MeIntervUAI/docs/research/hr-vina-muliana.md) |
+| - *Riset HR: Eza Hazami* | [docs/research/hr-eza-hazami.md](file:///d:/MeIntervUAI/docs/research/hr-eza-hazami.md) |
+| - *Riset HR: Yova Beltz & Ridha Poetri* | [docs/research/hr-yova-ridha.md](file:///d:/MeIntervUAI/docs/research/hr-yova-ridha.md) |
+| - *Riset BUMN: Apri Rokhyadi* | [docs/research/hr-apri-rokhyadi.md](file:///d:/MeIntervUAI/docs/research/hr-apri-rokhyadi.md) |
+| - *Riset Global & Evaluasi Atomik Jev* | [docs/research/standar-evaluasi-cv-rekruter.md](file:///d:/MeIntervUAI/docs/research/standar-evaluasi-cv-rekruter.md) |
+| - *Engine Dialog Wawancara Adaptif* | [docs/research/panduan-dialog-wawancara-adaptif.md](file:///d:/MeIntervUAI/docs/research/panduan-dialog-wawancara-adaptif.md) |
 | **Pengujian & Keamanan File Sensitif** | [docs/others.md](file:///d:/MeIntervUAI/docs/others.md) |
 
 ---
@@ -129,6 +135,16 @@ Setiap umpan balik aksi pengguna (sukses simpan, error API, info sistem):
      - **`antislop-human`**: Standar aksesibilitas (kontras WCAG AA, fokus keyboard, target sentuh ergonomis).
      - **`antislop`**: Filter penyaring seluruh pola klise dan kode generik AI.
      - **`antislop-copywriting`**: Penulisan teks UI, label, dan pesan sistem yang natural, tegas, dan manusiawi (bebas kata-kata hiperbolis atau basa-basi robotik).
+
+---
+
+## 9. Aturan Perintah Khusus: "jev wawancara"
+
+Ketika pengguna memberikan perintah dengan kata kunci **`jev wawancara`**:
+1. Agent **WAJIB** mengeksekusi pipeline pemantauan riset video praktisi HR dan simulasi kriteria evaluasi dialog wawancara adaptif berbasis Jev AI (`scripts/jev_monitor.py`).
+2. Menghubungkan temuan riset terbaru dari 5 praktisi (Vina Muliana, Eza Hazami, Yova Beltz, Ridha Poetri, Apri Rokhyadi) langsung ke parameter evaluasi dialog wawancara adaptif di [docs/research/panduan-dialog-wawancara-adaptif.md](file:///d:/MeIntervUAI/docs/research/panduan-dialog-wawancara-adaptif.md).
+3. Menyajikan laporan hasil evaluasi atomik Jev (Probabilitas Relevansi, Topik, Urgensi, & Dampak Rubrik) secara ringkas, bersih, dan bebas slop.
+
 
 
 
