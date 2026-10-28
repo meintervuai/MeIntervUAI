@@ -187,5 +187,34 @@ export const api = {
     });
     return res.json();
   },
+
+  // Simulasi Wawancara Adaptif
+  async mulaiSimulasi(data: {
+    pengguna_id: string;
+    target_role: string;
+    mode?: string;
+  }): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/simulasi/mulai`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
+
+  async kirimJawabanSimulasi(data: {
+    sesi_id: string;
+    pengguna_id: string;
+    target_role: string;
+    jawaban_kandidat: string;
+    riwayat_chat: any[];
+  }): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/simulasi/jawab`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    });
+    return res.json();
+  },
 };
 

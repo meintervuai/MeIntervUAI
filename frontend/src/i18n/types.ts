@@ -333,6 +333,25 @@ export interface PusatBantuanKonten {
     tombolLatihDiSimulasi: string;
     analisisUlangTombol: string;
   };
+  simulasiWawancara: {
+    judulHalaman: string;
+    subjudulHalaman: string;
+    pilihPosisiLabel: string;
+    pilihPosisiPlaceholder: string;
+    biayaSesiBadge: string;
+    tombolMulaiWawancara: string;
+    sedangMemulai: string;
+    statusSesiAktif: string;
+    akhiriSesi: string;
+    panelisJudul: string;
+    ketikJawabanPlaceholder: string;
+    tombolKirimJawaban: string;
+    sedangMerespon: string;
+    peringatanKami: string;
+    peringatanKlise: string;
+    apresiasiAngka: string;
+    konfirmasiKeluar: string;
+  };
   cvBuilder: {
     judulHalaman: string;
     subjudulHalaman: string;

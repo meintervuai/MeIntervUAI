@@ -64,4 +64,10 @@ Ketika kandidat memberikan jawaban pada giliran percakapan ($T_n$), sistem menge
 1. **Dilarang Format Statis**: AI dilarang mengirimkan nomor urut soal kaku (*"Pertanyaan 1...", "Pertanyaan 2..."*).
 2. **Konteks Sejarah Percakapan**: Setiap prompt selalu menyertakan data CV pengguna + riwayat percakapan sebelumnya (*multi-turn memory*).
 3. **Penyisipan Persona HR**: Di awal sesi, sistem menetapkan apakah wawancara dipimpin oleh persona **HR Recruiter** (Gaya Eza/Vina untuk *culture & behavioral*) atau **User / Hiring Manager** (Gaya Apri Rokhyadi untuk *technical & problem-solving*).
+4. **Single Dynamic Cognitive HR Engine (Anti-Jailbreak & Anti-Looping)**:
+   - Dilarang membiarkan bot menjadi ensiklopedia atau kalkulator di tengah wawancara kerja.
+   - Dilarang membalas kandidat dengan kalimat teguran template statis berulang saat kandidat menjawab singkat atau di luar konteks.
+   - **Anti-AI Slop Formatting**: Dilarang menggunakan penomoran daftar (**1.**, **2.**, **3.**, dst), bold headers kaku, atau membombardir banyak pertanyaan sekaligus. Pewawancara berbicara santun mengalir dalam paragraf natural dan **wajib tepat 1 pertanyaan** per giliran.
+   - **Reaktivitas Kepribadian HR**: Bina bereaksi secara realistis terhadap sikap kandidat (menantang rasa malas, arogan, atau ketidaksiapan kandidat secara profesional).
+   - Istilah teknis (seperti ROI, KPI, SLA, Microservices) yang ditanyakan kandidat harus dijawab secara ringkas lalu dijadikan bahan ujian balik (*challenging question*).
 

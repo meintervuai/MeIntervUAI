@@ -7,6 +7,7 @@ import { CSMPublik } from './pages/CSMPublik';
 import { Pengaturan } from './pages/Pengaturan';
 import { HalamanGalat } from './pages/HalamanGalat';
 import { CVBuilder } from './pages/cv/CVBuilder';
+import { SimulasiWawancara } from './pages/simulasi/SimulasiWawancara';
 import { Masuk } from './pages/auth/Masuk';
 import { Daftar } from './pages/auth/Daftar';
 import { OTP } from './pages/auth/OTP';
@@ -242,12 +243,12 @@ export const App: React.FC = () => {
             }
           />
 
-          {/* Rute Simulasi Wawancara (Navigasi Disiapkan) */}
+          {/* Rute Simulasi Wawancara Adaptif */}
           <Route
             path="/simulasi"
             element={
               pengguna ? (
-                <SegeraHadir judul="Modul Studio Simulasi Wawancara" />
+                <SimulasiWawancara pengguna={pengguna} />
               ) : (
                 <Navigate to="/masuk" replace />
               )

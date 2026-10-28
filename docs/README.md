@@ -20,8 +20,8 @@ d:\MeIntervUAI\
 │   ├── app/
 │   │   ├── main.py               # Gateway FastAPI & middleware CORS/SlowAPI
 │   │   ├── config.py             # Parser environment & setting rate-limit
-│   │   ├── routers/              # Endpoint auth, csm_publik, profil, pengaturan, cv
-│   │   └── services/             # Client Supabase & generator ID terstruktur
+│   │   ├── routers/              # Endpoint auth, csm_publik, profil, pengaturan, cv, simulasi
+│   │   └── services/             # Supabase service, ID generator, & bina_service.py (Otak Karakter Bina HR)
 │   ├── tests/                    # Pengujian unit otomatis (pytest)
 │   └── requirements.txt
 ├── frontend/
@@ -44,7 +44,7 @@ d:\MeIntervUAI\
 ## Daftar Rujukan Modul Dokumentasi
 - [Prinsip & Definisi Slop](principles.md)
 - [Alur Kerja (Workflow WF-01 - WF-09)](workflow.md)
-- [Standar Backend (BE-01 - BE-02)](backend.md)
+- [Standar Backend (BE-01 - BE-03)](backend.md)
 - [Standar Frontend (FE-01 - FE-05)](frontend.md)
 - [Standar UI/UX, Multi-Device & Rotasi (UX-01 - UX-13)](ui-ux.md)
 - [Standar Basis Data (DB-01 - DB-06)](database.md)
@@ -60,4 +60,5 @@ d:\MeIntervUAI\
   - [Riset BUMN: Apri Rokhyadi (Substansi Konten & Seleksi Korporat)](research/hr-apri-rokhyadi.md)
   - [Riset Global & Evaluasi Atomik Metode Jev](research/standar-evaluasi-cv-rekruter.md)
   - [Panduan Dialog Wawancara Adaptif (Branching & Probing)](research/panduan-dialog-wawancara-adaptif.md)
+  - [Spesifikasi Karakter Orisinal: Bina (Head of Talent Acquisition)](research/karakter-bina.md)
 

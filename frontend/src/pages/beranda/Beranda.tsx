@@ -176,7 +176,7 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
   };
 
   const tanganiMulaiSimulasi = () => {
-    alert(`Memulai simulasi mode ${modeSimulasi.toUpperCase()}. Mengalokasikan ${biayaMode[modeSimulasi]} token.`);
+    navigate('/simulasi');
   };
 
   const tanganiJalankanAnalisisAts = async () => {

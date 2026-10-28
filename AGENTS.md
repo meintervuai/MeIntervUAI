@@ -28,6 +28,8 @@ Sebelum menganalisis, merancang, atau memodifikasi kode, Agent **WAJIB** membaca
 | - *Riset BUMN: Apri Rokhyadi* | [docs/research/hr-apri-rokhyadi.md](file:///d:/MeIntervUAI/docs/research/hr-apri-rokhyadi.md) |
 | - *Riset Global & Evaluasi Atomik Jev* | [docs/research/standar-evaluasi-cv-rekruter.md](file:///d:/MeIntervUAI/docs/research/standar-evaluasi-cv-rekruter.md) |
 | - *Engine Dialog Wawancara Adaptif* | [docs/research/panduan-dialog-wawancara-adaptif.md](file:///d:/MeIntervUAI/docs/research/panduan-dialog-wawancara-adaptif.md) |
+| - *Karakter Orisinal Bina (AI HR Lead)* | [docs/research/karakter-bina.md](file:///d:/MeIntervUAI/docs/research/karakter-bina.md) |
+| **Service Karakter AI Bina (Backend Engine)** | [backend/app/services/bina_service.py](file:///d:/MeIntervUAI/backend/app/services/bina_service.py) |
 | **Pengujian & Keamanan File Sensitif** | [docs/others.md](file:///d:/MeIntervUAI/docs/others.md) |
 
 ---
@@ -135,15 +137,6 @@ Setiap umpan balik aksi pengguna (sukses simpan, error API, info sistem):
      - **`antislop-human`**: Standar aksesibilitas (kontras WCAG AA, fokus keyboard, target sentuh ergonomis).
      - **`antislop`**: Filter penyaring seluruh pola klise dan kode generik AI.
      - **`antislop-copywriting`**: Penulisan teks UI, label, dan pesan sistem yang natural, tegas, dan manusiawi (bebas kata-kata hiperbolis atau basa-basi robotik).
-
----
-
-## 9. Aturan Perintah Khusus: "jev wawancara"
-
-Ketika pengguna memberikan perintah dengan kata kunci **`jev wawancara`**:
-1. Agent **WAJIB** mengeksekusi pipeline pemantauan riset video praktisi HR dan simulasi kriteria evaluasi dialog wawancara adaptif berbasis Jev AI (`scripts/jev_monitor.py`).
-2. Menghubungkan temuan riset terbaru dari 5 praktisi (Vina Muliana, Eza Hazami, Yova Beltz, Ridha Poetri, Apri Rokhyadi) langsung ke parameter evaluasi dialog wawancara adaptif di [docs/research/panduan-dialog-wawancara-adaptif.md](file:///d:/MeIntervUAI/docs/research/panduan-dialog-wawancara-adaptif.md).
-3. Menyajikan laporan hasil evaluasi atomik Jev (Probabilitas Relevansi, Topik, Urgensi, & Dampak Rubrik) secara ringkas, bersih, dan bebas slop.
 
 
 
