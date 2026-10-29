@@ -16,6 +16,7 @@ import { FormPersiapanSimulasi } from './komponen/FormPersiapanSimulasi';
 import { VoiceRoomDedicated } from './komponen/VoiceRoomDedicated';
 import { VideoRoomDedicated } from './komponen/VideoRoomDedicated';
 import { TextRoomChat } from './komponen/TextRoomChat';
+import { LaporanEvaluasiWawancara } from './komponen/LaporanEvaluasiWawancara';
 
 export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => {
   const { t } = useBahasa();
@@ -28,6 +29,7 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
   const [saldoTokenState, setSaldoTokenState] = useState<number>(() => pengguna?.saldo_token ?? 1000);
   const [targetRole, setTargetRole] = useState('');
   const [modeSimulasi, setModeSimulasi] = useState<ModeSimulasiTipe>('teks');
+  const [tampilkanEvaluasi, setTampilkanEvaluasi] = useState<boolean>(false);
 
   useEffect(() => {
     if (pengguna?.saldo_token !== undefined) {
@@ -429,15 +431,27 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
   };
 
   const tanganiAkhiriSesi = () => {
-    if (window.confirm(t.simulasiWawancara.konfirmasiKeluar)) {
-      if (audioPlayerRef.current) {
-        audioPlayerRef.current.pause();
-      }
-      setSesiAktif(false);
-      setDaftarPesan([]);
-      navigate('/');
+    if (audioPlayerRef.current) {
+      audioPlayerRef.current.pause();
     }
+    setSesiAktif(false);
+    setTampilkanEvaluasi(true);
   };
+
+  if (tampilkanEvaluasi) {
+    return (
+      <LaporanEvaluasiWawancara
+        targetRole={targetRole}
+        modeSimulasi={modeSimulasi}
+        riwayatChat={daftarPesan}
+        onKembaliKeStudio={() => {
+          setTampilkanEvaluasi(false);
+          setSesiAktif(false);
+          setDaftarPesan([]);
+        }}
+      />
+    );
+  }
 
   return (
     <div className={`mx-auto font-sans safe-padding-x ${

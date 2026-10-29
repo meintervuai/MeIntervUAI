@@ -36,7 +36,7 @@
 | 3 | Frontend Pre-Session Mode Selector UI | Update `FormPersiapanSimulasi.tsx` & `SimulasiWawancara.tsx` with 25-token video option, responsive balance indicator, pre-flight validation, i18n keys | M1 | DONE |
 | 4 | Video Mode & MediaPipe Real-Time Vision | Create `usePostureAnalysis.ts` and `VideoRoomDedicated.tsx` with 2-column layout, PiP skeleton overlay, 4 telemetry metrics, and vision alert cards | M1 | DONE |
 | 5 | Post-Interview Scorecard Report | Build `LaporanEvaluasiWawancara.tsx` with Bento grid, 4 metrics pillars, per-question accordion, and audio playback | M3, M4 | DONE |
-| 6 | Comprehensive Docs Sync & E2E Verification | Update `docs/backend.md`, `docs/frontend.md`, `docs/ui-ux.md`, `docs/database.md`, `docs/README.md`, `README.md`; run full E2E validation | M1, M2, M3, M4, M5 | IN_PROGRESS |
+| 6 | Comprehensive Docs Sync & E2E Verification | Update `docs/backend.md`, `docs/frontend.md`, `docs/ui-ux.md`, `docs/database.md`, `docs/README.md`, `README.md`; run full E2E validation | M1, M2, M3, M4, M5 | DONE |
 
 ## Interface Contracts
 ### `app/routers/simulasi.py` ↔ `app/services/bina_service.py`

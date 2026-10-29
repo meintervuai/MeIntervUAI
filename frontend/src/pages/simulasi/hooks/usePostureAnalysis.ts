@@ -153,13 +153,15 @@ export const usePostureAnalysis = ({ sedangBicara, onTriggerAlert }: UsePostureA
       });
 
       streamRef.current = stream;
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play().catch((e) => console.warn('Video play tertunda:', e));
-          setTelemetri((prev) => ({ ...prev, kameraAktif: true }));
-        };
-      }
+      setTelemetri((prev) => ({ ...prev, kameraAktif: true }));
+
+      // Attach stream segera & pastikan play terpanggil
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play().catch((e) => console.warn('Video play tertunda:', e));
+        }
+      }, 50);
     } catch (err) {
       console.warn('Akses kamera tidak diizinkan atau tidak tersedia:', err);
       setTelemetri((prev) => ({ ...prev, kameraAktif: false }));

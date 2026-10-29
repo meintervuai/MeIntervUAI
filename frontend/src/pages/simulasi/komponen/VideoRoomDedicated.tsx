@@ -86,13 +86,19 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
       onTriggerAlert: tanganiAlertVision,
     });
 
-  // Jalankan kamera saat komponen terpasang di layar
+  // Jalankan kamera saat komponen terpasang di layar (jika belum aktif)
   useEffect(() => {
-    mulaiKamera();
+    let timeoutId: any;
+    if (!telemetri.kameraAktif) {
+      timeoutId = setTimeout(() => {
+        mulaiKamera();
+      }, 100);
+    }
     return () => {
+      if (timeoutId) clearTimeout(timeoutId);
       hentikanKamera();
     };
-  }, [mulaiKamera, hentikanKamera]);
+  }, []);
 
   return (
     <div className="w-full h-full flex flex-col md:h-[calc(100vh-120px)] md:min-h-[620px] md:max-h-[880px] animate-fadeIn">
@@ -183,39 +189,43 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
 
             {/* Picture-in-Picture (PiP) Kamera User di Pojok Kanan Bawah */}
             <div className="absolute bottom-3 right-3 z-30 w-44 h-32 rounded-2xl overflow-hidden border-2 border-stone-600/90 shadow-2xl bg-black">
-              {telemetri.kameraAktif ? (
-                <div className="w-full h-full relative">
-                  {/* Video Streaming Pengguna (Mirrored) */}
-                  <video
-                    ref={videoRef}
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover scale-x-[-1]"
-                  />
-                  {/* Canvas Overlay MediaPipe Skeleton (Mirrored) */}
-                  <canvas
-                    ref={canvasRef}
-                    className="absolute inset-0 w-full h-full object-cover scale-x-[-1] pointer-events-none"
-                  />
-                  <div className="absolute top-1.5 left-2 px-1.5 py-0.5 rounded bg-black/60 text-[9px] font-bold text-white tracking-wider">
-                    USER
+              <div className="w-full h-full relative">
+                {/* Video Streaming Pengguna (Mirrored) */}
+                <video
+                  ref={videoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className={`w-full h-full object-cover scale-x-[-1] ${telemetri.kameraAktif ? 'block' : 'hidden'}`}
+                />
+                {/* Canvas Overlay MediaPipe Skeleton (Mirrored) */}
+                <canvas
+                  ref={canvasRef}
+                  className={`absolute inset-0 w-full h-full object-cover scale-x-[-1] pointer-events-none ${telemetri.kameraAktif ? 'block' : 'hidden'}`}
+                />
+
+                {telemetri.kameraAktif ? (
+                  <>
+                    <div className="absolute top-1.5 left-2 px-1.5 py-0.5 rounded bg-black/60 text-[9px] font-bold text-white tracking-wider">
+                      USER
+                    </div>
+                    {telemetri.sedangMemuatModel ? (
+                      <div className="absolute top-1.5 right-2 px-1.5 py-0.5 rounded bg-black/60 text-[9px] font-semibold text-amber-300 tracking-wider">
+                        AI Loading
+                      </div>
+                    ) : (
+                      <div className="absolute top-1.5 right-2 px-1.5 py-0.5 rounded bg-black/60 text-[9px] font-semibold text-emerald-400 tracking-wider">
+                        AI Active
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center bg-stone-900 text-stone-400">
+                    <CameraOff className="w-5 h-5 mb-1 text-stone-500" />
+                    <span className="text-[10px]">{t.simulasiWawancara.kameraNonaktif}</span>
                   </div>
-                  {telemetri.sedangMemuatModel ? (
-                    <div className="absolute top-1.5 right-2 px-1.5 py-0.5 rounded bg-black/60 text-[9px] font-semibold text-amber-300 tracking-wider">
-                      AI Loading
-                    </div>
-                  ) : (
-                    <div className="absolute top-1.5 right-2 px-1.5 py-0.5 rounded bg-black/60 text-[9px] font-semibold text-emerald-400 tracking-wider">
-                      AI Active
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center p-2 text-center bg-stone-900 text-stone-400">
-                  <CameraOff className="w-5 h-5 mb-1 text-stone-500" />
-                  <span className="text-[10px]">{t.simulasiWawancara.kameraNonaktif}</span>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
 
@@ -467,29 +477,30 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
 
           {/* PiP Kamera Mobile di Pojok Kanan Bawah */}
           <div className="absolute bottom-2.5 right-2.5 z-30 w-28 h-20 rounded-xl overflow-hidden border-2 border-stone-600 bg-black">
-            {telemetri.kameraAktif ? (
-              <div className="w-full h-full relative">
-                <video
-                  ref={videoRef}
-                  playsInline
-                  muted
-                  className="w-full h-full object-cover scale-x-[-1]"
-                />
-                <canvas
-                  ref={canvasRef}
-                  className="absolute inset-0 w-full h-full object-cover scale-x-[-1] pointer-events-none"
-                />
-                {telemetri.sedangMemuatModel && (
+            <div className="w-full h-full relative">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className={`w-full h-full object-cover scale-x-[-1] ${telemetri.kameraAktif ? 'block' : 'hidden'}`}
+              />
+              <canvas
+                ref={canvasRef}
+                className={`absolute inset-0 w-full h-full object-cover scale-x-[-1] pointer-events-none ${telemetri.kameraAktif ? 'block' : 'hidden'}`}
+              />
+              {telemetri.kameraAktif ? (
+                telemetri.sedangMemuatModel && (
                   <div className="absolute top-1 right-1 px-1 py-0.5 rounded bg-black/70 text-[8px] font-semibold text-amber-300">
                     AI...
                   </div>
-                )}
-              </div>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-[9px] text-stone-400">
-                {t.simulasiWawancara.kameraNonaktif}
-              </div>
-            )}
+                )
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-[9px] text-stone-400">
+                  {t.simulasiWawancara.kameraNonaktif}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
