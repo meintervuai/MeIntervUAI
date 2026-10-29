@@ -1,6 +1,6 @@
-# Standar UI/UX, Multi-Device & Rotasi Layar: IntervU AI (UX-01 s.d UX-12)
+# Standar UI/UX, Multi-Device & Studio Vision: MeIntervUAI (UX-01 s.d UX-20)
 
-Ruang lingkup: Kualitas visual premium, responsivitas semua perangkat (320px–1920px), ketahanan rotasi layar, dan aksesibilitas kontras.
+Ruang lingkup: Kualitas visual premium, responsivitas semua perangkat (320px–1920px), ketahanan rotasi layar, aksesibilitas kontras, voice controller, video studio split-view, telemetri bahasa tubuh MediaPipe, dan laporan evaluasi purna wawancara (Scorecard).
 
 ## Aturan Utama
 
@@ -89,12 +89,66 @@ Tata letak wajib diuji dan bertahan pada seluruh ukuran standar:
   - **Segmented Control & Pill Carousel**: Ganti deretan tombol horizontal panjang dengan *horizontal scrollable chips/pills* dengan snapping yang mulus.
   - **Input Friendly**: Input form harus mencegah zoom otomatis di iOS Safari (`font-size >= 16px` pada input field mobile).
 
-### UX-18: Standar Studio Wawancara Split-View & Voice Controller (UX-18)
+### UX-17: Standar Skeleton Shimmer Loading & Zero CLS (Transisi Halaman & Form)
+- Pemuatan data halaman awal dan transisi antar menu/tab dilarang menggunakan spinner memutar di tengah layar kosong.
+- Gunakan kerangka Skeleton Shimmer (`animate-pulse`) yang mencerminkan geometri layout sebenarnya (header, kartu form, tab pills, dan tombol).
+- Menghasilkan pengalaman pengguna instan tanpa kedipan visual atau pergeseran tata letak (*Cumulative Layout Shift* / CLS).
+
+### UX-18: Standar Studio Wawancara Split-View & Voice Controller
 - **Split-View Desktop (`md:grid md:grid-cols-12 h-[calc(100vh-140px)]`)**:
   - Kolom Kiri (55%): Panel gelap dark charcoal (`#18181B` s.d `#1F1F23`) dengan concentric audio wave rings, avatar eksekutif pria HR Indonesia (Bina), status vokal real-time, dan tombol PTT oranye terakota (`#EA580C`). Seluruh kontrol pas dalam 1 layar tanpa scroll vertikal halaman utama.
   - Kolom Kanan (45%): Panel transkrip putih bersih (`#FFFFFF`) dengan border halus (`#E5E7EB`), bubble chat terpisah (Bina di kiri dengan avatar, Kandidat di kanan dengan aksen oranye), scrollable secara independen dengan auto-scroll ke interaksi terbaru.
 - **Sticky Control Mobile (`< 768px`)**:
   - Compact visualizer atas (25-30% viewport), transkrip scrollable independen di bagian tengah (`flex-1`), dan Sticky Bottom Action Bar di bagian bawah untuk jangkauan ibu jari yang ergonomis saat menekan tombol bicara.
+
+### UX-19: Standar Studio Video & Telemetri Bahasa Tubuh Real-Time
+Berdasarkan spesifikasi desain mockup resmi:
+- **Layout Split-View Desktop (`h-[calc(100vh-120px)]`)**:
+  - **Panel Kiri (58%)**:
+    * Panggung Video Utama: Menampilkan avatar visual Pria Eksekutif HR (Bina) dengan transisi visual saat audio berbicara aktif.
+    * Picture-in-Picture (PiP) Kamera Kandidat: Diposisikan di pojok kanan bawah video stage dengan overlay skeleton kanvas MediaPipe (Face mesh cyan, Pose bahu emerald, Hand landmarks amber).
+    * 4 Indikator Telemetri Bahasa Tubuh: Ditampilkan sebagai status pills dengan dot indikator solid statis:
+      1. Kontak Mata: Persentase fokus pandangan mata ke lensa.
+      2. Postur: Status tegak vs miring.
+      3. Bibir / Suara: Status bukaan artikulasi (Jelas / Normal / Kurang Terbuka).
+      4. Tangan: Status gestur (Normal vs Menyentuh Wajah).
+    * Kontrol Bawah: Tombol utama PTT (Push-To-Talk) oranye terakota (`bg-amber-700 hover:bg-amber-800`, `min-h-[52px]`), switch mode PTT / Hands-Free, serta toggle kamera dan audio.
+  - **Panel Kanan (42%)**:
+    * Transkrip Percakapan Real-Time: Alur riwayat tanya jawab terstruktur dengan penghitung interaksi.
+    * Inline AI Vision Alert Card: Kartu peringatan visual kontekstual (`bg-amber-50/90 border border-amber-300`) yang muncul otomatis ketika postur miring atau tangan menyentuh wajah terdeteksi secara berulang.
+    * Pemutar Ulang Audio: Tombol interaktif untuk memutar kembali suara pertanyaan Bina.
+- **Pengalaman Layar Seluler Mobile-First (`< 768px`)**:
+  - Susunan vertikal penuh (`h-screen flex flex-col`): stage video proporsional (~38vh), deretan horizontal chip telemetri dengan scroll halus, transkrip scrollable mandiri, dan sticky footer CTA jangkauan ibu jari (`min-h-[48px]`) dengan padding lingkungan aman `env(safe-area-inset-bottom)`.
+- **Standar Anti-Slop Visual Ketat**:
+  - Dilarang keras menggunakan pill atau titik berkedip AI (`animate-pulse` pada status dot). Seluruh indikator telemetri wajib menggunakan status dot solid (`●`).
+  - Dilarang keras menggunakan karakter em-dash (garis pisah panjang); gunakan tanda hubung biasa `-` atau titik dua `:`.
+
+### UX-20: Standar Laporan Evaluasi Wawancara (Post-Interview Scorecard Bento Grid & Accordion)
+Pada modul laporan evaluasi purna wawancara (`src/pages/simulasi/komponen/LaporanEvaluasiWawancara.tsx`):
+- **Palet Warna & Hirarki Visual Terakreditasi**:
+  - Latar Halaman: `#FAF8F5` (warm ivory stone).
+  - Kartu & Kontainer: `#FFFFFF` dengan border halus `#E5E7EB`.
+  - Warna Aksen Utama: `#EA580C` (oranye terakota) & soft amber (`#FFFBEB`, `#FEF3C7`).
+  - Kekuatan / Skor Tinggi: `#16A34A` (emerald) & soft green (`#F0FDF4`, `#DCFCE7`).
+  - Teks Utama: `#18181B` (zinc-900) dengan rasio kontras WCAG AA (>= 4.5:1).
+- **Header Laporan**:
+  - Tombol kembali ke Studio Wawancara, Judul Laporan Evaluasi, Metadata sesi (Posisi, Mode, Durasi), serta tombol tindakan "Latih Ulang Sesi" dan "Unduh Laporan PDF".
+- **Bento Grid 3 Kolom Ringkasan**:
+  1. *Skor Keseluruhan*: Circular SVG ring gauge (84/100, radius 54, circumference ~339.29, status "Sangat Baik - Siap Wawancara Kerja", dan chip persentil "Top 8% Kandidat Finansial").
+  2. *Rincian 4 Pilar Metrik*: Rincian progres bar terkalibrasi (Metode CAR: 88%, Komunikasi: 85%, Penguasaan Teknis: 82%, Bahasa Tubuh & Postur MediaPipe: 78%).
+  3. *Ringkasan Eksekutif Bina AI*: Avatar resmi Bina, kutipan evaluasi tajam berbobot (bebas kalimat klise AI), dan catatan gestur dominan kandidat.
+- **Accordion Evaluasi Per Pertanyaan**:
+  - Header Accordion: Pertanyaan nyata posisi profesional, skor numerik individual, badge kontak mata MediaPipe, dan chevron pembuka.
+  - Body Accordion:
+    * Transkrip jawaban kandidat dilengkapi pemutar audio simulasi frekuensi suara.
+    * Grid Komparasi 2 Sisi: Kotak hijau kekuatan jawaban vs Kotak oranye catatan kritis dan koreksi postur MediaPipe bertanda waktu konkret (misal: `[01:14] Sudut kemiringan kepala 12°`, `[07:40] Tangan menyentuh leher 2x`).
+    * Kotak Rekomendasi Jawaban Ideal dari Bina: Polesan formulasi STAR/CAR untuk meningkatkan daya saing kandidat.
+- **Responsivitas Mobile (< 768px)**:
+  - Bento kartu 3-kolom bertransformasi menjadi susunan vertikal 1-kolom.
+  - Komparasi 2-sisi bertumpuk rapi secara vertikal tanpa pergeseran horizontal.
+  - Tombol tindakan utama disajikan dalam format sticky footer bar bawah dengan target sentuh ergonomis minimum 44px (`min-h-[44px]`).
+  - Mode cetak PDF (`window.print()`) otomatis mengekspansi seluruh accordion agar dokumen tercetak utuh dan menyembunyikan navigasi interaktif melalui stylesheet `@media print`.
+
 
 
 

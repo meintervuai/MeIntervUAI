@@ -373,6 +373,48 @@ export interface PusatBantuanKonten {
     tampilkanTranskrip: string;
     sembunyikanTranskrip: string;
     mikrofonTidakAktif: string;
+    // Pre-session Form Keys
+    instruksiPilihFormat: string;
+    subjudulPosisi: string;
+    rekomendasiCvLabel: string;
+    statusCvTeranalisis: string;
+    statusCvBelumAnalisis: string;
+    tombolAnalisisSingkat: string;
+    saldoTokenAnda: string;
+    biayaSesiLabel: string;
+    saldoKurangPeringatan: string;
+    deskripsiBinaLengkap: string;
+    // Video Room & Vision Telemetry Keys
+    judulModeVideo: string;
+    badgeLiveVideo: string;
+    transkripEvaluasiJudul: string;
+    jumlahInteraksi: string;
+    koreksiPosturJudul: string;
+    koreksiTanganJudul: string;
+    putarUlangAudio: string;
+    binaSedangBicara: string;
+    kameraNonaktif: string;
+    nyalakanKamera: string;
+    matikanKamera: string;
+    nyalakanSpeaker: string;
+    bisukanSpeaker: string;
+    tahanBicaraCta: string;
+    lepasKirimCta: string;
+    mengevaluasiCta: string;
+    modePttLabel: string;
+    telemetriKontakMata: string;
+    telemetriPostur: string;
+    telemetriTegak: string;
+    telemetriMiring: string;
+    telemetriBibir: string;
+    telemetriJelas: string;
+    telemetriNormal: string;
+    telemetriKurangTerbuka: string;
+    telemetriTangan: string;
+    telemetriMenyentuhWajah: string;
+    telemetriTanganNormal: string;
+    alertTanganMenyentuh: string;
+    alertPosturMiring: string;
   };
   cvBuilder: {
     judulHalaman: string;

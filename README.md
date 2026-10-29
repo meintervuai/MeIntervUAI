@@ -9,15 +9,22 @@ Platform terintegrasi untuk simulasi wawancara kerja berbasis AI (*AI Job Interv
 MeIntervUAI dirancang untuk membantu para pencari kerja (job seekers) dan profesional dalam mempersiapkan diri menghadapi tahapan wawancara kerja, mengoptimalkan dokumen lamaran (CV), serta memperoleh panduan karir langsung melalui interaksi cerdas.
 
 ### Fitur Utama:
-1. **Simulasi Wawancara Kerja AI**: Latihan tanya-jawab wawancara interaktif berbasis posisi kerja dan industri, lengkap dengan umpan balik instan.
-2. **Pembuat CV ATS (ATS CV Builder)**: Pembuatan resume profesional yang terstandarisasi dan ramah sistem ATS (*Applicant Tracking System*).
-3. **Portal CSM & Dukungan Publik**: Halaman pusat bantuan terpadu (FAQ interaktif, pengajuan tiket kendala publik, dan live assistance).
-4. **Keamanan Autentikasi Modern**:
+1. **Simulasi Wawancara Kerja AI Adaptif (Engine Karakter Bina)**: Latihan tanya-jawab wawancara adaptif berbasis data CV konkret, 6 tahapan dialog progresif, metodologi STAR/CAR, probing mendalam tanpa klise bot AI, dan aturan tegas 1 pertanyaan per giliran.
+2. **3 Format Mode Wawancara Interaktif**:
+   - *Teks Interaktif* (10 Token): Tanya jawab cepat berbasis teks dengan verifikasi substansi jawaban.
+   - *Suara / Audio AI* (15 Token): Interaksi vokal bilingual real-time berbasis Fish Audio Cloud API & Edge-TTS neural Brian.
+   - *Video & Telemetri Bahasa Tubuh MediaPipe* (25 Token): Simulasi tatap muka split-view 58%:42% desktop dan mobile-first, avatar eksekutif Bina, webcam PiP dengan overlay skeleton MediaPipe real-time (18 FPS), 4 telemetri (Kontak Mata %, Postur, Artikulasi Bibir, Gestur Tangan), serta Inline AI Vision Alert Card.
+3. **Laporan Evaluasi Simulasi Wawancara (Post-Interview Scorecard)**: Scorecard komprehensif pasca-sesi dengan Bento Grid 3 Kolom (Circular Ring Gauge 84/100, 4 Pilar Metrik CAR/Komunikasi/Teknis/MediaPipe, Ringkasan Eksekutif Bina), Accordion Per Pertanyaan dengan komparasi Kekuatan vs Catatan Kritis bertanda waktu, rekomendasi jawaban ideal STAR/CAR, serta ekspor PDF terformat rapi.
+4. **Pembuat CV ATS (ATS CV Builder)**: Pembuatan resume profesional yang terstandarisasi dan ramah sistem ATS (*Applicant Tracking System*) dengan 6 pilihan template formal.
+5. **Sistem Token & Buku Besar Transaksi**: Transaksi saldo aman dengan audit mutasi atomik di `transaksi_token` dan pencegahan pemotongan saldo prematur (*zero orphan deduction*).
+6. **Portal CSM & Dukungan Publik**: Halaman pusat bantuan terpadu (FAQ interaktif, pengajuan tiket kendala publik, dan live assistance).
+7. **Keamanan Autentikasi Modern**:
    - Pendaftaran akun dengan verifikasi **OTP 6-digit email** (hitung mundur 30 detik).
    - Masuk cepat menggunakan **Google OAuth**.
    - Penomoran ID pengguna urut terstruktur (`userYYYYMMDD0000`).
-5. **Dukungan Dwibahasa (i18n)**: Antarmuka multibahasa (Bahasa Indonesia & English).
-6. **Mobile-First & Responsif**: Desain UI adaptif di semua resolusi perangkat (HP, tablet, desktop).
+8. **Dukungan Dwibahasa Simetris (i18n)**: Antarmuka multibahasa (Bahasa Indonesia & English) tanpa string hardcoded.
+9. **Mobile-First & Responsif Multi-Device**: Desain UI adaptif di semua resolusi perangkat (320px s.d 1920px).
+
 
 ---
 
@@ -70,10 +77,11 @@ flowchart TD
 
 Aplikasi ini menggunakan model arsitektur terpisah (*decoupled frontend & backend*):
 
-- **Frontend**: React (TypeScript) + Vite, Desain Token Vanilla CSS, Lucide Icons.
-- **Backend API**: Python FastAPI + Uvicorn, SlowAPI (Rate Limiter), Pydantic v2.
-- **Database & Auth**: PostgreSQL via Supabase Database & Supabase Auth.
+- **Frontend**: React 19 (TypeScript) + Vite, Tailwind CSS v4, MediaPipe Tasks Vision (`@mediapipe/tasks-vision` via Google official CDN), Lucide Icons, html2pdf.js.
+- **Backend API**: Python FastAPI + Uvicorn, SlowAPI (Rate Limiter), Pydantic v2, Bina Cognitive Engine (Cohere Command-R7B + Google Gemini 3.1 Flash Lite fallback), Fish Audio Cloud API & Microsoft Edge-TTS Brian Multilingual.
+- **Database & Auth**: PostgreSQL via Supabase Database (Auth, `pengguna`, `profil_pengguna`, `saldo_token`, `transaksi_token`, `cv_pengguna`, `tiket_bantuan_csm`).
 - **Proxy**: Vite Dev Server mem-proxy request `/api` langsung ke gateway FastAPI.
+
 
 ---
 
@@ -135,25 +143,28 @@ Aplikasi ini dikonfigurasi pada port:
 
 ```
 MeIntervUAI/
-├── docs/                         # Dokumentasi arsitektur, standar coding & ADR
+├── docs/                         # Dokumentasi arsitektur, standar coding & riset HR
 │   ├── README.md                 # Indeks aturan antislop & panduan dokumen
-│   ├── adr-auth-otp.md           # ADR-001: Alur autentikasi, verifikasi OTP & ID
-│   ├── backend.md                # Standar backend & rate limiting
-│   ├── frontend.md               # Standar frontend & arsitektur komponen
-│   ├── ui-ux.md                  # Standar UI/UX, tema & mobile-first
-│   └── database.md               # Skema data & standar ID terstruktur
+│   ├── backend.md                # Standar backend BE-01 s.d BE-06 (Bina Engine, Audio, Token Rate)
+│   ├── frontend.md               # Standar frontend FE-01 s.d FE-10 (Vision Hook, Video Room, Scorecard)
+│   ├── ui-ux.md                  # Standar UI/UX UX-01 s.d UX-20 (Studio Video, Telemetri, Scorecard)
+│   ├── database.md               # Standar basis data DB-01 s.d DB-07 (Audit Buku Besar Mutasi Saldo)
+│   └── research/                 # Riset praktisi HR & panduan wawancara adaptif
 ├── backend/                      # Layanan API FastAPI
 │   ├── app/
 │   │   ├── main.py               # Entry point FastAPI, CORS & router
 │   │   ├── config.py             # Pengaturan env & rate limits
-│   │   ├── routers/              # Endpoint auth, csm, profil, pengaturan
-│   │   └── services/             # Supabase service & ID generator
+│   │   ├── routers/              # Endpoint auth, csm, profil, pengaturan, cv, simulasi
+│   │   └── services/             # Supabase service, bina_service.py (Otak Bina), audio_service.py
+│   ├── tests/                    # Pengujian unit otomatis (pytest)
 │   └── requirements.txt          # Daftar pustaka Python
 ├── frontend/                     # Antarmuka Pengguna (React + Vite)
 │   ├── src/
-│   │   ├── pages/                # Halaman aplikasi (Auth, CSM, Beranda, Pengaturan)
-│   │   ├── components/           # Komponen UI terstandardisasi (Tombol, Input, Modal)
-│   │   ├── i18n/                 # Lokalisasi multi-bahasa (ID & EN)
+│   │   ├── pages/                # Halaman aplikasi (Auth, CSM, Beranda, Pengaturan, cv, simulasi)
+│   │   │   ├── cv/               # CVBuilder & komponen editor/pratinjau ATS
+│   │   │   └── simulasi/         # SimulasiWawancara, hooks (usePostureAnalysis), komponen (VideoRoomDedicated, LaporanEvaluasiWawancara)
+│   │   ├── components/           # Komponen UI terstandardisasi (Tombol, Input, Modal, NotifikasiToast)
+│   │   ├── i18n/                 # Lokalisasi multi-bahasa simetris (ID & EN)
 │   │   └── services/             # Klien Supabase & pemanggil API backend
 │   └── vite.config.ts            # Konfigurasi port dev (6825) & proxy backend (8609)
 └── README.md                     # Dokumentasi utama proyek

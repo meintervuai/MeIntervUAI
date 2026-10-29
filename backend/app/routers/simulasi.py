@@ -11,7 +11,7 @@ from typing import Optional, Dict, Any, List
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form, status
 from pydantic import BaseModel
 from app.services.supabase_service import get_supabase_client, buat_id_terstruktur
-from app.services.bina_service import hasilkan_respon_bina, evaluasi_biner_relevansi_kerja
+from app.services.bina_service import hasilkan_respon_bina, evaluasi_biner_relevansi_kerja, bangun_sapaan_awal_bina
 from app.services.audio_service import (
     sintesis_suara_bina_base64,
     transkripsi_suara_groq
@@ -60,6 +60,29 @@ def deteksi_anomali_input(jawaban: str, target_role: str) -> tuple[str, str]:
         )
 
     return ("NORMAL", "")
+
+# Biaya Token per Mode Simulasi Wawancara (Standar BE-01 & DB-04)
+TARIF_SIMULASI_MODE: Dict[str, int] = {
+    "teks": 10,
+    "suara": 15,
+    "audio": 15,
+    "video": 25,
+}
+
+def normalisasi_mode_simulasi(mode: Optional[str]) -> str:
+    """
+    Menormalisasi parameter mode simulasi wawancara menjadi format standar: teks, suara, atau video.
+    Menangani huruf kecil, spasi kosong, dan alias umum (suara/audio/voice -> suara, video/vid -> video).
+    Default: 'teks'.
+    """
+    if not mode:
+        return "teks"
+    m = mode.strip().lower()
+    if m in ["suara", "audio", "voice"]:
+        return "suara"
+    if m in ["video", "vid"]:
+        return "video"
+    return "teks"
 
 class PermintaanMulaiSimulasi(BaseModel):
     pengguna_id: str
@@ -175,66 +198,63 @@ async def mulai_sesi_wawancara(data: PermintaanMulaiSimulasi):
     Menginisialisasi sesi simulasi wawancara baru.
     Memotong token sesuai mode:
     - Teks: 10 token
-    - Suara: 15 token
-    Menyusun sapaan awal profesional oleh Bina, serta menyertakan audio suara (base64) jika mode suara aktif.
+    - Suara/Audio: 15 token
+    - Video: 25 token
+    Menyusun sapaan awal profesional oleh Bina, serta menyertakan audio suara (base64) jika mode suara atau video aktif.
     """
     cek_rate_limit_simulasi(data.pengguna_id)
     sb = get_supabase_client()
-    BIAYA_TOKEN = 15 if data.mode == "suara" else 25 if data.mode == "video" else 10
+    mode_standar = normalisasi_mode_simulasi(data.mode)
+    biaya_token = TARIF_SIMULASI_MODE.get(mode_standar, 10)
 
     try:
-        # Cek saldo token
+        # 1. Cek saldo token pengguna
         saldo_res = sb.table("saldo_token").select("saldo_id, jumlah_saldo, total_terpakai").eq("pengguna_id", data.pengguna_id).limit(1).execute()
-        if not saldo_res.data or saldo_res.data[0]["jumlah_saldo"] < BIAYA_TOKEN:
+        if not saldo_res.data or saldo_res.data[0]["jumlah_saldo"] < biaya_token:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Saldo token tidak mencukupi untuk memulai simulasi {data.mode}. Diperlukan {BIAYA_TOKEN} token."
+                detail=f"Saldo token tidak mencukupi untuk memulai simulasi mode {mode_standar}. Diperlukan {biaya_token} token."
             )
 
         saldo_info = saldo_res.data[0]
         saldo_lama = saldo_info["jumlah_saldo"]
-        saldo_baru = saldo_lama - BIAYA_TOKEN
-        total_terpakai_baru = saldo_info.get("total_terpakai", 0) + BIAYA_TOKEN
+        saldo_baru = saldo_lama - biaya_token
+        total_terpakai_baru = saldo_info.get("total_terpakai", 0) + biaya_token
 
-        # Potong token & catat transaksi
+        # 2. Ambil data CV pengguna untuk personalisasi sapaan SEBELUM memotong token (mencegah orphan deduction)
+        cv_res = sb.table("cv_pengguna").select("konten_json").eq("pengguna_id", data.pengguna_id).limit(1).execute()
+        konten_cv = {}
+        if cv_res.data and len(cv_res.data) > 0:
+            konten_cv = cv_res.data[0].get("konten_json", {}) or {}
+
+        teks_sapaan = bangun_sapaan_awal_bina(data.target_role, konten_cv)
+
+        audio_url = ""
+        if mode_standar in ["suara", "video"]:
+            try:
+                audio_url = await sintesis_suara_bina_base64(teks_sapaan)
+            except Exception as ea:
+                print("Audio synthesis error on start:", ea)
+
+        # 3. Potong token di database
         sb.table("saldo_token").update({
             "jumlah_saldo": saldo_baru,
             "total_terpakai": total_terpakai_baru
         }).eq("pengguna_id", data.pengguna_id).execute()
 
+        # 4. Catat mutasi di tabel transaksi_token (buku besar)
         transaksi_id = buat_id_terstruktur("tran", "transaksi_token", "transaksi_id")
         sb.table("transaksi_token").insert({
             "transaksi_id": transaksi_id,
             "pengguna_id": data.pengguna_id,
-            "jenis_transaksi": f"simulasi_{data.mode}",
-            "jumlah_token": -BIAYA_TOKEN,
+            "jenis_transaksi": f"simulasi_{mode_standar}",
+            "jumlah_token": -biaya_token,
             "saldo_sebelum": saldo_lama,
             "saldo_sesudah": saldo_baru,
-            "keterangan": f"Simulasi Wawancara Kerja Mode {data.mode.capitalize()} ({data.target_role})"
+            "keterangan": f"Simulasi Wawancara Kerja Mode {mode_standar.capitalize()} ({data.target_role})"
         }).execute()
 
         sesi_id = buat_id_terstruktur("sesi", "transaksi_token", "transaksi_id")
-
-        # Ambil data CV pengguna untuk personalisasi sapaan
-        cv_res = sb.table("cv_pengguna").select("konten_json").eq("pengguna_id", data.pengguna_id).limit(1).execute()
-        nama_kandidat = "Kandidat"
-        if cv_res.data and len(cv_res.data) > 0:
-            c = cv_res.data[0].get("konten_json", {})
-            nama_kandidat = c.get("data_kontak", {}).get("nama_lengkap", "Kandidat")
-
-        teks_sapaan = (
-            f"Halo {nama_kandidat}! Saya Bina, Head of Talent Acquisition di MeIntervUAI. "
-            f"Senang sekali bisa bertemu dengan Anda di sesi simulasi wawancara untuk posisi {data.target_role}. "
-            f"Sesi ini dirancang untuk mengasah ketajaman komunikasi dan kesiapan Anda menghadapi wawancara kerja yang sesungguhnya. "
-            f"Untuk memulai obrolan kita, bisa ceritakan secara ringkas latar belakang Anda dan apa motivasi terbesar Anda melamar posisi {data.target_role}?"
-        )
-
-        audio_url = ""
-        if data.mode == "suara":
-            try:
-                audio_url = await sintesis_suara_bina_base64(teks_sapaan)
-            except Exception as ea:
-                print("Audio synthesis error on start:", ea)
 
         pesan_awal = {
             "id": f"msg_{int(time.time()*1000)}",
@@ -296,11 +316,22 @@ async def tangani_jawaban_chat(data: PermintaanKirimJawaban):
         pertanyaan_terakhir=pertanyaan_terakhir
     )
 
-    # 4. Dialog Utama Adaptif Bina (Memanggil bina_service)
+    # 4. Ambil data CV kandidat untuk grounding respon Bina
+    sb = get_supabase_client()
+    konten_cv = {}
+    try:
+        cv_res = sb.table("cv_pengguna").select("konten_json").eq("pengguna_id", data.pengguna_id).limit(1).execute()
+        if cv_res.data and len(cv_res.data) > 0:
+            konten_cv = cv_res.data[0].get("konten_json", {}) or {}
+    except Exception as ecv:
+        print("[Simulasi Jawab] Info: Data CV tidak ditemukan / offline:", ecv)
+
+    # 5. Dialog Utama Adaptif Bina (Memanggil bina_service)
     teks_balasan = hasilkan_respon_bina(
         target_role=data.target_role,
         jawaban_kandidat=data.jawaban_kandidat,
         riwayat_chat=data.riwayat_chat,
+        cv_data=konten_cv,
         is_oot=not is_relevan
     )
 
@@ -396,10 +427,21 @@ async def proses_interaksi_suara(
         pertanyaan_terakhir=pertanyaan_terakhir
     )
 
+    # Ambil data CV kandidat untuk grounding respon Bina di mode suara
+    sb = get_supabase_client()
+    konten_cv = {}
+    try:
+        cv_res = sb.table("cv_pengguna").select("konten_json").eq("pengguna_id", pengguna_id).limit(1).execute()
+        if cv_res.data and len(cv_res.data) > 0:
+            konten_cv = cv_res.data[0].get("konten_json", {}) or {}
+    except Exception as ecv:
+        print("[Simulasi Suara] Info: Data CV tidak ditemukan / offline:", ecv)
+
     teks_balasan = hasilkan_respon_bina(
         target_role=target_role,
         jawaban_kandidat=teks_transkripsi_kandidat,
         riwayat_chat=riwayat_chat,
+        cv_data=konten_cv,
         is_oot=not is_relevan
     )
 

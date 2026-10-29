@@ -14,6 +14,7 @@ import { ArrowLeft } from 'lucide-react';
 import { PesanChat, ModeSimulasiTipe } from './komponen/types';
 import { FormPersiapanSimulasi } from './komponen/FormPersiapanSimulasi';
 import { VoiceRoomDedicated } from './komponen/VoiceRoomDedicated';
+import { VideoRoomDedicated } from './komponen/VideoRoomDedicated';
 import { TextRoomChat } from './komponen/TextRoomChat';
 
 export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => {
@@ -23,9 +24,16 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
   // Inisialisasi dari cache lokal browser (Stale-While-Revalidate: FE-07 / UX-17)
   const CACHE_KEY = `intervu_simulasi_kelayakan_${pengguna?.pengguna_id || 'guest'}`;
 
-  // State Inisialisasi & Kelayakan
+  // State Inisialisasi, Saldo Token Reaktif & Kelayakan
+  const [saldoTokenState, setSaldoTokenState] = useState<number>(() => pengguna?.saldo_token ?? 1000);
   const [targetRole, setTargetRole] = useState('');
   const [modeSimulasi, setModeSimulasi] = useState<ModeSimulasiTipe>('teks');
+
+  useEffect(() => {
+    if (pengguna?.saldo_token !== undefined) {
+      setSaldoTokenState(pengguna.saldo_token);
+    }
+  }, [pengguna?.saldo_token]);
   const [daftarRoleSaran, setDaftarRoleSaran] = useState<string[]>(() => {
     try {
       const c = localStorage.getItem(CACHE_KEY);
@@ -202,11 +210,26 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
         setSesiId(res.sesi_id);
         setDaftarPesan([res.pesan_awal]);
         setSesiAktif(true);
+
+        // Perbarui saldo token reaktif di state aplikasi dan localStorage
+        if (res.saldo_token !== undefined) {
+          setSaldoTokenState(res.saldo_token);
+          try {
+            const cached = localStorage.getItem('intervu_pengguna');
+            if (cached) {
+              const parsed = JSON.parse(cached);
+              parsed.saldo_token = res.saldo_token;
+              localStorage.setItem('intervu_pengguna', JSON.stringify(parsed));
+              window.dispatchEvent(new Event('storage'));
+            }
+          } catch {}
+        }
+
         const biaya = modeSimulasi === 'suara' ? 15 : modeSimulasi === 'video' ? 25 : 10;
         setNotif({ teks: `Sesi wawancara mode ${modeSimulasi} berhasil dibuka. Alokasi ${biaya} Token tercatat.`, tipe: 'sukses' });
 
-        // Jika mode suara, langsung putar ucapan sambutan Bina
-        if (modeSimulasi === 'suara' && res.pesan_awal.audio_url) {
+        // Jika mode suara atau video, langsung putar ucapan sambutan Bina
+        if ((modeSimulasi === 'suara' || modeSimulasi === 'video') && res.pesan_awal.audio_url) {
           setTimeout(() => {
             putarAudioBina(res.pesan_awal.audio_url);
           }, 300);
@@ -418,7 +441,7 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
 
   return (
     <div className={`mx-auto font-sans safe-padding-x ${
-      sesiAktif && modeSimulasi === 'suara'
+      sesiAktif && (modeSimulasi === 'suara' || modeSimulasi === 'video')
         ? 'max-w-7xl px-3 sm:px-6 py-3 sm:py-5 space-y-4 h-screen md:h-auto overflow-hidden'
         : 'max-w-5xl px-4 sm:px-6 py-6 sm:py-8 space-y-6 pb-24'
     }`}>
@@ -437,7 +460,7 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="p-2 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-100 transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center cursor-pointer shrink-0"
+            className="p-2 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer shrink-0"
             title="Kembali ke Beranda"
           >
             <ArrowLeft className="w-4 h-4" />
@@ -453,10 +476,10 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
         </div>
 
         <div className="flex items-center gap-2.5 shrink-0">
-          {/* Badge Token Pengguna Aktif */}
-          {pengguna?.saldo_token !== undefined && (
-            <div className="hidden sm:flex items-center px-3 py-1.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80 text-xs font-bold shadow-2xs">
-              <span>{pengguna.saldo_token} Token</span>
+          {/* Badge Token Pengguna Aktif (Responsif: Tampil di Seluler & Desktop) */}
+          {saldoTokenState !== undefined && (
+            <div className="flex items-center px-3 py-1.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80 text-xs font-bold shadow-2xs">
+              <span>{saldoTokenState} {t.simulasiWawancara.biayaTokenUnit}</span>
             </div>
           )}
 
@@ -464,9 +487,9 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
             <button
               type="button"
               onClick={tanganiAkhiriSesi}
-              className="px-3.5 py-1.5 sm:py-2 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-extrabold transition-colors min-h-[40px] flex items-center justify-center cursor-pointer shadow-2xs"
+              className="px-3.5 py-1.5 sm:py-2 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-extrabold transition-colors min-h-[44px] flex items-center justify-center cursor-pointer shadow-2xs"
             >
-              <span>Selesaikan Wawancara</span>
+              <span>{t.simulasiWawancara.akhiriSesi}</span>
             </button>
           )}
         </div>
@@ -483,7 +506,32 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
           kelayakan={kelayakan}
           sedangMemeriksaKelayakan={sedangMemeriksaKelayakan}
           sedangMemuatMulai={sedangMemuatMulai}
+          saldoTokenPengguna={saldoTokenState}
           onMulaiSesi={tanganiMulaiSesi}
+        />
+      ) : modeSimulasi === 'video' ? (
+        <VideoRoomDedicated
+          targetRole={targetRole}
+          daftarPesan={daftarPesan}
+          sedangMemutarAudio={sedangMemutarAudio}
+          sedangMerekam={sedangMerekam}
+          sedangMerespon={sedangMerespon}
+          liveTranscriptUser={liveTranscriptUser}
+          modeInteraksiSuara={modeInteraksiSuara}
+          setModeInteraksiSuara={setModeInteraksiSuara}
+          audioMuted={audioMuted}
+          onToggleMute={() => {
+            if (!audioMuted && audioPlayerRef.current) {
+              audioPlayerRef.current.pause();
+              setSedangMemutarAudio(false);
+            }
+            setAudioMuted(!audioMuted);
+          }}
+          onMulaiMerekam={mulaiMerekamSuara}
+          onHentikanMerekam={hentikanMerekamSuara}
+          onPutarAudio={putarAudioBina}
+          ujungChatRef={ujungChatRef}
+          onTambahPesan={(pesan) => setDaftarPesan((prev) => [...prev, pesan])}
         />
       ) : modeSimulasi === 'suara' ? (
         <VoiceRoomDedicated

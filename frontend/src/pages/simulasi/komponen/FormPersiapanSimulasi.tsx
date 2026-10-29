@@ -32,6 +32,7 @@ interface PropertiFormPersiapan {
   };
   sedangMemeriksaKelayakan: boolean;
   sedangMemuatMulai: boolean;
+  saldoTokenPengguna?: number;
   onMulaiSesi: () => void;
 }
 
@@ -44,12 +45,15 @@ export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
   kelayakan,
   sedangMemeriksaKelayakan,
   sedangMemuatMulai,
+  saldoTokenPengguna,
   onMulaiSesi,
 }) => {
   const { t } = useBahasa();
 
-  // Biaya token dinamis
+  // Biaya token dinamis & validasi saldo pra-klik
   const biayaToken = modeSimulasi === 'suara' ? 15 : modeSimulasi === 'video' ? 25 : 10;
+  const saldoTersedia = saldoTokenPengguna ?? 1000;
+  const saldoCukup = saldoTersedia >= biayaToken;
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -122,7 +126,7 @@ export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
                   {t.simulasiWawancara.pilihPosisiLabel}
                 </h2>
                 <p className="text-xs text-stone-500 leading-relaxed">
-                  Pilih posisi kerja yang ingin Anda uji kesiapan komunikasi dan ketahanan studinya.
+                  {t.simulasiWawancara.subjudulPosisi}
                 </p>
               </div>
 
@@ -142,7 +146,7 @@ export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
               {daftarRoleSaran.length > 0 && (
                 <div className="space-y-2.5 pt-1">
                   <span className="text-[11px] font-bold text-stone-700 uppercase tracking-wider block">
-                    Rekomendasi dari Riwayat CV Anda
+                    {t.simulasiWawancara.rekomendasiCvLabel}
                   </span>
                   
                   {/* Container: Horizontal Scroll pada Mobile, Wrap pada Desktop */}
@@ -154,7 +158,7 @@ export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
                           key={idx}
                           type="button"
                           onClick={() => setTargetRole(role)}
-                          className={`shrink-0 md:shrink px-3 py-1.5 rounded-xl text-xs font-semibold transition-all border cursor-pointer snap-start min-h-[36px] ${
+                          className={`shrink-0 md:shrink px-3.5 py-2 rounded-xl text-xs font-semibold transition-all border cursor-pointer snap-start min-h-[44px] flex items-center justify-center ${
                             isActive
                               ? 'bg-orange-700 text-white border-orange-700 shadow-sm shadow-orange-700/25 ring-2 ring-orange-600/30'
                               : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100 hover:border-stone-300'
@@ -176,7 +180,7 @@ export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
                 <div className="space-y-2.5">
                   <label className="text-xs font-bold text-stone-900 flex items-center justify-between">
                     <span>{t.simulasiWawancara.pilihModeLabel}</span>
-                    <span className="text-[11px] font-normal text-stone-500">Pilih salah satu format</span>
+                    <span className="text-[11px] font-normal text-stone-500">{t.simulasiWawancara.instruksiPilihFormat}</span>
                   </label>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
@@ -194,12 +198,12 @@ export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
                           <MessageSquare className="w-3.5 h-3.5" />
                         </div>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-stone-100 text-stone-700 border border-stone-200">
-                          10 Token
+                          10 {t.simulasiWawancara.biayaTokenUnit}
                         </span>
                       </div>
-                      <div className="font-bold text-xs text-stone-900 mt-1">Teks Interaktif</div>
+                      <div className="font-bold text-xs text-stone-900 mt-1">{t.simulasiWawancara.modeTeksJudul}</div>
                       <p className="text-[10px] text-stone-500 mt-0.5 leading-snug line-clamp-2">
-                        Dialog tertulis STAR/CAR & micro-guidance.
+                        {t.simulasiWawancara.modeTeksDesc}
                       </p>
                     </div>
 
@@ -217,16 +221,16 @@ export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
                           <Mic className="w-3.5 h-3.5" />
                         </div>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-800 border border-orange-200">
-                          15 Token
+                          15 {t.simulasiWawancara.biayaTokenUnit}
                         </span>
                       </div>
-                      <div className="font-bold text-xs text-stone-900 mt-1">Audio & Suara AI</div>
+                      <div className="font-bold text-xs text-stone-900 mt-1">{t.simulasiWawancara.modeAudioJudul}</div>
                       <p className="text-[10px] text-stone-500 mt-0.5 leading-snug line-clamp-2">
-                        Percakapan dua arah vokal pria alami Bina.
+                        {t.simulasiWawancara.modeAudioDesc}
                       </p>
                     </div>
 
-                    {/* Format C: Video & Bahasa Tubuh */}
+                    {/* Format C: Video & Bahasa Tubuh (Unlocked - 25 Token) */}
                     <div
                       onClick={() => setModeSimulasi('video')}
                       className={`p-3 rounded-2xl border text-left cursor-pointer transition-all ${
@@ -239,13 +243,13 @@ export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
                         <div className={`p-1.5 rounded-lg ${modeSimulasi === 'video' ? 'bg-orange-700 text-white' : 'bg-stone-100 text-stone-600'}`}>
                           <Video className="w-3.5 h-3.5" />
                         </div>
-                        <span className="text-[9px] font-semibold px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 border border-amber-200">
-                          Segera Hadir
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-200">
+                          25 {t.simulasiWawancara.biayaTokenUnit}
                         </span>
                       </div>
-                      <div className="font-bold text-xs text-stone-900 mt-1">Video & Postur</div>
+                      <div className="font-bold text-xs text-stone-900 mt-1">{t.simulasiWawancara.modeVideoJudul}</div>
                       <p className="text-[10px] text-stone-500 mt-0.5 leading-snug line-clamp-2">
-                        Evaluasi kontak mata & ekspresi visual.
+                        {t.simulasiWawancara.modeVideoDesc}
                       </p>
                     </div>
                   </div>
@@ -255,12 +259,12 @@ export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
                 <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 text-xs flex items-center justify-between gap-3">
                   <span className="text-emerald-900 font-medium text-[11px] sm:text-xs">
                     {kelayakan.cv_teranalisis
-                      ? 'CV Anda sudah pernah dianalisis AI (Data tersimpan di database).'
-                      : 'CV belum dianalisis skornya di Beranda.'}
+                      ? t.simulasiWawancara.statusCvTeranalisis
+                      : t.simulasiWawancara.statusCvBelumAnalisis}
                   </span>
                   {!kelayakan.cv_teranalisis && (
                     <Link to="/" className="text-orange-700 hover:text-orange-800 font-bold underline shrink-0 text-[11px]">
-                      Analisis
+                      {t.simulasiWawancara.tombolAnalisisSingkat}
                     </Link>
                   )}
                 </div>
@@ -286,18 +290,27 @@ export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
                         </span>
                       </div>
                       <p className="text-[11px] text-stone-600 mt-0.5 leading-relaxed">
-                        Pewawancara senior AI berkarakter pria ramah, tegas, dan artikulatif. Menguji metode CAR, kejujuran portofolio, dan ketahanan krisis operasional.
+                        {t.simulasiWawancara.deskripsiBinaLengkap}
                       </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* ================= FOOTER CARD: TOMBOL CTA LEBAR PENUH ================= */}
-              <div className="pt-2">
+              {/* ================= FOOTER CARD: SALDO, BIAYA & TOMBOL CTA LEBAR PENUH ================= */}
+              <div className="space-y-2.5 pt-2">
+                <div className="flex items-center justify-between text-xs px-1 text-stone-600 font-medium">
+                  <span>{t.simulasiWawancara.saldoTokenAnda} <strong className="text-stone-900">{saldoTersedia} {t.simulasiWawancara.biayaTokenUnit}</strong></span>
+                  <span>{t.simulasiWawancara.biayaSesiLabel} <strong className="text-orange-700">{biayaToken} {t.simulasiWawancara.biayaTokenUnit}</strong></span>
+                </div>
+                {!saldoCukup && (
+                  <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-medium">
+                    {t.simulasiWawancara.saldoKurangPeringatan}
+                  </div>
+                )}
                 <button
                   type="button"
-                  disabled={sedangMemuatMulai || !targetRole.trim() || modeSimulasi === 'video'}
+                  disabled={sedangMemuatMulai || !targetRole.trim() || !saldoCukup}
                   onClick={onMulaiSesi}
                   className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-orange-700 via-orange-600 to-amber-600 hover:from-orange-800 hover:to-orange-700 text-white font-extrabold text-sm min-h-[50px] shadow-md shadow-orange-700/25 flex items-center justify-center gap-2.5 transition-all cursor-pointer disabled:opacity-50 disabled:pointer-events-none hover:scale-[1.01] active:scale-[0.99]"
                 >
@@ -305,9 +318,9 @@ export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
                   <span>
                     {sedangMemuatMulai
                       ? t.simulasiWawancara.sedangMemulai
-                      : modeSimulasi === 'video'
-                      ? 'Format Video (Segera Hadir)'
-                      : `Mulai Percakapan Wawancara (${biayaToken} Token)`
+                      : !saldoCukup
+                      ? t.simulasiWawancara.saldoKurangPeringatan
+                      : `${t.simulasiWawancara.tombolMulaiWawancara} (${biayaToken} ${t.simulasiWawancara.biayaTokenUnit})`
                     }
                   </span>
                 </button>

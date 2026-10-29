@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@mediapipe/tasks-vision": "^1.2.0",
     "@supabase/supabase-js": "^2.39.8",
     "html2pdf.js": "^0.14.0",
     "lucide-react": "^0.354.0",

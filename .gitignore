@@ -9,6 +9,9 @@
 .agents
 .claude
 .gemini
+.vite
+.pytest_cache
+.vscode
 .opencode
 # Dependencies
 node_modules/
