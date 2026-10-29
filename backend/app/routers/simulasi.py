@@ -1,113 +1,23 @@
-# Router Simulasi Wawancara Adaptif (routers/simulasi.py)
-# Standar BE-01 (Rate limit AI), BE-02 (Pydantic v2 & Anti-SQLi),
-# Mengadopsi Riset Praktisi HR & Metode Jev Decision Primitives.
-# Nama Influencer/Pakar HANYA sebagai rujukan data riset di docs/research/,
-# BUKAN sebagai nama persona di chat (Etika & Profesionalisme: Pewawancara HR & User).
-# Menggunakan LLM Cohere Command-R7B / Gemini sebagai otak dialog adaptif dinamis.
+# Router Simulasi Wawancara Adaptif & Suara Bina (routers/simulasi.py)
+# Standar BE-01 (Rate limit AI), BE-02 (Pydantic v2 & Anti-SQLi), BE-03 (Single Dynamic Cognitive HR Engine)
+# Mengadopsi Riset Praktisi HR & Karakter Resmi AI Bina (Head of Talent Acquisition & Lead Career Evaluator).
+# Mode Teks & Mode Suara (Full Interactive Audio Mode dengan Edge-TTS Microsoft Neural 'id-ID-ArdiNeural' & Whisper Groq).
 
 import time
 import os
 import json
 import re
-import urllib.request
 from typing import Optional, Dict, Any, List
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form, status
 from pydantic import BaseModel
 from app.services.supabase_service import get_supabase_client, buat_id_terstruktur
 from app.services.bina_service import hasilkan_respon_bina, evaluasi_biner_relevansi_kerja
+from app.services.audio_service import (
+    sintesis_suara_bina_base64,
+    transkripsi_suara_groq
+)
 
 router = APIRouter(prefix="/api/simulasi", tags=["Simulasi Wawancara"])
-
-# Pelacak rate limit memori untuk simulasi pesan (BE-01: 20 request/menit per user)
-riwayat_pesan_user: Dict[str, List[float]] = {}
-
-def deteksi_anomali_input(jawaban: str, target_role: str, pertanyaan_terakhir: str = "") -> tuple[str, str]:
-    """
-    Tier 1 Deterministic Guardrail Interceptor:
-    Mencegah prompt injection, trolling, kata kasar, ketikan spam acak, tautan URL luar,
-    rumus matematika, serta pertanyaan balik non-pekerjaan agar Bina 100% konsisten
-    berada dalam persona Head of Talent Acquisition.
-    """
-    j = jawaban.strip().lower()
-
-    # 1. Deteksi Kata Kasar / Vulgar / Toxic / Godaan
-    toxic_words = [
-        "memek", "kontol", "anjing", "babi", "bangsat", "ngentot", "taek", "bajingan", "tolol", 
-        "goblok", "itil", "pantek", "asu", "kampang", "sayang", "bebeb", "cantik", "pacaran", "jodoh"
-    ]
-    if any(tw in j for tw in toxic_words):
-        return (
-            "TOXIC",
-            f"Saya adalah Bina, Head of Talent Acquisition MeIntervUAI. Saya mengharapkan etika, tata krama, dan profesionalisme yang ketat selama sesi wawancara ini. Sikap tidak pantas tidak memiliki tempat di lingkungan kerja profesional. Mari kita kembali fokus ke evaluasi kompetensi Anda untuk posisi {target_role}."
-        )
-
-    # 2. Deteksi URL / Link Promosi / Copas Artikel Berita (misal: 'kompas.com', 'https://', 'kmp.im')
-    if re.search(r"https?://|www\.|\.com|\.id|\.net|\.org|kmp\.im|bit\.ly", j):
-        return (
-            "URL_ARTICLE_COPAS",
-            f"Di meja wawancara ini, kami ingin mendengarkan pemikiran, pengalaman, dan jawaban asli dari Anda, bukan kutipan tautan atau artikel berita dari luar. Mari kita kembali fokus ke posisi {target_role}."
-        )
-
-    # 3. Deteksi Hitungan Matematika / Rumus Murni (misal: '1+1', '1 + 1 = 2', 'rumus segitiga')
-    if re.search(r"^\s*\d+\s*[\+\-\*\/\^%]\s*\d+", j) or re.search(r"rumus\s+(segitiga|lingkaran|fisika|kimia|matematika|luas|keliling)", j):
-        return (
-            "MATH_OR_FORMULA",
-            f"Sebagai Head of Talent Acquisition, fokus saya adalah memvalidasi kualifikasi profesional Anda untuk peran {target_role}, bukan menguji soal matematika dasar atau rumus pelajaran sekolah. Mari kita fokus kembali ke kompetensi kerja Anda."
-        )
-
-    # 4. Deteksi Spam / Keyboard Mash / Teks Acak (misal: 'asda', 'asdakdaldmalsiaer')
-    kata_kata = [w for w in re.split(r"\s+", j) if w]
-    kata_acak_pendek = ["asda", "asd", "qwe", "qwerty", "tes", "test", "123", "abc", "zzz", "xxx"]
-    
-    is_mash = False
-    if len(kata_kata) == 1:
-        kata_tunggal = kata_kata[0]
-        vokal = len(re.findall(r"[aiueo]", kata_tunggal))
-        total_huruf = len(re.findall(r"[a-z]", kata_tunggal))
-        rasio_vokal = vokal / max(total_huruf, 1)
-
-        if kata_tunggal in kata_acak_pendek:
-            is_mash = True
-        elif total_huruf >= 6 and (rasio_vokal < 0.18 or rasio_vokal > 0.82 or bool(re.search(r"(.)\1{3,}", kata_tunggal)) or bool(re.search(r"[^aiueo\s]{6,}", kata_tunggal))):
-            is_mash = True
-        elif total_huruf >= 12 and any(k in kata_tunggal for k in ["asda", "aldm", "daldm", "siaer", "kljs", "fdsk"]):
-            is_mash = True
-
-    if is_mash:
-        return (
-            "SPAM_RANDOM",
-            f"Respons yang Anda ketik tidak memiliki struktur kalimat profesional yang bermakna. Di posisi {target_role}, kejelasan artikulasi dan komunikasi adalah syarat mutlak. Mohon berikan tanggapan yang terstruktur dan relevan dengan pertanyaan wawancara."
-        )
-
-    # 5. Deteksi Pengulangan Sapaan Menghindar (misal: 'hai', 'halo', 'p', 'woi')
-    sapaan_pendek = ["hai", "halo", "hello", "p", "oi", "woi", "pagi", "siang", "malam"]
-    if j in sapaan_pendek or re.fullmatch(r"^(hai|halo|hello|p|oi)\s*([!?.]*)$", j):
-        return (
-            "SAPAAN_MENGHINDAR",
-            f"Kita sudah melewati perkenalan awal. Sikap menghindar atau sekadar mengulang sapaan menunjukkan kurangnya kesiapan menghadapi wawancara kerja yang sebenarnya. Bisa kita langsung masuk ke substansi pengalaman dan kapabilitas Anda di bidang {target_role}?"
-        )
-
-    # 6. Deteksi Pertanyaan AI Persona / Model / Pengembang (misal: 'kamu model siapa', 'gpt', 'claude')
-    if any(k in j for k in ["model siapa", "kamu gpt", "kamu ai", "cohere", "gemini", "claude", "chatgpt", "openai", "llm", "kamu siapa", "kamu apa"]):
-        return (
-            "AI_PERSONA_QUESTION",
-            f"Saya adalah Bina, Head of Talent Acquisition & Lead Career Evaluator di MeIntervUAI. Peran saya di sini murni sebagai pewawancara profesional untuk menguji kompetensi dan portofolio Anda. Mari kita maksimalkan waktu simulasi ini untuk mengeksplorasi kesiapan Anda di peran {target_role}."
-        )
-
-    # 7. Deteksi Pertanyaan Out of Topic / Ensiklopedia / Trivia Bebas
-    pola_trivia = [
-        r"hewan apa", r"siapa presiden", r"bikin puisi", r"cuaca", 
-        r"resep", r"buatkan", r"bantu bikin", r"hidung terpanjang", r"kapal angkasa",
-        r"cerita dong", r"nyanyi", r"lelucon", r"bikin program", r"bikin prom",
-        r"ringkas.*youtube", r"jadwal pertandingan", r"berita hoaks"
-    ]
-    if any(re.search(p, j) for p in pola_trivia):
-        return (
-            "OUT_OF_TOPIC",
-            f"Sebagai Head of Talent Acquisition, waktu kita di sesi ini dikhususkan untuk menguji kualifikasi posisi {target_role}, bukan membahas ensiklopedia umum atau permintaan bantuan lepas. Mari kita fokus kembali ke kompetensi kerja Anda."
-        )
-
-    return ("NORMAL", "")
 
 # Pelacak rate limit memori untuk simulasi pesan (BE-01: 20 request/menit per user)
 riwayat_pesan_user: Dict[str, List[float]] = {}
@@ -124,6 +34,33 @@ def cek_rate_limit_simulasi(pengguna_id: str, limit_per_menit: int = 20):
     daftar_waktu.append(sekarang)
     riwayat_pesan_user[pengguna_id] = daftar_waktu
 
+def deteksi_anomali_input(jawaban: str, target_role: str) -> tuple[str, str]:
+    """
+    Deterministic Guardrail Interceptor:
+    Mencegah kata kasar/toxic dan tautan URL luar agar sesi tetap profesional.
+    """
+    j = jawaban.strip().lower()
+
+    # 1. Deteksi Kata Kasar / Vulgar / Toxic / Godaan
+    toxic_words = [
+        "memek", "kontol", "anjing", "babi", "bangsat", "ngentot", "taek", "bajingan", "tolol", 
+        "goblok", "itil", "pantek", "asu", "kampang", "sayang", "bebeb", "cantik", "pacaran", "jodoh"
+    ]
+    if any(tw in j for tw in toxic_words):
+        return (
+            "TOXIC",
+            f"Saya adalah Bina, Head of Talent Acquisition MeIntervUAI. Saya mengharapkan etika dan profesionalisme yang ketat selama sesi wawancara ini. Sikap tidak pantas tidak memiliki tempat di lingkungan kerja profesional. Mari kita kembali fokus ke evaluasi kompetensi Anda untuk posisi {target_role}."
+        )
+
+    # 2. Deteksi URL / Link Promosi / Copas Artikel Berita
+    if re.search(r"https?://|www\.|\.com|\.id|\.net|\.org|kmp\.im|bit\.ly", j):
+        return (
+            "URL_ARTICLE_COPAS",
+            f"Di meja wawancara ini, kami ingin mendengarkan pemikiran, pengalaman, dan jawaban asli dari Anda, bukan kutipan tautan atau artikel berita dari luar. Mari kita kembali fokus ke posisi {target_role}."
+        )
+
+    return ("NORMAL", "")
+
 class PermintaanMulaiSimulasi(BaseModel):
     pengguna_id: str
     target_role: str
@@ -136,210 +73,114 @@ class PermintaanKirimJawaban(BaseModel):
     jawaban_kandidat: str
     riwayat_chat: List[Dict[str, Any]]
 
-def evaluasi_biner_relevansi_kerja(jawaban: str, target_role: str, pertanyaan_terakhir: str) -> bool:
+class PermintaanTTS(BaseModel):
+    teks: str
+
+@router.get("/kelayakan/{pengguna_id}")
+async def cek_kelayakan_simulasi(pengguna_id: str):
     """
-    Evaluator Biner Universal:
-    Menilai apakah input kandidat merupakan respons wawancara kerja yang wajar,
-    menceritakan pengalaman/kualifikasi diri, bertanya istilah wawancara, atau sekadar konfirmasi sopan.
-    Mengembalikan True (layak diproses) atau False (murni topik luar/gangguan).
+    Memeriksa kelayakan pengguna untuk mengakses studio simulasi wawancara.
+    Aturan Mutlak:
+    1. Minimal kontak (nama/email) dan riwayat edukasi harus terisi di CV.
+    2. Ekstraksi daftar posisi rekomendasi dinamis dari database (CV target_role, riwayat pengalaman, dan hasil analisis AI sebelumnya).
+    3. Memberitahukan apakah CV sudah pernah dianalisis AI atau belum (tanpa memicu analisis ulang).
     """
-    cohere_key = os.environ.get("COHERE_API_KEY")
-    if not cohere_key:
-        return True
-
-    j = jawaban.strip().lower()
-    # Pengecualian cepat jawaban sopan / konfirmasi / istilah teknis
-    if j in ["baik", "siap", "terima kasih", "oke", "ya", "lanjut", "lah mana pertanyaannya", "lah mana pertanyyaannya?"]:
-        return True
-    if len(j) < 40 and any(w in j for w in ["apa itu", "maksudnya", "artinya apa", "itu apa"]):
-        return True
-
-    eval_prompt = (
-        f"Kamu adalah AI Evaluator Relevansi Wawancara Kerja.\n"
-        f"POSISI YANG SEDANG DILAMAR: '{target_role}'.\n"
-        f"PERTANYAAN SEBELUMNYA DARI PEWAWANCARA: '{pertanyaan_terakhir}'\n"
-        f"INPUT DARI KANDIDAT: '{jawaban}'\n\n"
-        "TUGAS:\n"
-        "Tentukan apakah input kandidat di atas berkaitan dengan konteks wawancara kerja, "
-        "menceritakan pengalaman diri, merespons pertanyaan, atau bertanya klarifikasi profesional?\n"
-        "Jika berupa resep masakan, lirik lagu, berita/tokoh politik luar, matematika/sains murni, atau lelucon lepas, jawab 'TIDAK'.\n\n"
-        "Jawab HANYA satu kata: 'YA' atau 'TIDAK'."
-    )
-
-    url = "https://api.cohere.com/v2/chat"
-    headers = {"Authorization": f"Bearer {cohere_key}", "Content-Type": "application/json"}
-    data = {
-        "model": "command-r7b-12-2024",
-        "messages": [{"role": "user", "content": {"type": "text", "text": eval_prompt}}]
-    }
-
+    sb = get_supabase_client()
     try:
-        req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), headers=headers, method="POST")
-        with urllib.request.urlopen(req, timeout=6) as resp:
-            res = json.loads(resp.read().decode("utf-8"))
-            teks = res.get("message", {}).get("content", [{}])[0].get("text", "").strip().upper()
-            return "YA" in teks
+        # 1. Ambil data CV pengguna
+        cv_res = sb.table("cv_pengguna").select("*").eq("pengguna_id", pengguna_id).limit(1).execute()
+        
+        cv_ada = bool(cv_res.data and len(cv_res.data) > 0)
+        if not cv_ada:
+            return {
+                "status": "sukses",
+                "bisa_simulasi": False,
+                "alasan": "CV belum dibuat. Silakan lengkapi data profil kontak dan edukasi di menu CV Builder terlebih dahulu.",
+                "cv_tersedia": False,
+                "kontak_terisi": False,
+                "edukasi_terisi": False,
+                "cv_teranalisis": False,
+                "posisi_rekomendasi": [],
+                "target_posisi_utama": ""
+            }
+
+        cv = cv_res.data[0]
+        konten = cv.get("konten_json", {}) or {}
+        data_kontak = konten.get("data_kontak", {}) or {}
+        riwayat_edukasi = konten.get("riwayat_edukasi", []) or []
+        pengalaman_kerja = konten.get("pengalaman_kerja", []) or []
+
+        kontak_terisi = bool(data_kontak.get("nama_lengkap") and (data_kontak.get("email") or data_kontak.get("telepon")))
+        edukasi_terisi = len(riwayat_edukasi) > 0
+
+        bisa_simulasi = kontak_terisi and edukasi_terisi
+
+        # 2. Periksa apakah sudah pernah dianalisis oleh AI
+        rekomendasi_ai = cv.get("rekomendasi_ai") or {}
+        cv_teranalisis = bool(cv.get("skor_ats", 0) > 0 or (isinstance(rekomendasi_ai, dict) and rekomendasi_ai.get("target_role")))
+
+        # 3. Kumpulkan posisi rekomendasi murni dari database (Zero Hardcode)
+        posisi_set = []
+
+        # Sumber A: Target role di CV atau rekomendasi AI
+        target_role_cv = cv.get("target_role", "").strip()
+        target_role_ai = rekomendasi_ai.get("target_role", "").strip() if isinstance(rekomendasi_ai, dict) else ""
+        if target_role_cv and target_role_cv not in posisi_set:
+            posisi_set.append(target_role_cv)
+        if target_role_ai and target_role_ai not in posisi_set:
+            posisi_set.append(target_role_ai)
+
+        # Sumber B: Jabatan/posisi dari riwayat pengalaman kerja kandidat
+        for p in pengalaman_kerja:
+            posisi_exp = p.get("posisi", "").strip()
+            if posisi_exp and posisi_exp not in posisi_set:
+                posisi_set.append(posisi_exp)
+
+        # Sumber C: Role impian dari profil pengguna
+        profil_res = sb.table("profil_pengguna").select("role_impian").eq("pengguna_id", pengguna_id).limit(1).execute()
+        if profil_res.data and len(profil_res.data) > 0:
+            role_impian = profil_res.data[0].get("role_impian", "").strip()
+            if role_impian and role_impian not in posisi_set:
+                posisi_set.append(role_impian)
+
+        target_posisi_utama = posisi_set[0] if posisi_set else ""
+
+        alasan = ""
+        if not bisa_simulasi:
+            if not kontak_terisi and not edukasi_terisi:
+                alasan = "Data kontak dan riwayat edukasi belum diisi. Silakan lengkapi di CV Builder."
+            elif not kontak_terisi:
+                alasan = "Informasi kontak (nama/email) belum lengkap di CV Builder."
+            else:
+                alasan = "Minimal cantumkan 1 riwayat pendidikan di CV Builder agar simulasi wawancara dapat dibuka."
+
+        return {
+            "status": "sukses",
+            "bisa_simulasi": bisa_simulasi,
+            "alasan": alasan,
+            "cv_tersedia": True,
+            "kontak_terisi": kontak_terisi,
+            "edukasi_terisi": edukasi_terisi,
+            "cv_teranalisis": cv_teranalisis,
+            "skor_ats": cv.get("skor_ats", 0),
+            "posisi_rekomendasi": posisi_set,
+            "target_posisi_utama": target_posisi_utama
+        }
     except Exception as e:
-        print("Biner evaluation error:", e)
-        return True
-
-def generate_respon_pewawancara_llm(target_role: str, jawaban_kandidat: str, riwayat_chat: List[Dict[str, Any]], tipe_pewawancara: str, is_oot: bool = False) -> str:
-    """
-    Menghasilkan respon wawancara dinamis menggunakan persona 'Bina' (Head of Talent Acquisition MeIntervUAI).
-    Otak Bina menyerap seluruh riset praktisi HR:
-    - Tidak pernah mengulang template kaku.
-    - Menantang jawaban pendek/asal-asalan secara taktis dengan membimbing kandidat.
-    - Mengejar bukti konkret metode STAR/CAR dan skenario krisis realistis.
-    - Jika is_oot=True, Bina merespons dengan gaya HR profesional yang menolak topik luar secara elegan
-      dan SELALU mengajukan pertanyaan wawancara kerja yang baru.
-    """
-    cohere_key = os.environ.get("COHERE_API_KEY")
-    if not cohere_key:
-        return f"Terima kasih atas tanggapan Anda. Untuk peran {target_role}, bisa Anda ceritakan satu tantangan operasional paling menantang yang pernah Anda selesaikan?"
-
-    system_prompt = f"""KAMU ADALAH BINA, Head of Talent Acquisition & Lead Career Evaluator di MeIntervUAI.
-Kamu sedang memimpin sesi wawancara kerja tatap muka profesional untuk posisi: '{target_role}'.
-
-ATURAN PALING MUTLAK GAYA BICARA MANUSIAWI (ANTI-AI SLOP):
-1. DILARANG KERAS MENGGUNAKAN DAFTAR ANGKA, BULLET POINT, ATAU BOLD HEADING! (Jangan pernah menuliskan **1.**, **2.**, **3.**, dll). Tidak ada pewawancara manusia yang berbicara dalam bentuk daftar buletin kepada kandidat. Bicara dalam kalimat mengalir natural.
-2. HANYA AJUKAN TEPAT SATU PERTANYAAN SETIAP GILIRAN! Dilarang membombardir kandidat dengan 2 sampai 5 pertanyaan sekaligus.
-3. REAKTIF & BERKEPRIBADIAN HR NYATA:
-   - Jika kandidat malas, pasrah, atau ogah-ogahan (misal: 'malas ah', 'gak mau'):
-     Bereaksi lugas: ingatkan bahwa inisiatif adalah syarat mutlak untuk peran {target_role}, dan rasa malas adalah red flag fatal di meja rekrutmen. Lalu tantang apa yang biasanya memotivasi mereka.
-   - Jika kandidat arogan atau toksik (misal: 'saya individualis, people are stupid'):
-     Tegur langsung dengan tajam namun tetap santun: ingatkan bahwa seorang Lead wajib berkolaborasi dan memimpin manusia, bukan bekerja terisolasi. Tanyakan bagaimana mereka bisa memimpin jika memandang rendah tim.
-   - Jika kandidat menanyakan tokoh luar, gosip, atau topik di luar kerja (misal: 'who is elon musk', 'siapa prabowo'):
-     Tepis secara santai: "Kita sedang tidak membahas figur publik di sini. Fokus saya ada pada kapabilitas Anda sendiri untuk posisi {target_role}." Lalu ajukan pertanyaan kerja.
-   - Jika kandidat bertanya istilah teknis dari pertanyaan sebelumnya (misal: 'ROI itu apa'):
-     Jelaskan dalam 1 kalimat padat artinya, lalu tantang bagaimana mereka menerapkannya.
-   - Jika kandidat menjawab pengalaman kerja nyata:
-     Apresiasi secara natural dan gunakan metode STAR/CAR untuk membedah aksi mandiri dan dampak angkanya.
-4. GAYA BAHASA:
-   - Bahasa Indonesia profesional, tegas, berwibawa, anggun, dan manusiawi layaknya praktisi HR senior di Jakarta.
-   - Panjang respon MAKSIMAL 2-3 kalimat padat dan SELALU diakhiri dengan 1 pertanyaan kerja yang spesifik."""
-
-    # Format percakapan riwayat untuk LLM
-    messages_payload = [{"role": "system", "content": system_prompt}]
-    for msg in riwayat_chat[-6:]:
-        role = "assistant" if msg.get("pengirim") == "pewawancara" else "user"
-        teks = msg.get("teks", "")
-        messages_payload.append({"role": role, "content": {"type": "text", "text": teks}})
-
-    # Tambahkan instruksi khusus jika input terbukti di luar konteks kerja
-    user_content = jawaban_kandidat
-    if is_oot:
-        user_content = (
-            f"[KANDIDAT MENGETIK TOPIK DI LUAR WAWANCARA: '{jawaban_kandidat}']. "
-            f"Instruksi Bina: Jangan meladeni topik tersebut sama sekali. "
-            f"Tegur secara profesional dan ajukan 1 pertanyaan wawancara kerja baru untuk posisi {target_role}."
-        )
-
-    messages_payload.append({"role": "user", "content": {"type": "text", "text": user_content}})
-
-    url = "https://api.cohere.com/v2/chat"
-    headers = {
-        "Authorization": f"Bearer {cohere_key}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "model": "command-r7b-12-2024",
-        "messages": messages_payload
-    }
-
-    try:
-        req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), headers=headers, method="POST")
-        with urllib.request.urlopen(req, timeout=12) as resp:
-            hasil = json.loads(resp.read().decode("utf-8"))
-            teks_balasan = hasil.get("message", {}).get("content", [{}])[0].get("text", "").strip()
-            
-            # Post-Processing Sanitizer: Bersihkan jika masih ada kebocoran bot AI atau artifak json/token
-            leakage_patterns = [
-                r"saya adalah (model )?ai",
-                r"saya tidak (memiliki kemampuan|dapat|bisa) (menonton|mengakses internet)",
-                r"saya dirancang untuk",
-                r"sebagai model bahasa"
-            ]
-            for lp in leakage_patterns:
-                if re.search(lp, teks_balasan, re.IGNORECASE):
-                    teks_balasan = (
-                        f"Sebagai Head of Talent Acquisition MeIntervUAI, fokus saya adalah mengevaluasi kapabilitas "
-                        f"dan kesiapan Anda untuk posisi {target_role}. Mari kita kembali ke substansi evaluasi kerja Anda."
-                    )
-                    break
-
-            # Bersihkan artifak seperti '=true' atau 'true' di awal baris respons
-            teks_balasan = re.sub(r"^(=?true|=?false)\s*", "", teks_balasan, flags=re.IGNORECASE).strip()
-                    
-            if teks_balasan:
-                return teks_balasan
-    except Exception as e:
-        print("Fallback LLM error:", e)
-
-    # Fallback jika API sedang gangguan
-    return f"Menarik. Di bidang {target_role}, ketegasan komunikasi adalah kunci utama. Dari pengalaman yang pernah Anda lewati, apa kontribusi nyata yang paling Anda banggakan?"
-
-    # Format percakapan riwayat untuk LLM
-    messages_payload = [{"role": "system", "content": system_prompt}]
-    for msg in riwayat_chat[-6:]: # Ambil 6 riwayat terakhir
-        role = "assistant" if msg.get("pengirim") == "pewawancara" else "user"
-        teks = msg.get("teks", "")
-        messages_payload.append({"role": role, "content": {"type": "text", "text": teks}})
-
-    # Tambahkan jawaban terbaru
-    messages_payload.append({"role": "user", "content": {"type": "text", "text": jawaban_kandidat}})
-
-    url = "https://api.cohere.com/v2/chat"
-    headers = {
-        "Authorization": f"Bearer {cohere_key}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "model": "command-r7b-12-2024",
-        "messages": messages_payload
-    }
-
-    try:
-        req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), headers=headers, method="POST")
-        with urllib.request.urlopen(req, timeout=12) as resp:
-            hasil = json.loads(resp.read().decode("utf-8"))
-            teks_balasan = hasil.get("message", {}).get("content", [{}])[0].get("text", "").strip()
-            
-            # Post-Processing Sanitizer: Bersihkan jika masih ada kebocoran bot AI atau artifak json/token
-            leakage_patterns = [
-                r"saya adalah (model )?ai",
-                r"saya tidak (memiliki kemampuan|dapat|bisa) (menonton|mengakses internet)",
-                r"saya dirancang untuk",
-                r"sebagai model bahasa"
-            ]
-            for lp in leakage_patterns:
-                if re.search(lp, teks_balasan, re.IGNORECASE):
-                    teks_balasan = (
-                        f"Sebagai Head of Talent Acquisition MeIntervUAI, fokus saya adalah mengevaluasi kapabilitas "
-                        f"dan kesiapan Anda untuk posisi {target_role}. Mari kita kembali ke substansi evaluasi kerja Anda."
-                    )
-                    break
-
-            # Bersihkan artifak seperti '=true' atau 'true' di awal baris respons
-            teks_balasan = re.sub(r"^(=?true|=?false)\s*", "", teks_balasan, flags=re.IGNORECASE).strip()
-                    
-            if teks_balasan:
-                return teks_balasan
-    except Exception as e:
-        print("Fallback LLM error:", e)
-
-    # Fallback jika API sedang gangguan
-    return f"Menarik. Di bidang {target_role}, ketegasan komunikasi adalah kunci utama. Dari pengalaman yang pernah Anda lewati, apa kontribusi nyata yang paling Anda banggakan?"
+        raise HTTPException(status_code=500, detail=f"Gagal memeriksa kelayakan simulasi: {str(e)}")
 
 @router.post("/mulai")
 async def mulai_sesi_wawancara(data: PermintaanMulaiSimulasi):
     """
     Menginisialisasi sesi simulasi wawancara baru.
-    Memotong 10 Token, memuat data CV, dan membuka sapaan awal profesional
-    tanpa nama influencer asli.
+    Memotong token sesuai mode:
+    - Teks: 10 token
+    - Suara: 15 token
+    Menyusun sapaan awal profesional oleh Bina, serta menyertakan audio suara (base64) jika mode suara aktif.
     """
     cek_rate_limit_simulasi(data.pengguna_id)
     sb = get_supabase_client()
-    BIAYA_TOKEN = 10 if data.mode == "teks" else 15 if data.mode == "suara" else 25
+    BIAYA_TOKEN = 15 if data.mode == "suara" else 25 if data.mode == "video" else 10
 
     try:
         # Cek saldo token
@@ -355,7 +196,7 @@ async def mulai_sesi_wawancara(data: PermintaanMulaiSimulasi):
         saldo_baru = saldo_lama - BIAYA_TOKEN
         total_terpakai_baru = saldo_info.get("total_terpakai", 0) + BIAYA_TOKEN
 
-        # Potong token & catat mutasi
+        # Potong token & catat transaksi
         sb.table("saldo_token").update({
             "jumlah_saldo": saldo_baru,
             "total_terpakai": total_terpakai_baru
@@ -381,13 +222,27 @@ async def mulai_sesi_wawancara(data: PermintaanMulaiSimulasi):
             c = cv_res.data[0].get("konten_json", {})
             nama_kandidat = c.get("data_kontak", {}).get("nama_lengkap", "Kandidat")
 
-        # Sapaan awal profesional oleh Bina
+        teks_sapaan = (
+            f"Halo {nama_kandidat}! Saya Bina, Head of Talent Acquisition di MeIntervUAI. "
+            f"Senang sekali bisa bertemu dengan Anda di sesi simulasi wawancara untuk posisi {data.target_role}. "
+            f"Sesi ini dirancang untuk mengasah ketajaman komunikasi dan kesiapan Anda menghadapi wawancara kerja yang sesungguhnya. "
+            f"Untuk memulai obrolan kita, bisa ceritakan secara ringkas latar belakang Anda dan apa motivasi terbesar Anda melamar posisi {data.target_role}?"
+        )
+
+        audio_url = ""
+        if data.mode == "suara":
+            try:
+                audio_url = await sintesis_suara_bina_base64(teks_sapaan)
+            except Exception as ea:
+                print("Audio synthesis error on start:", ea)
+
         pesan_awal = {
             "id": f"msg_{int(time.time()*1000)}",
             "pengirim": "pewawancara",
             "nama": "Bina",
             "peran": "Head of Talent Acquisition",
-            "teks": f"Halo {nama_kandidat}! Saya Bina, Head of Talent Acquisition di MeIntervUAI. Senang sekali bisa bertemu dengan Anda di sesi simulasi wawancara untuk posisi {data.target_role}. Sesi ini dirancang untuk mengasah ketajaman komunikasi dan kesiapan Anda menghadapi wawancara kerja yang sesungguhnya. Untuk memulai obrolan kita, bisa ceritakan secara ringkas latar belakang Anda dan apa motivasi terbesar Anda melamar posisi {data.target_role}?",
+            "teks": teks_sapaan,
+            "audio_url": audio_url,
             "waktu": "Baru saja"
         }
 
@@ -402,108 +257,15 @@ async def mulai_sesi_wawancara(data: PermintaanMulaiSimulasi):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal memulai simulasi: {str(e)}")
 
-def klasifikasi_intent_ai_gatekeeper(jawaban: str, target_role: str, riwayat_chat: List[Dict[str, Any]]) -> tuple[bool, str]:
-    """
-    Semantic AI Gatekeeper (Prinsip Dinamis & Human-Centric):
-    Mendeteksi apakah input kandidat memiliki relevansi dengan sesi wawancara,
-    atau melenceng ke topik umum.
-    Pengecualian Penting:
-    - Klarifikasi istilah teknis (misal: 'ROI itu apa?', 'maksudnya microservices apa?')
-      DIANGGAP RELEVAN agar Bina bisa menjelaskan singkat lalu menguji kandidat.
-    - Jawaban singkat konfirmasi ('ya', 'baik', 'terima kasih') DIANGGAP RELEVAN agar
-      Bina melanjutkan ke pertanyaan baru, bukan mengulang teguran.
-    """
-    cohere_key = os.environ.get("COHERE_API_KEY")
-    if not cohere_key:
-        return (False, "")
-
-    # Ambil pertanyaan terakhir dari Bina
-    pertanyaan_terakhir = "Bisa ceritakan latar belakang dan kualifikasi Anda?"
-    for msg in reversed(riwayat_chat):
-        if msg.get("pengirim") == "pewawancara":
-            pertanyaan_terakhir = msg.get("teks", "")
-            break
-
-    # Pengecualian cepat: Kandidat bertanya istilah teknis dari pertanyaan Bina sebelumnya
-    j = jawaban.strip().lower()
-    if re.search(r"apa itu [a-z0-9_-]+|maksudnya|itu apa ya|boleh tanya.*apa", j) and len(j) < 60:
-        return (False, "") # Biarkan LLM Bina menjelaskan istilah lalu menguji balik
-
-    # Pengecualian cepat: Kandidat menjawab sopan / singkat / konfirmasi ('baik', 'terima kasih', 'lanjut')
-    if j in ["baik", "terima kasih", "terima kasih atas kesempatannya", "siap", "oke baik", "lah mana pertanyaannya", "lah mana pertanyyaannya?"]:
-        return (False, "") # Biarkan LLM Bina merespon secara alami dan memberikan pertanyaan baru!
-
-    system_gatekeeper = f"""PERAN: AI Semantic Gatekeeper Evaluasi Wawancara Kerja.
-POSISI YANG DILAMAR: '{target_role}'.
-PERTANYAAN SEBELUMNYA DARI BINA (HR): "{pertanyaan_terakhir}"
-
-TUGAS UTAMA:
-Tentukan apakah input kandidat ini merupakan respons yang sah dalam konteks percakapan wawancara kerja, ATAU murni di luar konteks (OOT).
-
-KRITERIA RELEVAN (relevan = true):
-- Kandidat menjawab pertanyaan, membagikan pengalaman, keahlian, atau motivasi.
-- Kandidat mengajukan klarifikasi mengenai istilah kerja atau instruksi yang sedang dibahas.
-- Kandidat memberikan konfirmasi sopan atau merespons alur percakapan secara profesional.
-
-KRITERIA TIDAK RELEVAN (relevan = false):
-- Pertanyaan pengetahuan umum atau tokoh luar tanpa kaitan wawancara (misal: 'siapa itu prabowo', 'filsafat eksistensialisme itu apa', 'resep seblak').
-- Teks sintaks coding acak lepas seperti `print = "hello word"` atau `=true`.
-- Curhat personal atau lelucon lepas.
-
-Keluarkan format JSON murni:
-{{
-  "relevan": true atau false,
-  "alasan": "ringkasan 1 kalimat",
-  "teguran_bina": "Jika relevan=false, buat 1-2 kalimat dari Bina (Head of Talent Acquisition) yang sopan tapi tegas, menolak topik tersebut dan memberikan pertanyaan wawancara terarah: '{pertanyaan_terakhir}'. JANGAN PERNAH menyertakan teks teknis seperti '=true' atau JSON."
-}}"""
-
-    url = "https://api.cohere.com/v2/chat"
-    headers = {
-        "Authorization": f"Bearer {cohere_key}",
-        "Content-Type": "application/json"
-    }
-    data = {
-        "model": "command-r7b-12-2024",
-        "messages": [
-            {"role": "system", "content": {"type": "text", "text": system_gatekeeper}},
-            {"role": "user", "content": {"type": "text", "text": jawaban}}
-        ],
-        "response_format": {"type": "json_object"}
-    }
-
-    try:
-        req = urllib.request.Request(url, data=json.dumps(data).encode("utf-8"), headers=headers, method="POST")
-        with urllib.request.urlopen(req, timeout=8) as resp:
-            hasil = json.loads(resp.read().decode("utf-8"))
-            konten_str = hasil.get("message", {}).get("content", [{}])[0].get("text", "{}")
-            obj = json.loads(konten_str)
-            
-            is_relevan = obj.get("relevan", False)
-            if not is_relevan:
-                teguran = obj.get("teguran_bina", "").strip()
-                # Bersihkan jika ada kebocoran artifact seperti '=true'
-                teguran = re.sub(r"^=true\s*", "", teguran, flags=re.IGNORECASE).strip()
-                if not teguran:
-                    teguran = (
-                        f"Sebagai Head of Talent Acquisition, fokus kita adalah kualifikasi Anda di posisi {target_role}. "
-                        f"Mari kita lanjutkan evaluasi kita: {pertanyaan_terakhir}"
-                    )
-                return (True, teguran)
-    except Exception as e:
-        print("Gatekeeper error:", e)
-
-    return (False, "")
-
 @router.post("/jawab")
 async def tangani_jawaban_chat(data: PermintaanKirimJawaban):
     """
-    Menerima jawaban kandidat dan menghasilkan respons cerdas dari 'Bina'
-    menggunakan Single Dynamic Cognitive Engine berbasis riset HR MeIntervUAI.
-    Tidak ada lagi template teguran berulang yang kaku.
+    Mode Teks: Menerima jawaban kandidat dan menghasilkan respons cerdas dari Bina
+    menggunakan Single Dynamic Cognitive Engine berbasis 4 pilar riset HR.
     """
     cek_rate_limit_simulasi(data.pengguna_id)
 
-    # 1. Filter Fisik Cepat (Kata Kasar Toxic / URL Copas Artikel)
+    # 1. Filter Deterministic Guardrail (Kata Kasar / URL Copas)
     kategori_fisik, respon_fisik = deteksi_anomali_input(data.jawaban_kandidat, data.target_role)
     if kategori_fisik in ["TOXIC", "URL_ARTICLE_COPAS"]:
         pesan_guardrail = {
@@ -534,7 +296,7 @@ async def tangani_jawaban_chat(data: PermintaanKirimJawaban):
         pertanyaan_terakhir=pertanyaan_terakhir
     )
 
-    # 4. Dialog Utama Adaptif Bina (Memanggil bina_service khusus)
+    # 4. Dialog Utama Adaptif Bina (Memanggil bina_service)
     teks_balasan = hasilkan_respon_bina(
         target_role=data.target_role,
         jawaban_kandidat=data.jawaban_kandidat,
@@ -555,3 +317,123 @@ async def tangani_jawaban_chat(data: PermintaanKirimJawaban):
         "status": "sukses",
         "pesan_pewawancara": pesan_baru
     }
+
+@router.post("/suara/proses")
+async def proses_interaksi_suara(
+    audio_file: UploadFile = File(...),
+    sesi_id: str = Form(...),
+    pengguna_id: str = Form(...),
+    target_role: str = Form(...),
+    live_transcript: str = Form(""),
+    riwayat_chat_json: str = Form("[]")
+):
+    """
+    Mode Suara AI Interaktif (Voice Mode ala Gemini / GPT):
+    1. Menerima rekaman audio kandidat (WebM/WAV/MP3) beserta live_transcript browser.
+    2. Transkripsi suara kandidat menjadi teks via Groq Whisper Large V3 Turbo dengan fallback live_transcript.
+    3. Evaluasi dan hasilkan respons adaptif dari Bina.
+    4. Sintesis suara balasan Bina menggunakan Microsoft Neural 'id-ID-ArdiNeural' (suara pria ramah, tegas, artikulatif).
+    5. Kembalikan teks transkrip kandidat, teks balasan Bina, dan audio Base64 data URL untuk diputar langsung di frontend.
+    """
+    cek_rate_limit_simulasi(pengguna_id)
+
+    try:
+        riwayat_chat = json.loads(riwayat_chat_json)
+    except Exception:
+        riwayat_chat = []
+
+    # 1. Prioritaskan Live Transcript dari Browser (Zero-Latency STT)
+    teks_transkripsi_kandidat = ""
+    if live_transcript and live_transcript.strip() and not live_transcript.startswith("🎙️"):
+        teks_transkripsi_kandidat = live_transcript.strip()
+
+    # Jika live transcript browser tidak tersedia, baru fallback transkripsi file audio via Whisper Groq
+    if not teks_transkripsi_kandidat:
+        audio_bytes = await audio_file.read()
+        if audio_bytes and len(audio_bytes) >= 100:
+            try:
+                fname = audio_file.filename if audio_file.filename and "." in audio_file.filename else "rekaman.webm"
+                teks_transkripsi_kandidat = transkripsi_suara_groq(
+                    audio_bytes,
+                    filename=fname
+                )
+            except Exception as e:
+                print("Transkripsi suara Groq error/unreachable:", e)
+
+    if not teks_transkripsi_kandidat or not teks_transkripsi_kandidat.strip():
+        teks_transkripsi_kandidat = "(Suara jawaban kandidat tidak tertangkap jelas)"
+
+    # 2. Filter Guardrail Fisik
+    kategori_fisik, respon_fisik = deteksi_anomali_input(teks_transkripsi_kandidat, target_role)
+    if kategori_fisik in ["TOXIC", "URL_ARTICLE_COPAS"]:
+        audio_bina = await sintesis_suara_bina_base64(respon_fisik)
+        return {
+            "status": "sukses",
+            "transkripsi_kandidat": teks_transkripsi_kandidat,
+            "kategori_guardrail": kategori_fisik,
+            "pesan_pewawancara": {
+                "id": f"msg_{int(time.time()*1000)}",
+                "pengirim": "pewawancara",
+                "nama": "Bina",
+                "peran": "Head of Talent Acquisition",
+                "teks": respon_fisik,
+                "audio_url": audio_bina,
+                "waktu": "Baru saja"
+            }
+        }
+
+    # 3. Ambil pertanyaan terakhir
+    pertanyaan_terakhir = "Ceritakan tentang diri, latar belakang, dan motivasi kerja Anda."
+    for msg in reversed(riwayat_chat):
+        if msg.get("pengirim") == "pewawancara":
+            pertanyaan_terakhir = msg.get("teks", "")
+            break
+
+    # 4. Evaluasi Relevansi Kerja & Buat Respon Bina
+    is_relevan = evaluasi_biner_relevansi_kerja(
+        jawaban=teks_transkripsi_kandidat,
+        target_role=target_role,
+        pertanyaan_terakhir=pertanyaan_terakhir
+    )
+
+    teks_balasan = hasilkan_respon_bina(
+        target_role=target_role,
+        jawaban_kandidat=teks_transkripsi_kandidat,
+        riwayat_chat=riwayat_chat,
+        is_oot=not is_relevan
+    )
+
+    # 5. Sintesis Suara Bina (Microsoft Neural Voice Ardi)
+    try:
+        audio_bina = await sintesis_suara_bina_base64(teks_balasan)
+    except Exception as ea:
+        print("TTS error on voice reply:", ea)
+        audio_bina = ""
+
+    return {
+        "status": "sukses",
+        "transkripsi_kandidat": teks_transkripsi_kandidat,
+        "pesan_pewawancara": {
+            "id": f"msg_{int(time.time()*1000)}",
+            "pengirim": "pewawancara",
+            "nama": "Bina",
+            "peran": "Head of Talent Acquisition",
+            "teks": teks_balasan,
+            "audio_url": audio_bina,
+            "waktu": "Baru saja"
+        }
+    }
+
+@router.post("/tts")
+async def sintesis_teks_ke_suara(data: PermintaanTTS):
+    """
+    Endpoint utilitas untuk mengonversi teks apa pun dari Bina menjadi audio base64 MP3.
+    """
+    try:
+        audio_b64 = await sintesis_suara_bina_base64(data.teks)
+        return {
+            "status": "sukses",
+            "audio_url": audio_b64
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Gagal sintesis teks ke suara: {str(e)}")

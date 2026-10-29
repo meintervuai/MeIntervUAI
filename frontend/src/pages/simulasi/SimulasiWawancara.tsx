@@ -1,60 +1,129 @@
-// Halaman Studio Simulasi Wawancara Adaptif Mode Teks (pages/simulasi/SimulasiWawancara.tsx)
+// Halaman Studio Simulasi Wawancara Adaptif (pages/simulasi/SimulasiWawancara.tsx)
 // Berdasarkan Riset Praktisi HR (Vina Muliana, Eza Hazami, Yova Beltz, Apri Rokhyadi) & Metode Jev
-// Panel Pewawancara Bergantian (HR & User), dialog mengalir adaptif, target sentuh ergonomis >= 44px,
-// bebas em-dash, bebas pulsing dot slop, 100% didaftarkan di modul i18n.
+// Modular Component Architecture (FE-02, FE-06, FE-07):
+// - FormPersiapanSimulasi: Seleksi posisi kerja & format (Teks/Suara/Video) dengan Stale-While-Revalidate
+// - VoiceRoomDedicated: Dedicated voice orb & waveform visualizer (Gemini Live / ChatGPT Voice Experience)
+// - TextRoomChat: Dialog tertulis mengalir adaptif STAR/CAR dengan micro-feedback
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Kartu } from '../../components/ui/Kartu';
-import { Tombol } from '../../components/ui/Tombol';
 import { NotifikasiToast } from '../../components/ui/NotifikasiToast';
 import { api } from '../../services/api';
 import { useBahasa } from '../../i18n';
-import { 
-  Send, 
-  ArrowLeft, 
-  Bot, 
-  AlertCircle, 
-  CheckCircle2, 
-  Briefcase,
-  Play
-} from 'lucide-react';
-
-interface PesanChat {
-  id: string;
-  pengirim: 'pewawancara' | 'kandidat';
-  nama: string;
-  peran?: string;
-  teks: string;
-  waktu: string;
-  kondisi_terdeteksi?: string;
-}
+import { ArrowLeft } from 'lucide-react';
+import { PesanChat, ModeSimulasiTipe } from './komponen/types';
+import { FormPersiapanSimulasi } from './komponen/FormPersiapanSimulasi';
+import { VoiceRoomDedicated } from './komponen/VoiceRoomDedicated';
+import { TextRoomChat } from './komponen/TextRoomChat';
 
 export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => {
   const { t } = useBahasa();
   const navigate = useNavigate();
 
-  // State Inisialisasi
+  // Inisialisasi dari cache lokal browser (Stale-While-Revalidate: FE-07 / UX-17)
+  const CACHE_KEY = `intervu_simulasi_kelayakan_${pengguna?.pengguna_id || 'guest'}`;
+
+  // State Inisialisasi & Kelayakan
   const [targetRole, setTargetRole] = useState('');
-  const [daftarRoleSaran] = useState([
-    'Frontend Developer',
-    'Backend Engineer',
-    'Senior Accountant',
-    'Product Manager',
-    'Human Resources Specialist',
-    'Digital Marketing Lead'
-  ]);
+  const [modeSimulasi, setModeSimulasi] = useState<ModeSimulasiTipe>('teks');
+  const [daftarRoleSaran, setDaftarRoleSaran] = useState<string[]>(() => {
+    try {
+      const c = localStorage.getItem(CACHE_KEY);
+      if (c) {
+        const obj = JSON.parse(c);
+        return Array.isArray(obj.posisi_rekomendasi) ? obj.posisi_rekomendasi : [];
+      }
+    } catch {}
+    return [];
+  });
+  const [kelayakan, setKelayakan] = useState<{
+    bisa_simulasi: boolean;
+    alasan: string;
+    cv_tersedia: boolean;
+    kontak_terisi: boolean;
+    edukasi_terisi: boolean;
+    cv_teranalisis: boolean;
+  }>(() => {
+    try {
+      const c = localStorage.getItem(CACHE_KEY);
+      if (c) {
+        const obj = JSON.parse(c);
+        return {
+          bisa_simulasi: obj.bisa_simulasi ?? true,
+          alasan: obj.alasan || '',
+          cv_tersedia: obj.cv_tersedia ?? true,
+          kontak_terisi: obj.kontak_terisi ?? true,
+          edukasi_terisi: obj.edukasi_terisi ?? true,
+          cv_teranalisis: obj.cv_teranalisis ?? false,
+        };
+      }
+    } catch {}
+    return {
+      bisa_simulasi: true,
+      alasan: '',
+      cv_tersedia: true,
+      kontak_terisi: true,
+      edukasi_terisi: true,
+      cv_teranalisis: false,
+    };
+  });
+  const [sedangMemeriksaKelayakan, setSedangMemeriksaKelayakan] = useState(() => {
+    return !localStorage.getItem(CACHE_KEY);
+  });
   const [sesiAktif, setSesiAktif] = useState(false);
   const [sesiId, setSesiId] = useState('');
   const [sedangMemuatMulai, setSedangMemuatMulai] = useState(false);
   
-  // State Percakapan Chat
+  // State Percakapan Chat & Audio Engine
   const [daftarPesan, setDaftarPesan] = useState<PesanChat[]>([]);
   const [inputJawaban, setInputJawaban] = useState('');
   const [sedangMerespon, setSedangMerespon] = useState(false);
   const [notif, setNotif] = useState<{ teks: string; tipe: 'sukses' | 'gagal' | 'info' } | null>(null);
 
+  // Khusus Mode Suara (Gemini Live / ChatGPT Voice Experience)
+  const [sedangMerekam, setSedangMerekam] = useState(false);
+  const [sedangMemutarAudio, setSedangMemutarAudio] = useState(false);
+  const [modeInteraksiSuara, setModeInteraksiSuara] = useState<'ptt' | 'handsfree'>('ptt');
+  const [tampilkanTranskripSuara, setTampilkanTranskripSuara] = useState(true);
+  const [audioMuted, setAudioMuted] = useState(false);
+  const [liveTranscriptUser, setLiveTranscriptUser] = useState('');
+
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  const audioPlayerRef = useRef<HTMLAudioElement | null>(null);
   const ujungChatRef = useRef<HTMLDivElement>(null);
+  const speechRecognitionRef = useRef<any>(null);
+
+  // Putar audio otomatis dari pesan terbaru jika mode suara
+  const putarAudioBina = (audioUrl?: string) => {
+    if (!audioUrl || audioMuted) return;
+    try {
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.pause();
+      }
+      const audio = new Audio(audioUrl);
+      audioPlayerRef.current = audio;
+      setSedangMemutarAudio(true);
+      audio.onended = () => setSedangMemutarAudio(false);
+      audio.onerror = () => setSedangMemutarAudio(false);
+      audio.play().catch((e) => {
+        console.warn('Autoplay audio tercegah kebijakan browser:', e);
+        setSedangMemutarAudio(false);
+      });
+    } catch (err) {
+      console.error('Gagal memutar audio Bina:', err);
+      setSedangMemutarAudio(false);
+    }
+  };
+
+  // Bersihkan audio saat unmount
+  useEffect(() => {
+    return () => {
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.pause();
+      }
+    };
+  }, []);
 
   // Auto-scroll ke pesan terbaru
   useEffect(() => {
@@ -63,16 +132,58 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
     }
   }, [daftarPesan, sedangMerespon]);
 
-  // Muat preferensi role impian jika ada di profil awal
+  // Cek kelayakan CV & muat daftar posisi rekomendasi dinamis dari database (Zero Hardcode)
   useEffect(() => {
     if (pengguna?.pengguna_id) {
-      api.getProfil(pengguna.pengguna_id).then((res) => {
-        if (res?.profil?.role_impian) {
-          setTargetRole(res.profil.role_impian);
-        }
-      }).catch(() => {});
+      // Ambil cache terlebih dahulu
+      const c = localStorage.getItem(CACHE_KEY);
+      if (!c) {
+        setSedangMemeriksaKelayakan(true);
+      }
+
+      api.cekKelayakanSimulasi(pengguna.pengguna_id)
+        .then((res) => {
+          if (res?.status === 'sukses') {
+            const dataKelayakan = {
+              bisa_simulasi: res.bisa_simulasi,
+              alasan: res.alasan || '',
+              cv_tersedia: res.cv_tersedia,
+              kontak_terisi: res.kontak_terisi,
+              edukasi_terisi: res.edukasi_terisi,
+              cv_teranalisis: res.cv_teranalisis,
+            };
+            setKelayakan(dataKelayakan);
+
+            // Simpan cache lokal untuk instant render berikutnya (0 ms)
+            try {
+              localStorage.setItem(CACHE_KEY, JSON.stringify({
+                ...dataKelayakan,
+                posisi_rekomendasi: res.posisi_rekomendasi || [],
+                target_posisi_utama: res.target_posisi_utama || ''
+              }));
+            } catch {}
+
+            // Rekomendasi posisi murni dari database & CV
+            if (Array.isArray(res.posisi_rekomendasi)) {
+              setDaftarRoleSaran(res.posisi_rekomendasi);
+            }
+
+            // Set posisi default dari CV jika belum dipilih
+            if (res.target_posisi_utama && !targetRole) {
+              setTargetRole(res.target_posisi_utama);
+            }
+          }
+        })
+        .catch(() => {
+          setNotif({ teks: 'Gagal memuat kelayakan CV. Pastikan server aktif.', tipe: 'gagal' });
+        })
+        .finally(() => {
+          setSedangMemeriksaKelayakan(false);
+        });
+    } else {
+      setSedangMemeriksaKelayakan(false);
     }
-  }, [pengguna]);
+  }, [pengguna?.pengguna_id]);
 
   const tanganiMulaiSesi = async () => {
     if (!targetRole.trim()) {
@@ -84,14 +195,22 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
       const res = await api.mulaiSimulasi({
         pengguna_id: pengguna.pengguna_id,
         target_role: targetRole.trim(),
-        mode: 'teks'
+        mode: modeSimulasi
       });
 
       if (res.status === 'sukses' && res.pesan_awal) {
         setSesiId(res.sesi_id);
         setDaftarPesan([res.pesan_awal]);
         setSesiAktif(true);
-        setNotif({ teks: 'Sesi wawancara berhasil dibuka. Alokasi 10 Token tercatat.', tipe: 'sukses' });
+        const biaya = modeSimulasi === 'suara' ? 15 : modeSimulasi === 'video' ? 25 : 10;
+        setNotif({ teks: `Sesi wawancara mode ${modeSimulasi} berhasil dibuka. Alokasi ${biaya} Token tercatat.`, tipe: 'sukses' });
+
+        // Jika mode suara, langsung putar ucapan sambutan Bina
+        if (modeSimulasi === 'suara' && res.pesan_awal.audio_url) {
+          setTimeout(() => {
+            putarAudioBina(res.pesan_awal.audio_url);
+          }, 300);
+        }
       } else {
         setNotif({ teks: res.pesan || 'Gagal memulai simulasi wawancara.', tipe: 'gagal' });
       }
@@ -141,8 +260,156 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
     }
   };
 
+  // Logika Merekam Suara Kandidat (Microphone Stream & MediaRecorder + Web Speech API Real-Time Streaming)
+  const mulaiMerekamSuara = async () => {
+    if (sedangMerespon || sedangMemutarAudio) return;
+    try {
+      setLiveTranscriptUser('');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        stream.getTracks().forEach((track) => track.stop());
+        await prosesAudioKandidat(audioBlob);
+      };
+
+      mediaRecorder.start();
+      setSedangMerekam(true);
+
+      // Inisialisasi Web Speech API untuk Live Real-Time Transcription saat kandidat bicara
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        try {
+          const recognizer = new SpeechRecognition();
+          recognizer.lang = 'id-ID';
+          recognizer.continuous = true;
+          recognizer.interimResults = true;
+
+          let akumulasiTeksFinal = '';
+
+          recognizer.onresult = (event: any) => {
+            let interimTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+              const item = event.results[i];
+              if (item.isFinal) {
+                akumulasiTeksFinal += item[0].transcript + ' ';
+              } else {
+                interimTranscript += item[0].transcript;
+              }
+            }
+            const totalTeks = (akumulasiTeksFinal + interimTranscript).trim();
+            if (totalTeks) {
+              setLiveTranscriptUser(totalTeks);
+            }
+          };
+
+          recognizer.onerror = (e: any) => {
+            console.warn('SpeechRecognition interim error:', e);
+          };
+
+          recognizer.start();
+          speechRecognitionRef.current = recognizer;
+        } catch (e) {
+          console.warn('SpeechRecognition tidak dapat dimulai:', e);
+        }
+      }
+    } catch (err) {
+      console.error('Akses mikrofon gagal:', err);
+      setNotif({ teks: t.simulasiWawancara.mikrofonTidakAktif, tipe: 'gagal' });
+    }
+  };
+
+  const hentikanMerekamSuara = () => {
+    if (speechRecognitionRef.current) {
+      try {
+        speechRecognitionRef.current.stop();
+      } catch {}
+      speechRecognitionRef.current = null;
+    }
+    if (mediaRecorderRef.current && sedangMerekam) {
+      mediaRecorderRef.current.stop();
+      setSedangMerekam(false);
+    }
+  };
+
+  const prosesAudioKandidat = async (blob: Blob) => {
+    // Tampilkan placeholder transkripsi kandidat secara instan (Zero Lag Feedback)
+    const teksAwalKandidat = liveTranscriptUser.trim().length > 0 
+      ? liveTranscriptUser 
+      : '🎙️ [Menganalisis audio ucapan Anda...]';
+
+    const tempKandidatId = `usr_${Date.now()}`;
+    const placeholderKandidat: PesanChat = {
+      id: tempKandidatId,
+      pengirim: 'kandidat',
+      nama: pengguna.nama_pengguna || 'Anda (Kandidat)',
+      teks: teksAwalKandidat,
+      waktu: 'Baru saja'
+    };
+    setDaftarPesan((prev) => [...prev, placeholderKandidat]);
+    setSedangMerespon(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('audio_file', blob, 'rekaman_kandidat.webm');
+      formData.append('sesi_id', sesiId);
+      formData.append('pengguna_id', pengguna.pengguna_id);
+      formData.append('target_role', targetRole);
+      formData.append('live_transcript', teksAwalKandidat);
+      formData.append('riwayat_chat_json', JSON.stringify(daftarPesan));
+
+      const res = await api.prosesInteraksiSuara(formData);
+      if (res.status === 'sukses' && res.pesan_pewawancara) {
+        const transkripTeks = res.transkripsi_kandidat && res.transkripsi_kandidat.trim().length > 0
+          ? res.transkripsi_kandidat
+          : liveTranscriptUser.trim().length > 0
+          ? liveTranscriptUser
+          : '(Suara kandidat terekam)';
+        
+        const pesanBina = res.pesan_pewawancara;
+        
+        // Perbarui pesan kandidat dengan teks transkripsi riil dan tambahkan respons Bina
+        setDaftarPesan((prev) => {
+          const updated = prev.map((p) => 
+            p.id === tempKandidatId ? { ...p, teks: transkripTeks } : p
+          );
+          return [...updated, pesanBina];
+        });
+
+        setLiveTranscriptUser('');
+
+        // Putar langsung audio suara Bina
+        if (pesanBina.audio_url) {
+          putarAudioBina(pesanBina.audio_url);
+        }
+      } else {
+        // Hapus placeholder jika gagal
+        setDaftarPesan((prev) => prev.filter((p) => p.id !== tempKandidatId));
+        setNotif({ teks: res.pesan || 'Gagal memproses suara kandidat.', tipe: 'gagal' });
+      }
+    } catch (err: any) {
+      setDaftarPesan((prev) => prev.filter((p) => p.id !== tempKandidatId));
+      setNotif({ teks: `Gangguan audio: ${err.message || 'Koneksi gagal'}`, tipe: 'gagal' });
+    } finally {
+      setSedangMerespon(false);
+      setLiveTranscriptUser('');
+    }
+  };
+
   const tanganiAkhiriSesi = () => {
     if (window.confirm(t.simulasiWawancara.konfirmasiKeluar)) {
+      if (audioPlayerRef.current) {
+        audioPlayerRef.current.pause();
+      }
       setSesiAktif(false);
       setDaftarPesan([]);
       navigate('/');
@@ -150,7 +417,11 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-6 pb-24 font-sans safe-padding-x">
+    <div className={`mx-auto font-sans safe-padding-x ${
+      sesiAktif && modeSimulasi === 'suara'
+        ? 'max-w-7xl px-3 sm:px-6 py-3 sm:py-5 space-y-4 h-screen md:h-auto overflow-hidden'
+        : 'max-w-5xl px-4 sm:px-6 py-6 sm:py-8 space-y-6 pb-24'
+    }`}>
       {/* Notifikasi Toast Mengambang Standar */}
       {notif && (
         <NotifikasiToast
@@ -161,215 +432,93 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
       )}
 
       {/* Header Halaman Simulasi */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-stone-200">
-        <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between gap-3 pb-3 border-b border-stone-200">
+        <div className="flex items-center gap-3 min-w-0">
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="p-2 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-100 transition-colors min-h-[44px] min-w-[44px] flex items-center justify-center cursor-pointer"
+            className="p-2 rounded-xl border border-stone-300 text-stone-600 hover:bg-stone-100 transition-colors min-h-[40px] min-w-[40px] flex items-center justify-center cursor-pointer shrink-0"
             title="Kembali ke Beranda"
           >
             <ArrowLeft className="w-4 h-4" />
           </button>
-          <div>
-            <h1 className="text-lg sm:text-2xl font-extrabold text-stone-900 tracking-tight">
+          <div className="min-w-0">
+            <h1 className="text-base sm:text-xl font-extrabold text-stone-900 tracking-tight truncate">
               {t.simulasiWawancara.judulHalaman}
             </h1>
-            <p className="text-xs text-stone-500 mt-0.5">
-              {sesiAktif ? `${t.simulasiWawancara.statusSesiAktif}: ${targetRole}` : t.simulasiWawancara.subjudulHalaman}
+            <p className="text-[11px] sm:text-xs text-stone-500 truncate">
+              {sesiAktif ? `Sesi Wawancara Aktif: ${targetRole}` : t.simulasiWawancara.subjudulHalaman}
             </p>
           </div>
         </div>
 
-        {sesiAktif && (
-          <button
-            type="button"
-            onClick={tanganiAkhiriSesi}
-            className="px-3.5 py-2 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-800 text-xs font-bold transition-colors min-h-[44px] flex items-center justify-center cursor-pointer"
-          >
-            <span>{t.simulasiWawancara.akhiriSesi}</span>
-          </button>
-        )}
+        <div className="flex items-center gap-2.5 shrink-0">
+          {/* Badge Token Pengguna Aktif */}
+          {pengguna?.saldo_token !== undefined && (
+            <div className="hidden sm:flex items-center px-3 py-1.5 rounded-full bg-amber-50 text-amber-800 border border-amber-200/80 text-xs font-bold shadow-2xs">
+              <span>{pengguna.saldo_token} Token</span>
+            </div>
+          )}
+
+          {sesiAktif && (
+            <button
+              type="button"
+              onClick={tanganiAkhiriSesi}
+              className="px-3.5 py-1.5 sm:py-2 rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-extrabold transition-colors min-h-[40px] flex items-center justify-center cursor-pointer shadow-2xs"
+            >
+              <span>Selesaikan Wawancara</span>
+            </button>
+          )}
+        </div>
       </div>
 
-      {/* FORM PEMILIHAN POSISI TARGET (Jika Sesi Belum Aktif) */}
+      {/* TAMPILAN BERDASARKAN STATUS SESI & FORMAT */}
       {!sesiAktif ? (
-        <div className="max-w-2xl mx-auto space-y-6 animate-fadeIn py-4">
-          <Kartu className="p-6 sm:p-8 space-y-6 bg-white border border-stone-200 shadow-sm">
-            <div className="space-y-1">
-              <span className="text-[11px] font-mono text-orange-800 bg-orange-100 px-2.5 py-1 rounded-md font-bold inline-block mb-1">
-                {t.simulasiWawancara.biayaSesiBadge}
-              </span>
-              <h2 className="text-base sm:text-lg font-bold text-stone-900">
-                {t.simulasiWawancara.pilihPosisiLabel}
-              </h2>
-              <p className="text-xs text-stone-600 leading-relaxed">
-                Pewawancara adaptif akan merumuskan studi kasus yang relevan dengan tanggung jawab posisi yang Anda tentukan di bawah.
-              </p>
-            </div>
-
-            {/* Input Target Posisi */}
-            <div className="space-y-2">
-              <div className="relative">
-                <Briefcase className="w-4 h-4 text-stone-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  value={targetRole}
-                  onChange={(e) => setTargetRole(e.target.value)}
-                  placeholder={t.simulasiWawancara.pilihPosisiPlaceholder}
-                  className="w-full pl-10 pr-4 py-3 rounded-xl border border-stone-300 text-xs sm:text-sm text-stone-900 bg-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-600 min-h-[46px]"
-                />
-              </div>
-
-              {/* Saran Posisi Populer */}
-              <div className="pt-2">
-                <span className="text-[11px] text-stone-500 font-semibold block mb-2">Rekomendasi Posisi Cepat:</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {daftarRoleSaran.map((role, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => setTargetRole(role)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors border cursor-pointer ${
-                        targetRole === role
-                          ? 'bg-orange-700 text-white border-orange-700 shadow-2xs'
-                          : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
-                      }`}
-                    >
-                      {role}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Banner Karakter Orisinal: Bina */}
-            <div className="p-4 rounded-xl bg-orange-50/70 border border-orange-200/80 space-y-2">
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded-full bg-orange-700 text-white font-extrabold text-xs flex items-center justify-center shrink-0">
-                  B
-                </div>
-                <div>
-                  <strong className="text-xs font-bold text-stone-900 block">
-                    Bina (Head of Talent Acquisition & Lead Evaluator)
-                  </strong>
-                  <span className="text-[11px] text-orange-950/80">
-                    Pewawancara AI adaptif berstandar riset praktisi rekrutmen profesional Indonesia.
-                  </span>
-                </div>
-              </div>
-              <p className="text-[11px] text-stone-600 leading-relaxed pt-1 border-t border-orange-200/50">
-                Bina akan menguji alur komunikasi, ketegasan peran mandiri (metode CAR), membongkar jawaban klise, serta menguji ketahanan Anda menghadapi skenario krisis pekerjaan nyata.
-              </p>
-            </div>
-
-            {/* Tombol Mulai */}
-            <Tombol
-              varian="primer"
-              ukuran="lg"
-              disabled={sedangMemuatMulai || !targetRole.trim()}
-              onClick={tanganiMulaiSesi}
-              className="w-full bg-orange-700 hover:bg-orange-800 text-white font-bold text-sm min-h-[48px] shadow-sm flex items-center justify-center gap-2 cursor-pointer"
-            >
-              <Play className="w-4 h-4 fill-white" />
-              <span>{sedangMemuatMulai ? t.simulasiWawancara.sedangMemulai : t.simulasiWawancara.tombolMulaiWawancara}</span>
-            </Tombol>
-          </Kartu>
-        </div>
+        <FormPersiapanSimulasi
+          targetRole={targetRole}
+          setTargetRole={setTargetRole}
+          modeSimulasi={modeSimulasi}
+          setModeSimulasi={setModeSimulasi}
+          daftarRoleSaran={daftarRoleSaran}
+          kelayakan={kelayakan}
+          sedangMemeriksaKelayakan={sedangMemeriksaKelayakan}
+          sedangMemuatMulai={sedangMemuatMulai}
+          onMulaiSesi={tanganiMulaiSesi}
+        />
+      ) : modeSimulasi === 'suara' ? (
+        <VoiceRoomDedicated
+          targetRole={targetRole}
+          daftarPesan={daftarPesan}
+          sedangMemutarAudio={sedangMemutarAudio}
+          sedangMerekam={sedangMerekam}
+          sedangMerespon={sedangMerespon}
+          liveTranscriptUser={liveTranscriptUser}
+          modeInteraksiSuara={modeInteraksiSuara}
+          setModeInteraksiSuara={setModeInteraksiSuara}
+          tampilkanTranskripSuara={tampilkanTranskripSuara}
+          setTampilkanTranskripSuara={setTampilkanTranskripSuara}
+          audioMuted={audioMuted}
+          onToggleMute={() => {
+            if (!audioMuted && audioPlayerRef.current) {
+              audioPlayerRef.current.pause();
+              setSedangMemutarAudio(false);
+            }
+            setAudioMuted(!audioMuted);
+          }}
+          onMulaiMerekam={mulaiMerekamSuara}
+          onHentikanMerekam={hentikanMerekamSuara}
+          onPutarAudio={putarAudioBina}
+          ujungChatRef={ujungChatRef}
+        />
       ) : (
-        /* RUANG CHAT WAWANCARA MENGLAIR INTERAKTIF */
-        <div className="space-y-4 animate-fadeIn">
-          {/* Box Area Pesan Chat */}
-          <div className="bg-white rounded-2xl border border-stone-200 p-4 sm:p-6 min-h-[450px] max-h-[580px] overflow-y-auto space-y-4 shadow-2xs">
-            {daftarPesan.map((pesan) => {
-              const adalahPewawancara = pesan.pengirim === 'pewawancara';
-              return (
-                <div
-                  key={pesan.id}
-                  className={`flex flex-col ${adalahPewawancara ? 'items-start' : 'items-end'} space-y-1 max-w-[88%] sm:max-w-[78%] ${
-                    adalahPewawancara ? 'mr-auto' : 'ml-auto'
-                  }`}
-                >
-                  <div className="flex items-center gap-1.5 text-[11px] font-semibold text-stone-500 px-1">
-                    {adalahPewawancara ? (
-                      <>
-                        <Bot className="w-3.5 h-3.5 text-orange-700" />
-                        <span className="text-orange-950 font-bold">{pesan.nama}</span>
-                        {pesan.peran && <span className="text-[10px] text-stone-400">({pesan.peran})</span>}
-                      </>
-                    ) : (
-                      <span>{pesan.nama}</span>
-                    )}
-                  </div>
-
-                  <div
-                    className={`p-3.5 sm:p-4 rounded-2xl text-xs sm:text-sm leading-relaxed ${
-                      adalahPewawancara
-                        ? 'bg-stone-100 text-stone-900 rounded-tl-sm border border-stone-200/60'
-                        : 'bg-orange-700 text-white rounded-tr-sm shadow-2xs'
-                    }`}
-                  >
-                    <p className="whitespace-pre-line">{pesan.teks}</p>
-                  </div>
-
-                  {/* Micro Feedback Badge (Jika ada deteksi kondisi Jev) */}
-                  {pesan.kondisi_terdeteksi && (
-                    <div className="px-1 text-[10px]">
-                      {pesan.kondisi_terdeteksi === 'BANYAK_KAMI' && (
-                        <span className="text-amber-700 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          <span>{t.simulasiWawancara.peringatanKami}</span>
-                        </span>
-                      )}
-                      {pesan.kondisi_terdeteksi === 'KLISE_HAFALAN' && (
-                        <span className="text-rose-700 bg-rose-50 px-2 py-0.5 rounded border border-rose-200 flex items-center gap-1">
-                          <AlertCircle className="w-3 h-3" />
-                          <span>{t.simulasiWawancara.peringatanKlise}</span>
-                        </span>
-                      )}
-                      {pesan.kondisi_terdeteksi === 'SOLID_BERMETRIK' && (
-                        <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3" />
-                          <span>{t.simulasiWawancara.apresiasiAngka}</span>
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Indikator Typing Saat Pewawancara Merumuskan Pertanyaan */}
-            {sedangMerespon && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-stone-50 border border-stone-200 text-xs text-stone-600 max-w-sm animate-pulse">
-                <Bot className="w-4 h-4 text-orange-700 shrink-0" />
-                <span>{t.simulasiWawancara.sedangMerespon}</span>
-              </div>
-            )}
-
-            <div ref={ujungChatRef} />
-          </div>
-
-          {/* Kolom Input Chat Jawaban Kandidat */}
-          <form onSubmit={tanganiKirimPesan} className="flex gap-2 items-center">
-            <input
-              type="text"
-              value={inputJawaban}
-              onChange={(e) => setInputJawaban(e.target.value)}
-              disabled={sedangMerespon}
-              placeholder={t.simulasiWawancara.ketikJawabanPlaceholder}
-              className="flex-1 px-4 py-3 rounded-xl border border-stone-300 text-xs sm:text-sm text-stone-900 bg-white placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-orange-600 min-h-[48px] shadow-2xs"
-            />
-            <button
-              type="submit"
-              disabled={sedangMerespon || !inputJawaban.trim()}
-              className="px-5 py-3 rounded-xl bg-orange-700 hover:bg-orange-800 disabled:opacity-40 text-white font-bold text-xs sm:text-sm min-h-[48px] flex items-center justify-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
-            >
-              <span>{t.simulasiWawancara.tombolKirimJawaban}</span>
-              <Send className="w-4 h-4" />
-            </button>
-          </form>
-        </div>
+        <TextRoomChat
+          daftarPesan={daftarPesan}
+          inputJawaban={inputJawaban}
+          setInputJawaban={setInputJawaban}
+          sedangMerespon={sedangMerespon}
+          onKirimPesan={tanganiKirimPesan}
+          ujungChatRef={ujungChatRef}
+        />
       )}
     </div>
   );

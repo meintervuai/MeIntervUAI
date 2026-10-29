@@ -89,8 +89,12 @@ Tata letak wajib diuji dan bertahan pada seluruh ukuran standar:
   - **Segmented Control & Pill Carousel**: Ganti deretan tombol horizontal panjang dengan *horizontal scrollable chips/pills* dengan snapping yang mulus.
   - **Input Friendly**: Input form harus mencegah zoom otomatis di iOS Safari (`font-size >= 16px` pada input field mobile).
 
-### UX-17: Standar Transisi Antarmuka & Skeleton Shimmer (Anti Full-Page Spinner Loop)
-- **Pengalaman Transisi Instan**: Saat berpindah antar-menu atau memuat formulir kompleks, dilarang menampilkan layar putih kosong dengan satu ikon spinner di tengah yang memutar tanpa kepastian tata letak.
-- **Kerangka Skeleton Proporsional**: Wajib menggunakan blok skeleton shimmer abu-abu netral (`bg-stone-200 animate-pulse rounded-*`) yang mengikuti proporsi persis dari navigasi, kartu, input teks, dan tombol asli. Pola ini memangkas persepsi waktu tunggu (*perceived latency*) dan menghilangkan lonjakan visual mendadak (*Cumulative Layout Shift*).
+### UX-18: Standar Studio Wawancara Split-View & Voice Controller (UX-18)
+- **Split-View Desktop (`md:grid md:grid-cols-12 h-[calc(100vh-140px)]`)**:
+  - Kolom Kiri (55%): Panel gelap dark charcoal (`#18181B` s.d `#1F1F23`) dengan concentric audio wave rings, avatar eksekutif pria HR Indonesia (Bina), status vokal real-time, dan tombol PTT oranye terakota (`#EA580C`). Seluruh kontrol pas dalam 1 layar tanpa scroll vertikal halaman utama.
+  - Kolom Kanan (45%): Panel transkrip putih bersih (`#FFFFFF`) dengan border halus (`#E5E7EB`), bubble chat terpisah (Bina di kiri dengan avatar, Kandidat di kanan dengan aksen oranye), scrollable secara independen dengan auto-scroll ke interaksi terbaru.
+- **Sticky Control Mobile (`< 768px`)**:
+  - Compact visualizer atas (25-30% viewport), transkrip scrollable independen di bagian tengah (`flex-1`), dan Sticky Bottom Action Bar di bagian bawah untuk jangkauan ibu jari yang ergonomis saat menekan tombol bicara.
+
 
 

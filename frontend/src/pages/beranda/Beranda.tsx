@@ -37,7 +37,7 @@ interface PropertiBeranda {
   onPerbaruiPengguna?: (pengguna: any) => void;
 }
 
-export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
+export const Beranda: React.FC<PropertiBeranda> = ({ pengguna, onPerbaruiPengguna }) => {
   const { t } = useBahasa();
   const navigate = useNavigate();
 
@@ -112,6 +112,13 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
           if (resProfil.saldo_token) {
             setSaldoToken(resProfil.saldo_token.jumlah_saldo);
             updateCache.saldo_token = resProfil.saldo_token.jumlah_saldo;
+            // Sinkronkan ke objek pengguna Navbar
+            if (onPerbaruiPengguna && pengguna) {
+              onPerbaruiPengguna({
+                ...pengguna,
+                saldo_token: resProfil.saldo_token.jumlah_saldo
+              });
+            }
           }
           const p = resProfil.profil || {};
           if (!p.umur || !p.status_pekerjaan) {
@@ -1157,3 +1164,6 @@ export const Beranda: React.FC<PropertiBeranda> = ({ pengguna }) => {
     </div>
   );
 };
+
+export default Beranda;
+

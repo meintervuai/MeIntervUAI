@@ -189,6 +189,11 @@ export const api = {
   },
 
   // Simulasi Wawancara Adaptif
+  async cekKelayakanSimulasi(pengguna_id: string): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/simulasi/kelayakan/${pengguna_id}`);
+    return res.json();
+  },
+
   async mulaiSimulasi(data: {
     pengguna_id: string;
     target_role: string;
@@ -199,7 +204,14 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    return res.json();
+    const json = await res.json();
+    if (!res.ok) {
+      return {
+        status: 'galat',
+        pesan: json.detail || json.message || json.pesan || 'Gagal memulai simulasi.'
+      };
+    }
+    return json;
   },
 
   async kirimJawabanSimulasi(data: {
@@ -214,7 +226,29 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
     });
-    return res.json();
+    const json = await res.json();
+    if (!res.ok) {
+      return {
+        status: 'galat',
+        pesan: json.detail || json.message || json.pesan || 'Gagal mengirim jawaban simulasi.'
+      };
+    }
+    return json;
+  },
+
+  async prosesInteraksiSuara(formData: FormData): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/simulasi/suara/proses`, {
+      method: 'POST',
+      body: formData,
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      return {
+        status: 'galat',
+        pesan: json.detail || json.message || json.pesan || 'Gagal memproses interaksi suara.'
+      };
+    }
+    return json;
   },
 };
 

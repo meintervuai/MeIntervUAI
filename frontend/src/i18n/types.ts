@@ -338,6 +338,15 @@ export interface PusatBantuanKonten {
     subjudulHalaman: string;
     pilihPosisiLabel: string;
     pilihPosisiPlaceholder: string;
+    pilihModeLabel: string;
+    modeTeksJudul: string;
+    modeTeksDesc: string;
+    modeAudioJudul: string;
+    modeAudioDesc: string;
+    modeVideoJudul: string;
+    modeVideoDesc: string;
+    biayaTokenUnit: string;
+    fiturSegeraHadir: string;
     biayaSesiBadge: string;
     tombolMulaiWawancara: string;
     sedangMemulai: string;
@@ -351,6 +360,19 @@ export interface PusatBantuanKonten {
     peringatanKlise: string;
     apresiasiAngka: string;
     konfirmasiKeluar: string;
+    // Voice Mode
+    binaBicara: string;
+    binaMendengar: string;
+    binaBerpikir: string;
+    tekanBicara: string;
+    lepasKirim: string;
+    klikMulaiBicara: string;
+    klikSelesaiBicara: string;
+    modeHandsFree: string;
+    modePushToTalk: string;
+    tampilkanTranskrip: string;
+    sembunyikanTranskrip: string;
+    mikrofonTidakAktif: string;
   };
   cvBuilder: {
     judulHalaman: string;

@@ -128,9 +128,22 @@ export const App: React.FC = () => {
           return;
         }
 
+        // Ambil saldo token aktual dari database
+        const { data: saldoData } = await supabase
+          .from('saldo_token')
+          .select('jumlah_saldo')
+          .eq('pengguna_id', dbUser.pengguna_id)
+          .limit(1)
+          .maybeSingle();
+
+        const userLengkap = {
+          ...dbUser,
+          saldo_token: saldoData?.jumlah_saldo !== undefined ? saldoData.jumlah_saldo : (dbUser.saldo_token || 100)
+        };
+
         // Akun sah & terverifikasi
-        setPengguna(dbUser);
-        localStorage.setItem('intervu_pengguna', JSON.stringify(dbUser));
+        setPengguna(userLengkap);
+        localStorage.setItem('intervu_pengguna', JSON.stringify(userLengkap));
         if (!localStorage.getItem('intervu_waktu_login')) {
           localStorage.setItem('intervu_waktu_login', Date.now().toString());
         }
@@ -153,8 +166,19 @@ export const App: React.FC = () => {
           .maybeSingle();
 
         if (dbUser && dbUser.email_terverifikasi) {
-          setPengguna(dbUser);
-          localStorage.setItem('intervu_pengguna', JSON.stringify(dbUser));
+          const { data: saldoData } = await supabase
+            .from('saldo_token')
+            .select('jumlah_saldo')
+            .eq('pengguna_id', dbUser.pengguna_id)
+            .limit(1)
+            .maybeSingle();
+
+          const userLengkap = {
+            ...dbUser,
+            saldo_token: saldoData?.jumlah_saldo !== undefined ? saldoData.jumlah_saldo : (dbUser.saldo_token || 100)
+          };
+          setPengguna(userLengkap);
+          localStorage.setItem('intervu_pengguna', JSON.stringify(userLengkap));
           localStorage.setItem('intervu_waktu_login', Date.now().toString());
         } else {
           // Akun tidak ada di DB atau belum verifikasi

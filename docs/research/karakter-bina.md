@@ -73,3 +73,18 @@ Otak evaluasi Bina dibangun dari sintesis 5 pilar riset praktisi HR terkemuka:
 | **Respon Singkat / Konfirmasi** (*"baik", "siap", "terima kasih"*) | **Alur Percakapan Alami**: Tidak mengulang teguran. Bina mengapresiasi dan langsung memberikan pertanyaan berikutnya agar alur simulasi mengalir mulus. |
 | **Kandidat Bingung Soal** (*"lah mana pertanyaannya?"*) | **Re-Focusing Instan**: Membimbing kandidat dengan menyajikan kembali pertanyaan terarah yang harus dijawab. |
 
+---
+
+## 4. Karakter & Arsitektur Suara Bina (Voice Mode ala Gemini & GPT)
+
+Sesuai preferensi kepribadian profesional HR senior:
+* **Profil Suara**: Laki-laki ramah, tegas, artikulatif, dan halus (*friendly, assertive, smooth baritone*).
+* **Model Engine Text-To-Speech (TTS)**:
+  - **Prioritas Utama**: **Google Gemini Live High-Fidelity Voice** model `gemini-2.5-flash-preview-tts` dengan karakter suara **`Charon`**.
+    * Keunggulan: Artikulasi manusiawi sangat ekspresif, infleksi emosi alami (bukan robotic monoton AI kaku), intonasi tenang berwibawa, dan pelafalan istilah teknis bahasa Inggris (*microservices, continuous integration, ROI, KPI, scrum master*) sangat mulus.
+  - **Fallback Cadangan**: `id-ID-ArdiNeural` (Microsoft Neural Natural Voice via `edge-tts`).
+* **Model Engine Speech-To-Text (STT)**: Groq API `whisper-large-v3-turbo` (`language="id"`).
+  * Keunggulan: Latensi ultra rendah (~300ms), akurasi transkrip tinggi bahkan dengan aksen lokal atau istilah asing campur (*code-switching*).
+* **Arsitektur Service**: Terpusat pada [backend/app/services/audio_service.py](file:///d:/MeIntervUAI/backend/app/services/audio_service.py) dan diorkestrasi oleh endpoint [backend/app/routers/simulasi.py](file:///d:/MeIntervUAI/backend/app/routers/simulasi.py).
+
+

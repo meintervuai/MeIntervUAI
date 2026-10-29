@@ -21,7 +21,7 @@ d:\MeIntervUAI\
 │   │   ├── main.py               # Gateway FastAPI & middleware CORS/SlowAPI
 │   │   ├── config.py             # Parser environment & setting rate-limit
 │   │   ├── routers/              # Endpoint auth, csm_publik, profil, pengaturan, cv, simulasi
-│   │   └── services/             # Supabase service, ID generator, & bina_service.py (Otak Karakter Bina HR)
+│   │   └── services/             # Supabase service, ID generator, bina_service.py (Otak Karakter Bina HR), & audio_service.py (Edge-TTS Ardi & Groq Whisper)
 │   ├── tests/                    # Pengujian unit otomatis (pytest)
 │   └── requirements.txt
 ├── frontend/
@@ -31,8 +31,9 @@ d:\MeIntervUAI\
 │   │   ├── i18n/                 # Modul lokalisasi dwibahasa terpusat (types.ts, hook useBahasa, id.ts, en.ts)
 │   │   ├── components/ui/        # Komponen standar (Tombol, KotakInput + aksiKanan, Kartu, DialogModal, IndikatorToken)
 │   │   ├── components/tata_letak/# Navbar responsif, Footer & Drawer
-│   │   ├── pages/                # CSMPublik, MasukDaftar, Beranda, Pengaturan, cv/
-│   │   │   └── cv/               # CVBuilder (Orkestrator), komponen/ (FormKontak, Edukasi, Pengalaman, Proyek, Keahlian, PengaturanCV, PratinjauKertasATS)
+│   │   ├── pages/                # CSMPublik, MasukDaftar, Beranda, Pengaturan, cv/, simulasi/
+│   │   │   ├── cv/               # CVBuilder (Orkestrator), komponen/ (FormKontak, Edukasi, Pengalaman, Proyek, Keahlian, PengaturanCV, PratinjauKertasATS)
+│   │   │   └── simulasi/         # SimulasiWawancara (Orkestrator), komponen/ (FormPersiapanSimulasi, VoiceRoomDedicated, TextRoomChat, types)
 │   │   ├── services/             # supabase.ts (Supabase OAuth & Auth) dan api.ts (Klien backend)
 │   │   └── index.css             # Desain token terpusat & fluid typography
 │   ├── package.json
@@ -44,7 +45,7 @@ d:\MeIntervUAI\
 ## Daftar Rujukan Modul Dokumentasi
 - [Prinsip & Definisi Slop](principles.md)
 - [Alur Kerja (Workflow WF-01 - WF-09)](workflow.md)
-- [Standar Backend (BE-01 - BE-03)](backend.md)
+- [Standar Backend (BE-01 - BE-05)](backend.md)
 - [Standar Frontend (FE-01 - FE-05)](frontend.md)
 - [Standar UI/UX, Multi-Device & Rotasi (UX-01 - UX-13)](ui-ux.md)
 - [Standar Basis Data (DB-01 - DB-06)](database.md)
