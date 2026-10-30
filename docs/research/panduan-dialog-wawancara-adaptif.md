@@ -71,3 +71,17 @@ Ketika kandidat memberikan jawaban pada giliran percakapan ($T_n$), sistem menge
    - **Reaktivitas Kepribadian HR**: Bina bereaksi secara realistis terhadap sikap kandidat (menantang rasa malas, arogan, atau ketidaksiapan kandidat secara profesional).
    - Istilah teknis (seperti ROI, KPI, SLA, Microservices) yang ditanyakan kandidat harus dijawab secara ringkas lalu dijadikan bahan ujian balik (*challenging question*).
 
+
+
+---
+
+## 4. Standar Evaluasi Telemetri Visual & Gestur Tangan Non-Verbal
+
+Modul live video mengintegrasikan evaluasi non-verbal berbasis MediaPipe Tasks Vision tanpa beban server (client-side):
+
+1. Subtitle / Closed Caption (CC) Suara Pewawancara: Teks ucapan pewawancara (Bina) disajikan langsung sebagai subtitle elegan semi-transparan mengambang di panggung Live Video utama.
+2. HUD Peringatan Gestur Mengambang: Peringatan bahasa tubuh tidak mengotori riwayat transkrip chat, melainkan melayang di kanan atas video panggung dan otomatis menghilang (auto-dismiss 5 detik).
+3. Standar Klasifikasi Gestur Tangan Pelanggaran:
+   - Gestur Tidak Sopan / Konfrontatif (gestur_tidak_sopan)
+   - Menutupi Wajah / Kamera (menghalangi_kamera)
+   - Menyentuh Wajah / Menopang Dagu (menyentuh_wajah)

@@ -9,7 +9,7 @@
 import React, { useState, useEffect } from 'react';
 import { useBahasa } from '../../../i18n';
 import { PesanChat } from './types';
-import { usePostureAnalysis, PostureAlertEvent } from '../hooks/usePostureAnalysis';
+import { usePostureAnalysis } from '../hooks/usePostureAnalysis';
 import {
   Volume2,
   VolumeX,
@@ -53,38 +53,76 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
   onHentikanMerekam,
   onPutarAudio,
   ujungChatRef,
-  onTambahPesan,
 }) => {
   const { t } = useBahasa();
   const [daftarPesanLokal, setDaftarPesanLokal] = useState<PesanChat[]>(daftarPesan);
+  // State overlay alert HUD mengambang di kanan atas panggung video avatar Bina
+  const [hudAlert, setHudAlert] = useState<{ judul: string; teks: string; tipe: string } | null>(null);
 
   // Sinkronkan daftar pesan dari parent saat bertambah
   useEffect(() => {
     setDaftarPesanLokal(daftarPesan);
   }, [daftarPesan]);
 
-  // Tangani Inline Vision Alert Event ke Alur Transkrip
-  const tanganiAlertVision = (alert: PostureAlertEvent) => {
-    const alertCard: PesanChat = {
-      id: `alert_${Date.now()}`,
-      pengirim: 'pewawancara',
-      nama: 'AI Vision Evaluator',
-      kondisi_terdeteksi: alert.tipe,
-      teks: alert.tipe === 'tangan' ? t.simulasiWawancara.alertTanganMenyentuh : t.simulasiWawancara.alertPosturMiring,
-      waktu: 'Baru saja',
-    };
-    setDaftarPesanLokal((prev) => [...prev, alertCard]);
-    if (onTambahPesan) {
-      onTambahPesan(alertCard);
-    }
-  };
+  // Ambil ucapan terakhir Bina untuk disajikan sebagai Closed Caption (CC) Subtitle di Panggung Video Utama
+  const ucapanTerakhirBina = [...daftarPesanLokal]
+    .reverse()
+    .find((p) => p.pengirim === 'pewawancara' && !p.kondisi_terdeteksi)?.teks || '';
 
   // Aktifkan Hook Analisis Postur & MediaPipe Tasks Vision
   const { videoRef, canvasRef, telemetri, mulaiKamera, hentikanKamera } =
     usePostureAnalysis({
       sedangBicara: sedangMerekam,
-      onTriggerAlert: tanganiAlertVision,
     });
+
+  // Sinkronisasi Reaktif HUD Peringatan Mengambang dengan State Telemetri Riil
+  // Begitu kondisi tangan atau postur kembali Normal, notifikasi seketika hilang
+  useEffect(() => {
+    if (telemetri.tangan === 'gestur_tidak_sopan') {
+      setHudAlert({
+        judul: t.simulasiWawancara.koreksiTanganJudul,
+        teks: t.simulasiWawancara.alertTanganTidakSopan,
+        tipe: 'gestur_tidak_sopan',
+      });
+    } else if (telemetri.tangan === 'menghalangi_kamera') {
+      setHudAlert({
+        judul: t.simulasiWawancara.koreksiTanganJudul,
+        teks: t.simulasiWawancara.alertTanganMenghalangi,
+        tipe: 'menghalangi_kamera',
+      });
+    } else if (telemetri.tangan === 'menyentuh_wajah') {
+      setHudAlert({
+        judul: t.simulasiWawancara.koreksiTanganJudul,
+        teks: t.simulasiWawancara.alertTanganMenyentuh,
+        tipe: 'menyentuh_wajah',
+      });
+    } else if (telemetri.postur === 'miring' || telemetri.postur === 'bungkuk') {
+      setHudAlert({
+        judul: t.simulasiWawancara.koreksiPosturJudul,
+        teks: t.simulasiWawancara.alertPosturMiring,
+        tipe: 'postur',
+      });
+    } else {
+      // Jika status telemetri Normal (tangan normal, postur tegak), langsung hilangkan notif seketika
+      setHudAlert(null);
+    }
+  }, [telemetri.tangan, telemetri.postur, t]);
+
+  // State deteksi ukuran layar mobile vs desktop agar ref tidak ganda di DOM
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Jalankan kamera saat komponen terpasang di layar (jika belum aktif)
   useEffect(() => {
@@ -162,9 +200,8 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
 
           {/* 2. Panggung Video Utama: Avatar Bina + PiP Kamera Pengguna */}
           <div className="flex-1 my-3 rounded-2xl bg-stone-900 border border-stone-800 relative overflow-hidden flex items-center justify-center">
-            {/* Badge Live Video di Sudut Kiri Atas (Tanpa Pulsing Dot - Anti Slop Mandatori) */}
-            <div className="absolute top-3 left-3 z-30 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-stone-700/60 text-white text-[11px] font-bold flex items-center gap-2 shadow-md">
-              <span className="w-2 h-2 rounded-full bg-rose-500" />
+            {/* Badge Live Video di Sudut Kiri Atas */}
+            <div className="absolute top-3 left-3 z-30 px-3 py-1 rounded-full bg-black/60 backdrop-blur-md border border-stone-700/60 text-white text-[11px] font-bold shadow-md">
               <span>{t.simulasiWawancara.badgeLiveVideo}</span>
             </div>
 
@@ -178,11 +215,41 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
                 }`}
               />
 
+              {/* Toast HUD Notifikasi Peringatan di Kanan Atas Panggung Video Avatar */}
+              {hudAlert && (
+                <div className="absolute top-3 right-3 z-30 max-w-[280px] sm:max-w-[320px] p-3 rounded-2xl bg-stone-900/95 backdrop-blur-md border border-amber-500/70 text-amber-200 text-xs shadow-2xl animate-fadeIn flex items-start gap-2.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div className="space-y-0.5 min-w-0">
+                    <span className="font-bold block text-white text-[11px] leading-tight">
+                      {hudAlert.judul}
+                    </span>
+                    <p className="text-[11px] text-amber-100/90 leading-relaxed">
+                      {hudAlert.teks}
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {/* Status Audio Respon Bina Saat Bersuara */}
               {sedangMemutarAudio && (
-                <div className="absolute bottom-3 left-3 z-30 px-3 py-1 rounded-xl bg-orange-950/80 border border-orange-500/50 text-orange-200 text-xs font-semibold flex items-center gap-2 shadow-lg">
+                <div className="absolute top-3 right-3 z-30 px-3 py-1 rounded-xl bg-orange-950/80 border border-orange-500/50 text-orange-200 text-xs font-semibold flex items-center gap-2 shadow-lg">
                   <Volume2 className="w-3.5 h-3.5 text-orange-400" />
                   <span>{t.simulasiWawancara.binaSedangBicara}</span>
+                </div>
+              )}
+
+              {/* Subtitle / Closed-Caption (CC) Teks Suara Bina di Panggung Live Video */}
+              {ucapanTerakhirBina && (
+                <div className="absolute bottom-3 left-4 right-48 z-30 pointer-events-none">
+                  <div className="max-w-xl px-4 py-2.5 rounded-2xl bg-black/75 backdrop-blur-md border border-stone-700/70 text-white text-xs sm:text-sm leading-relaxed shadow-xl animate-fadeIn">
+                    <div className="flex items-center gap-1.5 mb-1 text-[11px] font-bold text-amber-400">
+                      <span>Bina</span>
+                      {sedangMemutarAudio && <Volume2 className="w-3 h-3 text-amber-400" />}
+                    </div>
+                    <p className="line-clamp-3 font-medium text-stone-100">
+                      "{ucapanTerakhirBina}"
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
@@ -190,19 +257,23 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
             {/* Picture-in-Picture (PiP) Kamera User di Pojok Kanan Bawah */}
             <div className="absolute bottom-3 right-3 z-30 w-44 h-32 rounded-2xl overflow-hidden border-2 border-stone-600/90 shadow-2xl bg-black">
               <div className="w-full h-full relative">
-                {/* Video Streaming Pengguna (Mirrored) */}
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className={`w-full h-full object-cover scale-x-[-1] ${telemetri.kameraAktif ? 'block' : 'hidden'}`}
-                />
-                {/* Canvas Overlay MediaPipe Skeleton (Mirrored) */}
-                <canvas
-                  ref={canvasRef}
-                  className={`absolute inset-0 w-full h-full object-cover scale-x-[-1] pointer-events-none ${telemetri.kameraAktif ? 'block' : 'hidden'}`}
-                />
+                {!isMobile && (
+                  <>
+                    {/* Video Streaming Pengguna (Mirrored) */}
+                    <video
+                      ref={videoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className={`w-full h-full object-cover scale-x-[-1] ${telemetri.kameraAktif ? 'block' : 'hidden'}`}
+                    />
+                    {/* Canvas Overlay MediaPipe Skeleton (Mirrored) */}
+                    <canvas
+                      ref={canvasRef}
+                      className={`absolute inset-0 w-full h-full object-cover scale-x-[-1] pointer-events-none ${telemetri.kameraAktif ? 'block' : 'hidden'}`}
+                    />
+                  </>
+                )}
 
                 {telemetri.kameraAktif ? (
                   <>
@@ -229,21 +300,16 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
             </div>
           </div>
 
-          {/* 3. Bar 4 Indikator Telemetri Bahasa Tubuh (Solid Dot - Tanpa Animasi Pulsa) */}
+          {/* 3. Bar 4 Indikator Telemetri Bahasa Tubuh (Clean Badge - Bebas Lingkaran Bulat) */}
           <div className="grid grid-cols-4 gap-2 mb-3">
             {/* Telemetri 1: Kontak Mata */}
             <div
-              className={`px-2.5 py-1.5 rounded-xl border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-colors ${
+              className={`px-2.5 py-1.5 rounded-xl border flex items-center justify-center text-[11px] font-bold transition-colors ${
                 telemetri.kontakMataPersen >= 70
                   ? 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300'
                   : 'bg-amber-950/70 border-amber-500/40 text-amber-300'
               }`}
             >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  telemetri.kontakMataPersen >= 70 ? 'bg-emerald-400' : 'bg-amber-400'
-                }`}
-              />
               <span className="truncate">
                 {t.simulasiWawancara.telemetriKontakMata} {telemetri.kontakMataPersen}%
               </span>
@@ -251,17 +317,12 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
 
             {/* Telemetri 2: Postur Tubuh */}
             <div
-              className={`px-2.5 py-1.5 rounded-xl border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-colors ${
+              className={`px-2.5 py-1.5 rounded-xl border flex items-center justify-center text-[11px] font-bold transition-colors ${
                 telemetri.postur === 'tegak'
                   ? 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300'
                   : 'bg-amber-950/70 border-amber-500/40 text-amber-300'
               }`}
             >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  telemetri.postur === 'tegak' ? 'bg-emerald-400' : 'bg-amber-400'
-                }`}
-              />
               <span className="truncate">
                 {t.simulasiWawancara.telemetriPostur}{' '}
                 {telemetri.postur === 'tegak'
@@ -272,17 +333,12 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
 
             {/* Telemetri 3: Bibir / Gerak Bicara */}
             <div
-              className={`px-2.5 py-1.5 rounded-xl border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-colors ${
+              className={`px-2.5 py-1.5 rounded-xl border flex items-center justify-center text-[11px] font-bold transition-colors ${
                 telemetri.bibirSuara === 'jelas'
                   ? 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300'
                   : 'bg-stone-800 border-stone-700 text-stone-300'
               }`}
             >
-              <span
-                className={`w-1.5 h-1.5 rounded-full ${
-                  telemetri.bibirSuara === 'jelas' ? 'bg-emerald-400' : 'bg-stone-400'
-                }`}
-              />
               <span className="truncate">
                 {t.simulasiWawancara.telemetriBibir}{' '}
                 {telemetri.bibirSuara === 'jelas'
@@ -293,26 +349,35 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
               </span>
             </div>
 
-            {/* Telemetri 4: Posisi Tangan (Alert Terracotta / Amber jika menyentuh wajah) */}
+            {/* Telemetri 4: Posisi Tangan & Gestur */}
             <div
               className={`px-2.5 py-1.5 rounded-xl border flex items-center justify-center gap-1.5 text-[11px] font-bold transition-colors ${
-                telemetri.tangan === 'menyentuh_wajah'
+                telemetri.tangan === 'gestur_tidak_sopan'
+                  ? 'bg-rose-900/90 border-rose-500 text-white shadow-sm'
+                  : telemetri.tangan === 'menghalangi_kamera' || telemetri.tangan === 'menyentuh_wajah'
                   ? 'bg-amber-700/80 border-amber-500 text-white shadow-sm'
                   : 'bg-emerald-950/70 border-emerald-500/40 text-emerald-300'
               }`}
             >
-              {telemetri.tangan === 'menyentuh_wajah' ? (
+              {telemetri.tangan === 'gestur_tidak_sopan' ? (
+                <>
+                  <AlertTriangle className="w-3.5 h-3.5 text-rose-200" />
+                  <span className="truncate">{t.simulasiWawancara.telemetriGesturTidakSopan}</span>
+                </>
+              ) : telemetri.tangan === 'menghalangi_kamera' ? (
+                <>
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-200" />
+                  <span className="truncate">{t.simulasiWawancara.telemetriMenghalangiKamera}</span>
+                </>
+              ) : telemetri.tangan === 'menyentuh_wajah' ? (
                 <>
                   <AlertTriangle className="w-3.5 h-3.5 text-amber-200" />
                   <span className="truncate">{t.simulasiWawancara.telemetriMenyentuhWajah}</span>
                 </>
               ) : (
-                <>
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  <span className="truncate">
-                    {t.simulasiWawancara.telemetriTangan} {t.simulasiWawancara.telemetriTanganNormal}
-                  </span>
-                </>
+                <span className="truncate">
+                  {t.simulasiWawancara.telemetriTangan} {t.simulasiWawancara.telemetriTanganNormal}
+                </span>
               )}
             </div>
           </div>
@@ -387,64 +452,46 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
 
           {/* Area Pesan Mengalir */}
           <div className="flex-1 overflow-y-auto p-2 space-y-4 pr-1">
-            {daftarPesanLokal.map((pesan) => {
-              // KASUS 1: INLINE AI VISION ALERT CARD
-              if (pesan.kondisi_terdeteksi) {
-                return (
-                  <div
-                    key={pesan.id}
-                    className="p-3.5 rounded-2xl bg-amber-50/90 border border-amber-300 text-amber-900 text-xs font-medium shadow-2xs flex items-start gap-2.5 animate-fadeIn"
-                  >
-                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <div className="space-y-0.5">
-                      <span className="font-bold block">
-                        {pesan.kondisi_terdeteksi === 'tangan'
-                          ? t.simulasiWawancara.koreksiTanganJudul
-                          : t.simulasiWawancara.koreksiPosturJudul}
-                      </span>
-                      <p className="leading-relaxed">{pesan.teks}</p>
-                    </div>
-                  </div>
-                );
-              }
-
-              // KASUS 2: BUBBLE BINA (PEWAWANCARA)
-              if (pesan.pengirim === 'pewawancara') {
-                return (
-                  <div key={pesan.id} className="space-y-1.5 animate-fadeIn">
-                    <div className="flex items-center justify-between text-xs font-bold text-stone-800">
-                      <div className="flex items-center gap-1.5">
-                        <span>Bina</span>
-                        <Volume2 className="w-3.5 h-3.5 text-stone-500" />
+            {daftarPesanLokal
+              .filter((p) => !p.kondisi_terdeteksi)
+              .map((pesan) => {
+                // KASUS 1: BUBBLE BINA (PEWAWANCARA)
+                if (pesan.pengirim === 'pewawancara') {
+                  return (
+                    <div key={pesan.id} className="space-y-1.5 animate-fadeIn">
+                      <div className="flex items-center justify-between text-xs font-bold text-stone-800">
+                        <div className="flex items-center gap-1.5">
+                          <span>Bina</span>
+                          <Volume2 className="w-3.5 h-3.5 text-stone-500" />
+                        </div>
+                        {pesan.audio_url && (
+                          <button
+                            type="button"
+                            onClick={() => onPutarAudio(pesan.audio_url)}
+                            className="text-[11px] text-amber-700 hover:text-amber-800 font-semibold flex items-center gap-1 cursor-pointer min-h-[30px]"
+                          >
+                            <RotateCcw className="w-3 h-3" />
+                            <span>{t.simulasiWawancara.putarUlangAudio}</span>
+                          </button>
+                        )}
                       </div>
-                      {pesan.audio_url && (
-                        <button
-                          type="button"
-                          onClick={() => onPutarAudio(pesan.audio_url)}
-                          className="text-[11px] text-amber-700 hover:text-amber-800 font-semibold flex items-center gap-1 cursor-pointer min-h-[30px]"
-                        >
-                          <RotateCcw className="w-3 h-3" />
-                          <span>{t.simulasiWawancara.putarUlangAudio}</span>
-                        </button>
-                      )}
+                      <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200/90 text-xs sm:text-sm text-stone-800 leading-relaxed shadow-2xs">
+                        {pesan.teks}
+                      </div>
                     </div>
-                    <div className="p-4 rounded-2xl bg-stone-50 border border-stone-200/90 text-xs sm:text-sm text-stone-800 leading-relaxed shadow-2xs">
+                  );
+                }
+
+                // KASUS 2: BUBBLE KANDIDAT
+                return (
+                  <div key={pesan.id} className="space-y-1 text-right animate-fadeIn">
+                    <div className="text-xs font-bold text-stone-700">{pesan.nama}</div>
+                    <div className="p-4 rounded-2xl bg-orange-50/60 border border-orange-200/80 text-xs sm:text-sm text-stone-900 leading-relaxed inline-block text-left shadow-2xs">
                       {pesan.teks}
                     </div>
                   </div>
                 );
-              }
-
-              // KASUS 3: BUBBLE KANDIDAT
-              return (
-                <div key={pesan.id} className="space-y-1 text-right animate-fadeIn">
-                  <div className="text-xs font-bold text-stone-700">{pesan.nama}</div>
-                  <div className="p-4 rounded-2xl bg-orange-50/60 border border-orange-200/80 text-xs sm:text-sm text-stone-900 leading-relaxed inline-block text-left shadow-2xs">
-                    {pesan.teks}
-                  </div>
-                </div>
-              );
-            })}
+              })}
 
             {/* Live Transcript Streaming saat bicara */}
             {liveTranscriptUser && (
@@ -464,8 +511,7 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
       <div className="md:hidden flex flex-col h-screen -mx-3 -my-3 overflow-hidden bg-stone-900">
         {/* Panggung Video Atas (~38vh) */}
         <div className="h-[38vh] w-full relative bg-stone-950 flex items-center justify-center overflow-hidden border-b border-stone-800">
-          <div className="absolute top-3 left-3 z-30 px-2.5 py-1 rounded-full bg-black/60 text-white text-[10px] font-bold flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+          <div className="absolute top-3 left-3 z-30 px-2.5 py-1 rounded-full bg-black/60 text-white text-[10px] font-bold">
             <span>{t.simulasiWawancara.badgeLiveVideo}</span>
           </div>
 
@@ -475,20 +521,49 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
             className="h-[80%] object-contain"
           />
 
+          {/* Subtitle / Closed-Caption (CC) Teks Suara Bina di Panggung Mobile */}
+          {ucapanTerakhirBina && (
+            <div className="absolute bottom-2 left-2.5 right-32 z-30 pointer-events-none">
+              <div className="p-2 rounded-xl bg-black/80 backdrop-blur-md border border-stone-700/70 text-white text-[10px] leading-snug shadow-lg">
+                <span className="font-bold text-amber-400 block text-[9px] mb-0.5">Bina</span>
+                <p className="line-clamp-2 text-stone-100">"{ucapanTerakhirBina}"</p>
+              </div>
+            </div>
+          )}
+
+          {/* Toast HUD Notifikasi Peringatan di Kanan Atas Panggung Video Mobile */}
+          {hudAlert && (
+            <div className="absolute top-2.5 right-2.5 z-30 max-w-[210px] p-2 rounded-xl bg-stone-900/95 backdrop-blur-md border border-amber-500/70 text-amber-200 text-[10px] shadow-xl animate-fadeIn flex items-start gap-1.5">
+              <AlertTriangle className="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5" />
+              <div className="space-y-0.5 min-w-0">
+                <span className="font-bold block text-white text-[10px] leading-tight">
+                  {hudAlert.judul}
+                </span>
+                <p className="text-[9px] text-amber-100/90 leading-tight">
+                  {hudAlert.teks}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* PiP Kamera Mobile di Pojok Kanan Bawah */}
           <div className="absolute bottom-2.5 right-2.5 z-30 w-28 h-20 rounded-xl overflow-hidden border-2 border-stone-600 bg-black">
             <div className="w-full h-full relative">
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className={`w-full h-full object-cover scale-x-[-1] ${telemetri.kameraAktif ? 'block' : 'hidden'}`}
-              />
-              <canvas
-                ref={canvasRef}
-                className={`absolute inset-0 w-full h-full object-cover scale-x-[-1] pointer-events-none ${telemetri.kameraAktif ? 'block' : 'hidden'}`}
-              />
+              {isMobile && (
+                <>
+                  <video
+                    ref={videoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className={`w-full h-full object-cover scale-x-[-1] ${telemetri.kameraAktif ? 'block' : 'hidden'}`}
+                  />
+                  <canvas
+                    ref={canvasRef}
+                    className={`absolute inset-0 w-full h-full object-cover scale-x-[-1] pointer-events-none ${telemetri.kameraAktif ? 'block' : 'hidden'}`}
+                  />
+                </>
+              )}
               {telemetri.kameraAktif ? (
                 telemetri.sedangMemuatModel && (
                   <div className="absolute top-1 right-1 px-1 py-0.5 rounded bg-black/70 text-[8px] font-semibold text-amber-300">
@@ -504,22 +579,30 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
           </div>
         </div>
 
-        {/* Telemetri Strip Mobile (Solid Dots) */}
+        {/* Telemetri Strip Mobile */}
         <div className="flex items-center gap-1.5 px-3 py-2 bg-stone-900 border-b border-stone-800 overflow-x-auto scrollbar-none">
-          <div className="px-2 py-1 rounded-lg bg-stone-800 text-stone-200 text-[10px] font-bold shrink-0">
-            ● {t.simulasiWawancara.telemetriKontakMata} {telemetri.kontakMataPersen}%
+          <div className="px-2.5 py-1 rounded-lg bg-stone-800 text-stone-200 text-[10px] font-bold shrink-0">
+            {t.simulasiWawancara.telemetriKontakMata} {telemetri.kontakMataPersen}%
           </div>
-          <div className="px-2 py-1 rounded-lg bg-stone-800 text-stone-200 text-[10px] font-bold shrink-0">
-            ● {t.simulasiWawancara.telemetriPostur}{' '}
+          <div className="px-2.5 py-1 rounded-lg bg-stone-800 text-stone-200 text-[10px] font-bold shrink-0">
+            {t.simulasiWawancara.telemetriPostur}{' '}
             {telemetri.postur === 'tegak'
               ? t.simulasiWawancara.telemetriTegak
               : t.simulasiWawancara.telemetriMiring}
           </div>
-          {telemetri.tangan === 'menyentuh_wajah' && (
+          {telemetri.tangan === 'gestur_tidak_sopan' ? (
+            <div className="px-2 py-1 rounded-lg bg-rose-800 text-white text-[10px] font-bold shrink-0">
+              🚫 {t.simulasiWawancara.telemetriGesturTidakSopan}
+            </div>
+          ) : telemetri.tangan === 'menghalangi_kamera' ? (
+            <div className="px-2 py-1 rounded-lg bg-amber-700 text-white text-[10px] font-bold shrink-0">
+              ⚠️ {t.simulasiWawancara.telemetriMenghalangiKamera}
+            </div>
+          ) : telemetri.tangan === 'menyentuh_wajah' ? (
             <div className="px-2 py-1 rounded-lg bg-amber-700 text-white text-[10px] font-bold shrink-0">
               ⚠️ {t.simulasiWawancara.telemetriMenyentuhWajah}
             </div>
-          )}
+          ) : null}
         </div>
 
         {/* Transkrip Tengah Mobile */}
@@ -527,13 +610,10 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
           <h3 className="text-xs font-bold text-stone-800">
             {t.simulasiWawancara.transkripEvaluasiJudul}
           </h3>
-          {daftarPesanLokal.map((pesan) => (
-            <div key={pesan.id} className="text-xs leading-relaxed">
-              {pesan.kondisi_terdeteksi ? (
-                <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-300 text-amber-900 text-xs font-medium">
-                  ⚠️ {pesan.teks}
-                </div>
-              ) : (
+          {daftarPesanLokal
+            .filter((p) => !p.kondisi_terdeteksi)
+            .map((pesan) => (
+              <div key={pesan.id} className="text-xs leading-relaxed">
                 <div
                   className={`p-3 rounded-xl ${
                     pesan.pengirim === 'pewawancara'
@@ -546,9 +626,8 @@ export const VideoRoomDedicated: React.FC<PropertiVideoRoom> = ({
                   </span>
                   <p>{pesan.teks}</p>
                 </div>
-              )}
-            </div>
-          ))}
+              </div>
+            ))}
           <div ref={ujungChatRef} />
         </div>
 

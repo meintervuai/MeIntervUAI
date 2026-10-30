@@ -24,11 +24,32 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
 
   // Inisialisasi dari cache lokal browser (Stale-While-Revalidate: FE-07 / UX-17)
   const CACHE_KEY = `intervu_simulasi_kelayakan_${pengguna?.pengguna_id || 'guest'}`;
+  const ACTIVE_SESSION_KEY = `intervu_simulasi_sesi_aktif_${pengguna?.pengguna_id || 'guest'}`;
+
+  // Cek apakah ada sesi wawancara aktif yang tersimpan di localStorage (< 4 jam yang lalu)
+  const savedActiveSession = (() => {
+    try {
+      const raw = localStorage.getItem(ACTIVE_SESSION_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed && parsed.sesiId && Array.isArray(parsed.daftarPesan) && parsed.daftarPesan.length > 0) {
+          const waktuMulai = parsed.waktuMulai || 0;
+          const empatJamMs = 4 * 60 * 60 * 1000;
+          if (Date.now() - waktuMulai < empatJamMs) {
+            return parsed;
+          } else {
+            localStorage.removeItem(ACTIVE_SESSION_KEY);
+          }
+        }
+      }
+    } catch {}
+    return null;
+  })();
 
   // State Inisialisasi, Saldo Token Reaktif & Kelayakan
   const [saldoTokenState, setSaldoTokenState] = useState<number>(() => pengguna?.saldo_token ?? 1000);
-  const [targetRole, setTargetRole] = useState('');
-  const [modeSimulasi, setModeSimulasi] = useState<ModeSimulasiTipe>('teks');
+  const [targetRole, setTargetRole] = useState(() => savedActiveSession?.targetRole || '');
+  const [modeSimulasi, setModeSimulasi] = useState<ModeSimulasiTipe>(() => savedActiveSession?.modeSimulasi || 'teks');
   const [tampilkanEvaluasi, setTampilkanEvaluasi] = useState<boolean>(false);
 
   useEffect(() => {
@@ -80,12 +101,12 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
   const [sedangMemeriksaKelayakan, setSedangMemeriksaKelayakan] = useState(() => {
     return !localStorage.getItem(CACHE_KEY);
   });
-  const [sesiAktif, setSesiAktif] = useState(false);
-  const [sesiId, setSesiId] = useState('');
+  const [sesiAktif, setSesiAktif] = useState(() => Boolean(savedActiveSession));
+  const [sesiId, setSesiId] = useState(() => savedActiveSession?.sesiId || '');
   const [sedangMemuatMulai, setSedangMemuatMulai] = useState(false);
   
   // State Percakapan Chat & Audio Engine
-  const [daftarPesan, setDaftarPesan] = useState<PesanChat[]>([]);
+  const [daftarPesan, setDaftarPesan] = useState<PesanChat[]>(() => savedActiveSession?.daftarPesan || []);
   const [inputJawaban, setInputJawaban] = useState('');
   const [sedangMerespon, setSedangMerespon] = useState(false);
   const [notif, setNotif] = useState<{ teks: string; tipe: 'sukses' | 'gagal' | 'info' } | null>(null);
@@ -141,6 +162,32 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
       ujungChatRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [daftarPesan, sedangMerespon]);
+
+  // Sinkronisasi Persistence Sesi Aktif ke localStorage (FE-07 / UX-17)
+  useEffect(() => {
+    if (sesiAktif && sesiId && daftarPesan.length > 0) {
+      const dataSesi = {
+        sesiId,
+        targetRole,
+        modeSimulasi,
+        daftarPesan,
+        waktuMulai: savedActiveSession?.waktuMulai || Date.now(),
+      };
+      localStorage.setItem(ACTIVE_SESSION_KEY, JSON.stringify(dataSesi));
+    }
+  }, [sesiAktif, sesiId, targetRole, modeSimulasi, daftarPesan, ACTIVE_SESSION_KEY]);
+
+  // Peringatan Browser jika pengguna tidak sengaja merefresh tab saat sesi sedang aktif
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (sesiAktif) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [sesiAktif]);
 
   // Cek kelayakan CV & muat daftar posisi rekomendasi dinamis dari database (Zero Hardcode)
   useEffect(() => {
@@ -434,6 +481,8 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
     if (audioPlayerRef.current) {
       audioPlayerRef.current.pause();
     }
+    // Hapus sesi aktif dari localStorage karena pengguna sudah selesai/mengakhiri secara resmi
+    localStorage.removeItem(ACTIVE_SESSION_KEY);
     setSesiAktif(false);
     setTampilkanEvaluasi(true);
   };
@@ -445,6 +494,7 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
         modeSimulasi={modeSimulasi}
         riwayatChat={daftarPesan}
         onKembaliKeStudio={() => {
+          localStorage.removeItem(ACTIVE_SESSION_KEY);
           setTampilkanEvaluasi(false);
           setSesiAktif(false);
           setDaftarPesan([]);

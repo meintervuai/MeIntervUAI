@@ -553,8 +553,12 @@ export const kontenEn: PusatBantuanKonten = {
     telemetriKurangTerbuka: 'Narrow Opening',
     telemetriTangan: 'Hand:',
     telemetriMenyentuhWajah: 'Touching Face',
+    telemetriMenghalangiKamera: 'Obstructing Face',
+    telemetriGesturTidakSopan: 'Inappropriate Gesture',
     telemetriTanganNormal: 'Normal',
     alertTanganMenyentuh: 'Avoid touching your face frequently while speaking to remain focused and confident.',
+    alertTanganMenghalangi: 'Keep your hands away from obstructing your face to maintain clear visual engagement.',
+    alertTanganTidakSopan: 'Please maintain professional hand conduct and avoid inappropriate or confrontational finger gestures.',
     alertPosturMiring: 'Keep your shoulders straight and balanced to project confidence and poise.',
   },
   cvBuilder: {

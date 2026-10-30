@@ -553,8 +553,12 @@ export const kontenId: PusatBantuanKonten = {
     telemetriKurangTerbuka: 'Kurang Terbuka',
     telemetriTangan: 'Tangan:',
     telemetriMenyentuhWajah: 'Menyentuh Wajah',
+    telemetriMenghalangiKamera: 'Menutupi Wajah',
+    telemetriGesturTidakSopan: 'Gestur Tidak Sopan',
     telemetriTanganNormal: 'Normal',
     alertTanganMenyentuh: 'Hindari menyentuh wajah terlalu sering saat berbicara agar tetap fokus dan meyakinkan.',
+    alertTanganMenghalangi: 'Jangan menghadapkan atau menutupi wajah dengan tangan agar kontak visual dengan pewawancara tetap terjaga.',
+    alertTanganTidakSopan: 'Hindari gestur jari yang tidak pantas atau konfrontatif demi menjaga etika wawancara formal.',
     alertPosturMiring: 'Posisikan bahu tegak dan seimbang agar postur tubuh memancarkan rasa percaya diri.',
   },
   cvBuilder: {

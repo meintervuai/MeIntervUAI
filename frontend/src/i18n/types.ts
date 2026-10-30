@@ -412,8 +412,12 @@ export interface PusatBantuanKonten {
     telemetriKurangTerbuka: string;
     telemetriTangan: string;
     telemetriMenyentuhWajah: string;
+    telemetriMenghalangiKamera: string;
+    telemetriGesturTidakSopan: string;
     telemetriTanganNormal: string;
     alertTanganMenyentuh: string;
+    alertTanganMenghalangi: string;
+    alertTanganTidakSopan: string;
     alertPosturMiring: string;
   };
   cvBuilder: {

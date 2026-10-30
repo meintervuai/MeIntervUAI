@@ -17,13 +17,14 @@ export interface PostureTelemetry {
   kontakMataPersen: number;
   postur: 'tegak' | 'miring' | 'bungkuk';
   bibirSuara: 'jelas' | 'kurang_terbuka' | 'normal';
-  tangan: 'normal' | 'menyentuh_wajah';
+  tangan: 'normal' | 'menyentuh_wajah' | 'menghalangi_kamera' | 'gestur_tidak_sopan';
   kameraAktif: boolean;
   sedangMemuatModel: boolean;
 }
 
 export interface PostureAlertEvent {
   tipe: 'postur' | 'tangan' | 'kontak_mata';
+  subTipe?: 'menyentuh_wajah' | 'menghalangi_kamera' | 'gestur_tidak_sopan';
   pesan: string;
 }
 
@@ -55,6 +56,8 @@ export const usePostureAnalysis = ({ sedangBicara, onTriggerAlert }: UsePostureA
   // EMA & Persistence State Refs
   const smoothedEyeContactRef = useRef<number>(92);
   const touchFaceFrameCountRef = useRef<number>(0);
+  const blockCameraFrameCountRef = useRef<number>(0);
+  const inappropriateGestureFrameCountRef = useRef<number>(0);
   const slouchFrameCountRef = useRef<number>(0);
   const lastAlertTimeRef = useRef<number>(0);
 
@@ -155,13 +158,17 @@ export const usePostureAnalysis = ({ sedangBicara, onTriggerAlert }: UsePostureA
       streamRef.current = stream;
       setTelemetri((prev) => ({ ...prev, kameraAktif: true }));
 
-      // Attach stream segera & pastikan play terpanggil
-      setTimeout(() => {
+      // Pasang stream ke elemen video dan trigger play
+      const pasangStream = () => {
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
           videoRef.current.play().catch((e) => console.warn('Video play tertunda:', e));
         }
-      }, 50);
+      };
+
+      pasangStream();
+      setTimeout(pasangStream, 100);
+      setTimeout(pasangStream, 300);
     } catch (err) {
       console.warn('Akses kamera tidak diizinkan atau tidak tersedia:', err);
       setTelemetri((prev) => ({ ...prev, kameraAktif: false }));
@@ -207,25 +214,41 @@ export const usePostureAnalysis = ({ sedangBicara, onTriggerAlert }: UsePostureA
             let rawEyeScore = 90;
             let currentPostur: 'tegak' | 'miring' | 'bungkuk' = 'tegak';
             let currentBibir: 'jelas' | 'kurang_terbuka' | 'normal' = sedangBicara ? 'jelas' : 'normal';
-            let currentTangan: 'normal' | 'menyentuh_wajah' = 'normal';
+            let currentTangan: 'normal' | 'menyentuh_wajah' | 'menghalangi_kamera' | 'gestur_tidak_sopan' = 'normal';
 
             const videoTime = performance.now();
 
             // 1. Face Landmarker & Mesh Overlay
             const faceBounds = { minX: 1, maxX: 0, minY: 1, maxY: 0 };
+            let faceDetected = false;
+            let currentFaceLandmarks: any[] = [];
             if (faceLandmarkerRef.current) {
               try {
                 const faceResult = faceLandmarkerRef.current.detectForVideo(video, videoTime);
                 if (faceResult.faceLandmarks && faceResult.faceLandmarks.length > 0) {
+                  faceDetected = true;
                   const landmarks = faceResult.faceLandmarks[0];
+                  currentFaceLandmarks = landmarks;
 
-                  // Hitung Bounding Box Wajah
+                  // Hitung Bounding Box Wajah dengan Margin Penyangga (Buffer 5%)
+                  let fMinX = 1;
+                  let fMaxX = 0;
+                  let fMinY = 1;
+                  let fMaxY = 0;
                   landmarks.forEach((p) => {
-                    if (p.x < faceBounds.minX) faceBounds.minX = p.x;
-                    if (p.x > faceBounds.maxX) faceBounds.maxX = p.x;
-                    if (p.y < faceBounds.minY) faceBounds.minY = p.y;
-                    if (p.y > faceBounds.maxY) faceBounds.maxY = p.y;
+                    if (p.x < fMinX) fMinX = p.x;
+                    if (p.x > fMaxX) fMaxX = p.x;
+                    if (p.y < fMinY) fMinY = p.y;
+                    if (p.y > fMaxY) fMaxY = p.y;
                   });
+
+                  // Tambahkan buffer 4-5% ke area deteksi sekitar dagu, pipi, hidung, dan kening
+                  const padX = (fMaxX - fMinX) * 0.05;
+                  const padY = (fMaxY - fMinY) * 0.05;
+                  faceBounds.minX = Math.max(0, fMinX - padX);
+                  faceBounds.maxX = Math.min(1, fMaxX + padX);
+                  faceBounds.minY = Math.max(0, fMinY - padY);
+                  faceBounds.maxY = Math.min(1, fMaxY + padY);
 
                   // Render Face Mesh Halus (Teal / Cyan)
                   drawingUtils.drawConnectors(
@@ -312,7 +335,7 @@ export const usePostureAnalysis = ({ sedangBicara, onTriggerAlert }: UsePostureA
               } catch {}
             }
 
-            // 3. Hand Landmarker & Deteksi Sentuh Wajah
+            // 3. Hand Landmarker & Deteksi Analisis Gestur Tangan
             if (handLandmarkerRef.current) {
               try {
                 const handResult = handLandmarkerRef.current.detectForVideo(video, videoTime);
@@ -325,25 +348,97 @@ export const usePostureAnalysis = ({ sedangBicara, onTriggerAlert }: UsePostureA
                     );
                     drawingUtils.drawLandmarks(hand, { color: '#fbbf24', radius: 2 });
 
-                    // Periksa apakah sendi jari berada dalam area bounding wajah
-                    const isTouching = hand.some(
-                      (p) =>
-                        p.x >= faceBounds.minX &&
-                        p.x <= faceBounds.maxX &&
-                        p.y >= faceBounds.minY &&
-                        p.y <= faceBounds.maxY
-                    );
+                    // Standard GitHub Open-Source MediaPipe Finger State Evaluation:
+                    // Landmark index:
+                    // Wrist: 0
+                    // Thumb: tip=4, mcp=2
+                    // Index: tip=8, pip=6, mcp=5
+                    // Middle: tip=12, pip=10, mcp=9
+                    // Ring: tip=16, pip=14, mcp=13
+                    // Pinky: tip=20, pip=18, mcp=17
+                    const wrist = hand[0];
+                    const distSq = (p1: any, p2: any) => {
+                      const dx = p1.x - p2.x;
+                      const dy = p1.y - p2.y;
+                      return dx * dx + dy * dy;
+                    };
 
-                    if (isTouching) {
-                      currentTangan = 'menyentuh_wajah';
-                      touchFaceFrameCountRef.current += 1;
+                    // Jari terentang jika jarak ujung jari ke wrist > jarak sendi tengah (pip) ke wrist
+                    // dan posisi Y ujung jari di atas MCP (untuk gestur menghadap kamera)
+                    const indexExtended = distSq(hand[8], wrist) > distSq(hand[6], wrist) * 1.15;
+                    const middleExtended = distSq(hand[12], wrist) > distSq(hand[10], wrist) * 1.15;
+                    const ringExtended = distSq(hand[16], wrist) > distSq(hand[14], wrist) * 1.15;
+                    const pinkyExtended = distSq(hand[20], wrist) > distSq(hand[18], wrist) * 1.15;
+
+                    // KASUS A: DETEKSI GESTUR TIDAK SOPAN (Jari Tengah Terentang Sendiri)
+                    // Jari tengah terentang, sedangkan jari telunjuk, manis, dan kelingking terlipat
+                    const isMiddleFingerOnly = middleExtended && !indexExtended && !ringExtended && !pinkyExtended;
+
+                    if (isMiddleFingerOnly) {
+                      currentTangan = 'gestur_tidak_sopan';
+                      inappropriateGestureFrameCountRef.current = Math.min(20, inappropriateGestureFrameCountRef.current + 2);
                       break;
                     }
+
+                    // KASUS B & C: POSISI TERHADAP WAJAH (Sentuh Pipi / Dagu / Menopang Dagu / Menutupi)
+                    if (faceDetected && currentFaceLandmarks.length > 0) {
+                      // Cek apakah ada ujung jari (index=8, middle=12, ring=16, pinky=20, thumb=4) atau sendi tangan yang sangat dekat/menempel wajah
+                      let minDistanceToFace = 999;
+                      for (const hp of hand) {
+                        for (let fi = 0; fi < currentFaceLandmarks.length; fi += 4) { // Cek rapat sampel kontur wajah
+                          const fp = currentFaceLandmarks[fi];
+                          const d = Math.hypot(hp.x - fp.x, hp.y - fp.y);
+                          if (d < minDistanceToFace) minDistanceToFace = d;
+                        }
+                      }
+
+                      // Cek jumlah landmark tangan yang berada di dalam bounding box wajah (+ buffer)
+                      const insideFacePoints = hand.filter(
+                        (p) =>
+                          p.x >= faceBounds.minX &&
+                          p.x <= faceBounds.maxX &&
+                          p.y >= faceBounds.minY &&
+                          p.y <= faceBounds.maxY
+                      );
+
+                      // Jika titik tangan berada di dalam batas wajah ATAU sangat dekat (minDistanceToFace < 0.09)
+                      if (insideFacePoints.length > 0 || minDistanceToFace < 0.09) {
+                        const handSpanX = Math.abs(hand[4].x - hand[20].x);
+                        const isBlocking = insideFacePoints.length >= 7 || handSpanX > 0.20;
+
+                        if (isBlocking) {
+                          currentTangan = 'menghalangi_kamera';
+                          blockCameraFrameCountRef.current = Math.min(20, blockCameraFrameCountRef.current + 2);
+                        } else {
+                          // Sentuhan langsung pada dagu, pipi, rahang bawah (menopang dagu)
+                          currentTangan = 'menyentuh_wajah';
+                          touchFaceFrameCountRef.current = Math.min(20, touchFaceFrameCountRef.current + 2);
+                        }
+                        break;
+                      }
+                    }
+                  }
+
+                  if (currentTangan === 'normal') {
+                    touchFaceFrameCountRef.current = Math.max(0, touchFaceFrameCountRef.current - 1);
+                    blockCameraFrameCountRef.current = Math.max(0, blockCameraFrameCountRef.current - 1);
+                    inappropriateGestureFrameCountRef.current = Math.max(0, inappropriateGestureFrameCountRef.current - 1);
                   }
                 } else {
                   touchFaceFrameCountRef.current = Math.max(0, touchFaceFrameCountRef.current - 1);
+                  blockCameraFrameCountRef.current = Math.max(0, blockCameraFrameCountRef.current - 1);
+                  inappropriateGestureFrameCountRef.current = Math.max(0, inappropriateGestureFrameCountRef.current - 1);
                 }
               } catch {}
+            }
+
+            // Ambang batas persistensi per jenis pelanggaran (Respons Cepat: Mulai 2 frame / ~90ms)
+            if (inappropriateGestureFrameCountRef.current >= 2) {
+              currentTangan = 'gestur_tidak_sopan';
+            } else if (blockCameraFrameCountRef.current >= 2) {
+              currentTangan = 'menghalangi_kamera';
+            } else if (touchFaceFrameCountRef.current >= 2) {
+              currentTangan = 'menyentuh_wajah';
             }
 
             // Smoothing Kontak Mata via EMA (Alpha = 0.10)
@@ -351,17 +446,34 @@ export const usePostureAnalysis = ({ sedangBicara, onTriggerAlert }: UsePostureA
               0.90 * smoothedEyeContactRef.current + 0.10 * rawEyeScore
             );
 
-            // Debounce Inline AI Vision Alert Card (Cooldown 35 Detik)
+            // Debounce Trigger Alert HUD di Kanan Atas Video (Respons Cepat: >= 3 frame / ~140ms, Cooldown 6 Detik)
             const sekarang = Date.now();
-            if (sekarang - lastAlertTimeRef.current > 35000) {
-              if (touchFaceFrameCountRef.current >= 35) {
+            if (sekarang - lastAlertTimeRef.current > 6000) {
+              if (inappropriateGestureFrameCountRef.current >= 3) {
+                lastAlertTimeRef.current = sekarang;
+                inappropriateGestureFrameCountRef.current = 0;
+                onTriggerAlert?.({
+                  tipe: 'tangan',
+                  subTipe: 'gestur_tidak_sopan',
+                  pesan: 'Hindari gestur jari yang tidak pantas atau konfrontatif demi menjaga etika wawancara formal.',
+                });
+              } else if (blockCameraFrameCountRef.current >= 3) {
+                lastAlertTimeRef.current = sekarang;
+                blockCameraFrameCountRef.current = 0;
+                onTriggerAlert?.({
+                  tipe: 'tangan',
+                  subTipe: 'menghalangi_kamera',
+                  pesan: 'Jangan menghadapkan atau menutupi wajah dengan tangan agar kontak visual dengan pewawancara tetap terjaga.',
+                });
+              } else if (touchFaceFrameCountRef.current >= 3) {
                 lastAlertTimeRef.current = sekarang;
                 touchFaceFrameCountRef.current = 0;
                 onTriggerAlert?.({
                   tipe: 'tangan',
+                  subTipe: 'menyentuh_wajah',
                   pesan: 'Hindari menyentuh wajah terlalu sering saat berbicara agar tetap fokus dan meyakinkan.',
                 });
-              } else if (slouchFrameCountRef.current >= 45) {
+              } else if (slouchFrameCountRef.current >= 15) {
                 lastAlertTimeRef.current = sekarang;
                 slouchFrameCountRef.current = 0;
                 onTriggerAlert?.({
