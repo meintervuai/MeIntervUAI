@@ -54,6 +54,7 @@ d:\MeIntervUAI\
 - [Standar Basis Data & Audit Mutasi (DB-01 - DB-07)](database.md)
 - [Standar Pengujian & Keamanan (OT-01 - OT-02)](others.md)
 - [ADR-001: Alur Autentikasi & Verifikasi OTP](adr-auth-otp.md)
+- [ADR-002: Agregasi Rekomendasi Lowongan Kerja (Job Board Aggregator)](adr-lowongan-kerja.md)
 - [Spesifikasi 6 Template CV ATS & Kustomisasi Styling](cv-templates-ats.md)
 - [Standar Pasfoto CV & Resume Formal (Nasional & Internasional)](cv-photo-standards.md)
 - [Matriks Riset Isian Form Dinamis 6 Template CV Resmi](cv-form-field-matrix.md)

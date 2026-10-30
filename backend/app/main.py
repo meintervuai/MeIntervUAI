@@ -4,7 +4,7 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from app.routers import auth, csm_publik, profil, pengaturan, cv, simulasi
+from app.routers import auth, csm_publik, profil, pengaturan, cv, simulasi, lowongan
 
 app = FastAPI(
     title="MeIntervUAI Backend API",
@@ -28,6 +28,7 @@ app.include_router(profil.router)
 app.include_router(pengaturan.router)
 app.include_router(cv.router)
 app.include_router(simulasi.router)
+app.include_router(lowongan.router)
 
 @app.get("/")
 async def root():

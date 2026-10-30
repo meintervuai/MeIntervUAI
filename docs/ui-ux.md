@@ -10,6 +10,8 @@ Saat membahas atau memperbaiki antarmuka, sebutkan nama komponennya secara tekni
 ### UX-02: Desain Premium, Bukan Slop AI
 - Maksimal **1 warna dominan netral + 1 warna aksen terarah** (total corak warna ≤ 3).
 - Dilarang: *glassmorphism* berat yang bertumpuk, gradien pelangi lebih dari 2 warna, bayangan melayang berlebihan, dan border neon acak.
+- **Larangan Ikon Sparkles / Bintang AI**: Dilarang keras menggunakan ikon `Sparkles` (`<path d="m12 3-1.912 5.813..."/>`) atau bintang 4 sudut khas AI generik. Gunakan ikon semantik konkret (misal `FileText`, `CheckCircle2`, `Target`, `Briefcase`).
+- **Larangan Titik Berdenyut (Pulsing Dot)**: Dilarang menggunakan indikator bulat `animate-pulse` di dalam button atau badge.
 
 ### UX-03: Warna Status Terstandarisasi
 - Merah: Error / Kuota Habis (`rose-600`)

@@ -8,23 +8,13 @@ import { Pengaturan } from './pages/Pengaturan';
 import { HalamanGalat } from './pages/HalamanGalat';
 import { CVBuilder } from './pages/cv/CVBuilder';
 import { SimulasiWawancara } from './pages/simulasi/SimulasiWawancara';
+import { LowonganKerja } from './pages/lowongan/LowonganKerja';
 import { Masuk } from './pages/auth/Masuk';
 import { Daftar } from './pages/auth/Daftar';
 import { OTP } from './pages/auth/OTP';
 import { LupaSandi } from './pages/auth/LupaSandi';
 import { AturUlangSandi } from './pages/auth/AturUlangSandi';
 import { authSupabase, supabase } from './services/supabase';
-
-const SegeraHadir: React.FC<{ judul: string }> = ({ judul }) => (
-  <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-    <div className="bg-white border border-slate-200/90 rounded-2xl p-10 shadow-sm space-y-3">
-      <h2 className="text-xl font-bold text-slate-900 tracking-tight">{judul}</h2>
-      <p className="text-sm text-slate-500">
-        Navigasi telah disiapkan. Halaman modul ini akan dibuka pada tahap berikutnya.
-      </p>
-    </div>
-  </div>
-);
 
 const TIGA_PULUH_HARI_MS = 30 * 24 * 60 * 60 * 1000;
 
@@ -255,17 +245,19 @@ export const App: React.FC = () => {
             }
           />
 
-          {/* Rute Job / Loker (Navigasi Disiapkan) */}
+          {/* Rute Lowongan Kerja (Job Board Aggregator) - Mendukung alias /job, /lowongan, /jobs */}
           <Route
             path="/job"
             element={
               pengguna ? (
-                <SegeraHadir judul="Modul Rekomendasi Lowongan Kerja" />
+                <LowonganKerja pengguna={pengguna} />
               ) : (
                 <Navigate to="/masuk" replace />
               )
             }
           />
+          <Route path="/lowongan" element={<Navigate to="/job" replace />} />
+          <Route path="/jobs" element={<Navigate to="/job" replace />} />
 
           {/* Rute Simulasi Wawancara Adaptif */}
           <Route

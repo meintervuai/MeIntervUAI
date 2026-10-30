@@ -130,6 +130,7 @@ Setiap umpan balik aksi pengguna (sukses simpan, error API, info sistem):
 
 1. **Larangan Elemen Visual Klise AI (*Strictly Forbidden AI Visual Slop*)**:
    - **Dilarang Menambahkan Titik/Pill Berkedip (*Pulsing Dot Slop*)**: Dilarang menggunakan `<span className="... rounded-full bg-amber-300 animate-pulse ...">` atau badge bulat berdenyut di dalam tombol, header, atau kartu. Pola ini terlihat murahan dan merupakan ciri khas artifaktual AI coding.
+   - **Dilarang Menggunakan Ikon Bintang/Sparkles AI (*Strictly No Sparkles / AI Magic Clichés*)**: Dilarang keras menggunakan ikon `Sparkles` (`<path d="m12 3-1.912 5.813..."/>`), bintang 4 sudut, atau ikon 'keajaiban sihir' AI yang klise. Gunakan ikon fungsional yang konkret dan profesional (misal: `FileText`, `CheckCircle2`, `Target`, `Briefcase`, `Award`, `TrendingUp`).
    - **Dilarang Menggunakan Karakter Em-Dash (*Anti Em-Dash* —)**: Jangan pernah menggunakan karakter em-dash (`—`) pada teks UI, dokumentasi, maupun pesan sistem. Gunakan tanda hubung strip biasa (`-`), titik dua (`:`), atau struktur kalimat yang alami.
 2. **Kewajiban Menjalankan Skills Khusus Saat Pengerjaan Frontend & UI/UX**:
    - Seluruh coding agent wajib mengaktifkan dan mematuhi panduan dari 4 skill utama berikut sebelum dan selama memodifikasi UI/UX, tata letak, dan salinan teks (*copywriting*):

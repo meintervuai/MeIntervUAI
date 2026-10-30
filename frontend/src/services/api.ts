@@ -278,6 +278,45 @@ export const api = {
     }
     return json;
   },
+
+  // Modul Lowongan Kerja (Job Board Aggregator)
+  async cariLowongan(params?: {
+    kata_kunci?: string;
+    lokasi?: string;
+    sumber?: string;
+    tipe_kerja?: string;
+    kategori?: string;
+  }): Promise<ResponApi> {
+    const q = new URLSearchParams();
+    if (params?.kata_kunci) q.append('kata_kunci', params.kata_kunci);
+    if (params?.lokasi) q.append('lokasi', params.lokasi);
+    if (params?.sumber) q.append('sumber', params.sumber);
+    if (params?.tipe_kerja) q.append('tipe_kerja', params.tipe_kerja);
+    if (params?.kategori) q.append('kategori', params.kategori);
+
+    const res = await fetch(`${BASE_URL}/lowongan/cari?${q.toString()}`);
+    return res.json();
+  },
+
+  async ambilRekomendasiLowongan(pengguna_id: string): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/lowongan/rekomendasi/${pengguna_id}`);
+    return res.json();
+  },
+
+  async ambilBookmarkLowongan(pengguna_id: string): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/lowongan/bookmark/${pengguna_id}`);
+    return res.json();
+  },
+
+  async toggleBookmarkLowongan(pengguna_id: string, lowongan_id: string, lowongan_data?: any): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/lowongan/bookmark/toggle`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pengguna_id, lowongan_id, lowongan_data }),
+    });
+    return res.json();
+  },
 };
+
 
 
