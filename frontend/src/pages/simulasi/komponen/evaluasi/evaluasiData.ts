@@ -284,26 +284,50 @@ export function hitungMetrikTelemetri(
 } {
   // Hitung rata-rata skor riil
   const totalSkor = daftarSoal.reduce((acc, q) => acc + q.skor, 0);
-  const avgSkor = daftarSoal.length > 0 ? Math.round(totalSkor / daftarSoal.length) : 84;
+  const avgSkor = daftarSoal.length > 0 ? Math.round(totalSkor / daftarSoal.length) : 0;
   
   const totalKontakMata = daftarSoal.reduce((acc, q) => acc + q.kontakMataPersen, 0);
-  const avgKontakMata = daftarSoal.length > 0 ? Math.round(totalKontakMata / daftarSoal.length) : 80;
+  const avgKontakMata = daftarSoal.length > 0 ? Math.round(totalKontakMata / daftarSoal.length) : 75;
+
+  // Persentil realistis berdasarkan skor keseluruhan
+  let persentil = 50;
+  if (avgSkor >= 85) persentil = 10;
+  else if (avgSkor >= 75) persentil = 25;
+  else if (avgSkor >= 60) persentil = 45;
+  else if (avgSkor >= 40) persentil = 70;
+  else persentil = 90;
+
+  // Evaluasi pilar disesuaikan dengan rerata skor riil jika tidak diinput manual
+  const carScore = inputKandidat?.metodeCar ?? Math.min(95, Math.max(15, avgSkor - 5));
+  const komScore = inputKandidat?.komunikasi ?? Math.min(95, Math.max(20, avgSkor));
+  const tekScore = inputKandidat?.penguasaanTeknis ?? Math.min(95, Math.max(15, avgSkor - 3));
+  const posturScore = inputKandidat?.bahasaTubuh ?? (inputKandidat?.kontakMataRataRata ?? avgKontakMata);
+
+  const catatanPostur = inputKandidat?.catatanPosturDominan ?? (
+    avgSkor < 50
+      ? 'Fokus pandangan dan postur tubuh perlu diperbaiki. Usahakan duduk tegak dan hindari menyentuh wajah saat berbicara.'
+      : `Kontak mata rata-rata ${avgKontakMata}%. Postur tubuh umumnya stabil dan terkendali selama menjawab pertanyaan.`
+  );
+
+  const kutipanBina = inputKandidat?.kutipanEvaluasiBina ?? (
+    avgSkor < 50
+      ? 'Jawaban Anda masih sangat ringkas atau belum relevan dengan pertanyaan yang diajukan. Gunakan struktur STAR/CAR (Konteks, Aksi, Hasil) dan sebutkan contoh riil pengalaman kerja Anda agar rekruter memahami kapasitas Anda.'
+      : avgSkor < 70
+      ? 'Anda memiliki pemahaman dasar, namun jawaban perlu diperkuat dengan data konkret, metodologi kerja, dan hasil terukur untuk meyakinkan tim rekruter.'
+      : 'Komunikasi dan penyampaian Anda solid. Tingkatkan ketajaman metrik dampak bisnis untuk memperkuat nilai tawar profesional Anda.'
+  );
 
   return {
     skorKeseluruhan: inputKandidat?.skorKeseluruhan ?? avgSkor,
-    persentilKandidat: inputKandidat?.persentilKandidat ?? 8,
-    metodeCar: inputKandidat?.metodeCar ?? 88,
-    komunikasi: inputKandidat?.komunikasi ?? 85,
-    penguasaanTeknis: inputKandidat?.penguasaanTeknis ?? 82,
-    bahasaTubuh: inputKandidat?.bahasaTubuh ?? (inputKandidat?.kontakMataRataRata ?? avgKontakMata),
+    persentilKandidat: inputKandidat?.persentilKandidat ?? persentil,
+    metodeCar: carScore,
+    komunikasi: komScore,
+    penguasaanTeknis: tekScore,
+    bahasaTubuh: posturScore,
     kontakMataRataRata: inputKandidat?.kontakMataRataRata ?? avgKontakMata,
-    catatanPosturDominan:
-      inputKandidat?.catatanPosturDominan ??
-      'Kontak mata stabil rata-rata 80%. Terdeteksi 3x gestur menyentuh dagu atau leher saat menghadapi pertanyaan mengenai audit krisis dan PSAK.',
-    kutipanEvaluasiBina:
-      inputKandidat?.kutipanEvaluasiBina ??
-      'Struktur CAR Anda pada resolusi rekonsiliasi multi-entitas dan zero-based budgeting sangat berbobot eksekutif. Tingkatkan ketenangan gestur fisik saat mendiskusikan dinamika konflik agar kredibilitas kepemimpinan Anda terpancar sempurna.',
-    durasiSesiFormatted: inputKandidat?.durasiSesiFormatted ?? '18 Menit 42 Detik',
+    catatanPosturDominan: catatanPostur,
+    kutipanEvaluasiBina: kutipanBina,
+    durasiSesiFormatted: inputKandidat?.durasiSesiFormatted ?? 'Sesi Selesai',
   };
 }
 
@@ -323,23 +347,132 @@ export function adaptasiRiwayatChatKeEvaluasi(
   for (const pesan of riwayatChat) {
     if (pesan.pengirim === 'pewawancara') {
       pertanyaanTerakhir = pesan.teks;
-    } else if (pesan.pengirim === 'kandidat' && pertanyaanTerakhir) {
+    } else if (pesan.pengirim === 'kandidat') {
+      // Pasangkan dengan pertanyaan terakhir, atau jika belum ada pertanyaan, pasangkan dengan pembuka
       pasangTanyaJawab.push({
-        pertanyaan: pertanyaanTerakhir,
+        pertanyaan: pertanyaanTerakhir || (bahasa === 'en' ? 'Tell me about yourself and your professional background.' : 'Ceritakan tentang diri, latar belakang, dan motivasi profesional Anda.'),
         jawaban: pesan.teks,
       });
       pertanyaanTerakhir = '';
     }
   }
 
-  // Jika ada pasangan tanya jawab nyata dari sesi simulasi, gabungkan secara cerdas
+  // Jika ada jawaban kandidat dalam sesi simulasi, evaluasi secara cerdas dan jujur
   if (pasangTanyaJawab.length > 0) {
     return pasangTanyaJawab.map((ptj, index) => {
-      const fallback = defaultList[index % defaultList.length];
-      const kataKandidat = ptj.jawaban.split(/\s+/).length;
-      // Perhitungan skor responsif berbasis kedalaman kata kandidat
-      const dinamisSkor = Math.min(95, Math.max(70, Math.round(75 + Math.min(20, kataKandidat / 4))));
-      const dinamisKontakMata = Math.min(92, Math.max(68, Math.round(74 + (index % 3) * 5)));
+      const teksBersih = ptj.jawaban.trim();
+      const kataKandidat = teksBersih.split(/\s+/).filter(Boolean).length;
+      const lower = teksBersih.toLowerCase();
+
+      // Cek indikasi jawaban ngawur / terlalu singkat / tidak bermakna / basa-basi
+      const isSangatSingkat = kataKandidat < 6;
+      const isSingkat = kataKandidat >= 6 && kataKandidat < 15;
+      const isBasaBasi = /^(terima kasih|makasih|thanks|thank you|selamat siang|selamat pagi|selamat sore|halo|hai|tes|test|oke|siap)/i.test(lower);
+      const isAsalAsalan = /^(ya|tidak|gak tau|tidak tahu|apa|ngawur|asdf|qwerty)/i.test(lower) && kataKandidat < 10;
+      
+      // Hitung skor objektif (0 - 100)
+      let dinamisSkor = 50;
+      let kekuatan: string[] = [];
+      let peningkatan: string[] = [];
+      let rekomendasiBina = '';
+      let poinKunci: string[] = [];
+
+      if (isAsalAsalan || isSangatSingkat || (isBasaBasi && kataKandidat < 8)) {
+        // Jawaban ngawur, basa-basi kosong, atau 1-5 kata (misal "Terima kasih.")
+        dinamisSkor = Math.min(25, Math.max(10, kataKandidat * 3));
+        if (bahasa === 'en') {
+          kekuatan = ['None - No professional substance or substantive answer provided.'];
+          peningkatan = [
+            'Response is purely conversational filler or extremely brief; lacks any professional substance, context, actions, and results.',
+            'Target role competence cannot be evaluated from this answer.',
+          ];
+          rekomendasiBina = 'Do not respond with mere pleasantries. Directly tackle the interview question using the STAR/CAR method (Context, Action, Result).';
+          poinKunci = [
+            'Pleasantries without substance result in an immediate failing score in recruitment assessments.',
+            'Provide at least 3 detailed sentences explaining your actions and business impact.',
+          ];
+        } else {
+          kekuatan = ['Tidak ada - Jawaban tidak memuat substansi pengalaman kerja.'];
+          peningkatan = [
+            'Jawaban hanya berupa basa-basi atau terlalu singkat; sama sekali belum menyajikan konteks situasi, tindakan nyata, maupun hasil kerja.',
+            'Kapasitas profesional Anda untuk posisi ini belum dapat dinilai dari jawaban seperti ini.',
+          ];
+          rekomendasiBina = 'Jangan hanya merespon dengan ucapan sopan santun atau satu kata. Masuki inti pertanyaan wawancara dengan format STAR/CAR: jelaskan masalah, langkah kerja Anda, dan hasil yang dicapai.';
+          poinKunci = [
+            'Ucapan terima kasih atau salam tanpa substansi jawaban dinilai tidak memenuhi kriteria kelulusan.',
+            'Sajikan minimal 3 kalimat terstruktur yang menjelaskan alur kerja dan kontribusi Anda.',
+          ];
+        }
+      } else if (isSingkat) {
+        // Jawaban singkat (6 - 14 kata)
+        dinamisSkor = Math.min(60, Math.max(38, 35 + kataKandidat * 2));
+        if (bahasa === 'en') {
+          kekuatan = ['Direct and straightforward response without unnecessary tangents.'];
+          peningkatan = [
+            'Lacks concrete operational details and quantitative evidence.',
+            'Does not elaborate on personal initiative or strategic problem solving.',
+          ];
+          rekomendasiBina = 'Enrich your answer by outlining the specific tools, methodology, and metrics that prove your impact.';
+          poinKunci = [
+            'Connect your actions to tangible business deliverables.',
+            'Elaborate beyond basic statements to demonstrate depth of experience.',
+          ];
+        } else {
+          kekuatan = ['Menjawab langsung pada inti tanpa berbelit-belit.'];
+          peningkatan = [
+            'Masih minim rincian operasional, metodologi kerja, dan bukti kuantitatif.',
+            'Inisiatif pribadi dan proses pemecahan masalah belum terelaborasi dengan kuat.',
+          ];
+          rekomendasiBina = 'Perkaya jawaban dengan menyebutkan alat/sistem yang digunakan, langkah mitigasi kendala, dan indikator keberhasilan yang dicapai.';
+          poinKunci = [
+            'Kaitkan tindakan Anda dengan hasil terukur bagi perusahaan.',
+            'Hindari asumsi bahwa pewawancara sudah mengetahui detail pekerjaan Anda.',
+          ];
+        }
+      } else {
+        // Jawaban cukup panjang (>= 15 kata)
+        // Hitung kelengkapan indikator STAR (kata kunci aksi, dampak, angka)
+        const hasNumbers = /\d+/.test(teksBersih);
+        const hasActionWords = /(memimpin|mengembangkan|mengelola|mengoptimalkan|menganalisis|menyelesaikan|menerapkan|lead|built|managed|optimized|analyzed|solved)/i.test(teksBersih);
+        
+        let bonus = 0;
+        if (hasNumbers) bonus += 8;
+        if (hasActionWords) bonus += 7;
+        
+        dinamisSkor = Math.min(94, Math.max(65, Math.round(55 + Math.min(25, kataKandidat / 3) + bonus)));
+
+        if (bahasa === 'en') {
+          kekuatan = [
+            'Good articulation with sufficient narrative depth and relevant context.',
+            hasNumbers ? 'Includes quantitative data to substantiate accomplishments.' : 'Presents clear progression of responsibility.',
+          ];
+          peningkatan = [
+            'Further quantify long-term ROI or organizational efficiency improvements.',
+            'Ensure body language remains poised and steady when articulating technical terms.',
+          ];
+          rekomendasiBina = 'Strengthen the concluding Result: specify percentage efficiency gained, cost savings, or timeline improvements achieved.';
+          poinKunci = [
+            'Highlight strategic leadership and risk mitigation.',
+            'Maintain confident eye contact when delivering key milestones.',
+          ];
+        } else {
+          kekuatan = [
+            'Artikulasi pengalaman kerja mengalir dengan konteks situasi yang cukup jelas.',
+            hasNumbers ? 'Menyertakan data kuantitatif yang memperkuat kredibilitas pencapaian.' : 'Menjelaskan alur tanggung jawab secara teratur.',
+          ];
+          peningkatan = [
+            'Dapat diperkaya dengan metrik efisiensi jangka panjang atau penghematan sumber daya.',
+            'Pertahankan postur tubuh stabil saat mendiskusikan keputusan penting.',
+          ];
+          rekomendasiBina = 'Pertegas bagian Result: sebutkan persentase kenaikan efisiensi, nilai penghematan, atau pengakuan dari manajemen atas hasil kerja Anda.';
+          poinKunci = [
+            'Tunjukkan kepemimpinan strategis dan kehati-hatian mitigasi risiko.',
+            'Jaga kontak mata tegak dan percaya diri saat menyampaikan kesimpulan.',
+          ];
+        }
+      }
+
+      const dinamisKontakMata = Math.min(92, Math.max(68, Math.round(75 + (index % 3) * 5)));
 
       return {
         id: `eval_chat_${index + 1}`,
@@ -348,12 +481,12 @@ export function adaptasiRiwayatChatKeEvaluasi(
         skor: dinamisSkor,
         kontakMataPersen: dinamisKontakMata,
         jawabanKandidat: ptj.jawaban,
-        durasiAudioDetik: Math.max(25, Math.round(kataKandidat * 0.4)),
-        kekuatanCAR: fallback.kekuatanCAR,
-        areaPeningkatan: fallback.areaPeningkatan,
-        koreksiPosturMediaPipe: fallback.koreksiPosturMediaPipe,
-        rekomendasiJawabanBina: fallback.rekomendasiJawabanBina,
-        poinKunciBina: fallback.poinKunciBina,
+        durasiAudioDetik: Math.max(10, Math.round(kataKandidat * 0.45)),
+        kekuatanCAR: kekuatan,
+        areaPeningkatan: peningkatan,
+        koreksiPosturMediaPipe: [],
+        rekomendasiJawabanBina: rekomendasiBina,
+        poinKunciBina: poinKunci,
       };
     });
   }

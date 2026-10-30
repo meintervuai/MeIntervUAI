@@ -16,7 +16,9 @@ export interface EvaluasiI18nDict {
     judulSkorKeseluruhan: string;
     statusSangatBaik: string;
     statusBaik: string;
+    statusCukup: string;
     statusPerluLatihan: string;
+    statusTidakLolos: string;
     tagPersentil: (persen: number, bidang: string) => string;
     pilarMetrikJudul: string;
     pilarCar: string;
@@ -70,7 +72,9 @@ export const kamusEvaluasi: Record<'id' | 'en', EvaluasiI18nDict> = {
       judulSkorKeseluruhan: 'Skor Kesiapan Keseluruhan',
       statusSangatBaik: 'Sangat Baik - Siap Wawancara Kerja',
       statusBaik: 'Kompeten - Siap Bersaing',
-      statusPerluLatihan: 'Perlu Penguatan Struktur CAR',
+      statusCukup: 'Cukup - Perlu Penajaman Bukti Nyata',
+      statusPerluLatihan: 'Perlu Latihan - Struktur CAR Lemah',
+      statusTidakLolos: 'Tidak Memenuhi Standar - Jawaban Tidak Berbobot',
       tagPersentil: (persen, bidang) => `Top ${persen}% Kandidat ${bidang}`,
       pilarMetrikJudul: '4 Pilar Evaluasi Kompetensi',
       pilarCar: 'Metode CAR & Struktur',
@@ -122,7 +126,9 @@ export const kamusEvaluasi: Record<'id' | 'en', EvaluasiI18nDict> = {
       judulSkorKeseluruhan: 'Overall Readiness Score',
       statusSangatBaik: 'Excellent - Job Interview Ready',
       statusBaik: 'Competent - Strong Contender',
-      statusPerluLatihan: 'Needs CAR Structure Practice',
+      statusCukup: 'Fair - Needs Concrete Proof',
+      statusPerluLatihan: 'Needs Practice - Weak CAR Structure',
+      statusTidakLolos: 'Below Standard - Insufficient Substance',
       tagPersentil: (persen, bidang) => `Top ${persen}% ${bidang} Candidates`,
       pilarMetrikJudul: '4 Core Competency Pillars',
       pilarCar: 'CAR Method & Structure',

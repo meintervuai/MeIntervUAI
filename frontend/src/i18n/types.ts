@@ -419,6 +419,17 @@ export interface PusatBantuanKonten {
     alertTanganMenghalangi: string;
     alertTanganTidakSopan: string;
     alertPosturMiring: string;
+    // Histori Simulasi & Tab Navigasi
+    tabPersiapan: string;
+    tabHistori: string;
+    historiJudul: string;
+    historiSubjudul: string;
+    historiKosongJudul: string;
+    historiKosongDesc: string;
+    tombolLihatLaporan: string;
+    skorBadge: string;
+    tanggalSesi: string;
+    modeLabel: string;
   };
   cvBuilder: {
     judulHalaman: string;

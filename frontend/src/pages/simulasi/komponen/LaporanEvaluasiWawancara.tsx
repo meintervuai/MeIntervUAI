@@ -103,11 +103,13 @@ export const LaporanEvaluasiWawancara: React.FC<LaporanEvaluasiProps> = ({
     return bahasa === 'en' ? 'Interactive Text Mode' : 'Mode Percakapan Teks';
   }, [modeSimulasi, bahasa]);
 
-  // Penentuan status kelayakan umum
+  // Penentuan status kelayakan umum berdasarkan skor riil
   const statusLabel = useMemo(() => {
-    if (metrik.skorKeseluruhan >= 80) return dict.bento.statusSangatBaik;
+    if (metrik.skorKeseluruhan >= 85) return dict.bento.statusSangatBaik;
     if (metrik.skorKeseluruhan >= 70) return dict.bento.statusBaik;
-    return dict.bento.statusPerluLatihan;
+    if (metrik.skorKeseluruhan >= 50) return dict.bento.statusCukup;
+    if (metrik.skorKeseluruhan >= 30) return dict.bento.statusPerluLatihan;
+    return dict.bento.statusTidakLolos;
   }, [metrik.skorKeseluruhan, dict]);
 
   const tagPersentil = useMemo(() => {

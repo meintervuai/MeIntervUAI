@@ -250,5 +250,34 @@ export const api = {
     }
     return json;
   },
+
+  async simpanEvaluasiSimulasi(payload: any): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/simulasi/evaluasi/simpan`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      return {
+        status: 'galat',
+        pesan: json.detail || json.message || json.pesan || 'Gagal menyimpan evaluasi.'
+      };
+    }
+    return json;
+  },
+
+  async ambilHistoriSimulasi(pengguna_id: string): Promise<ResponApi> {
+    const res = await fetch(`${BASE_URL}/simulasi/histori/${pengguna_id}`);
+    const json = await res.json();
+    if (!res.ok) {
+      return {
+        status: 'galat',
+        pesan: json.detail || json.message || json.pesan || 'Gagal mengambil histori simulasi.'
+      };
+    }
+    return json;
+  },
 };
+
 

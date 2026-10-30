@@ -85,14 +85,14 @@ export const QuestionAccordionItem: React.FC<QuestionAccordionItemProps> = ({
           </span>
 
           <div className="min-w-0 flex-1">
-            <h4 className="text-xs sm:text-sm font-bold text-[#18181B] leading-snug tracking-tight line-clamp-2 sm:line-clamp-1">
+            <h4 className="text-xs sm:text-sm font-bold text-[#18181B] leading-snug tracking-tight text-left">
               {item.pertanyaan}
             </h4>
           </div>
         </div>
 
         {/* Skor & Badges */}
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-center mt-1 sm:mt-0">
           {/* Badge Kontak Mata MediaPipe */}
           <div
             className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-50 text-[#EA580C] border border-orange-200 text-xs font-bold"
@@ -105,9 +105,11 @@ export const QuestionAccordionItem: React.FC<QuestionAccordionItemProps> = ({
           {/* Badge Skor Jawaban */}
           <div
             className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-black border ${
-              item.skor >= 85
+              item.skor >= 75
                 ? 'bg-emerald-50 text-[#16A34A] border-emerald-200'
-                : 'bg-amber-50 text-amber-800 border-amber-200'
+                : item.skor >= 50
+                ? 'bg-amber-50 text-amber-800 border-amber-200'
+                : 'bg-rose-50 text-rose-800 border-rose-200'
             }`}
           >
             <Award className="w-3.5 h-3.5" />
@@ -140,34 +142,36 @@ export const QuestionAccordionItem: React.FC<QuestionAccordionItemProps> = ({
                 </span>
               </div>
 
-              {/* Pemutar Audio Interaktif */}
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={togglePlayAudio}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors min-h-[36px] cursor-pointer shadow-2xs ${
-                    isPlayingAudio
-                      ? 'bg-orange-600 text-white hover:bg-orange-700'
-                      : 'bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-200'
-                  }`}
-                >
-                  {isPlayingAudio ? (
-                    <>
-                      <Pause className="w-3.5 h-3.5" />
-                      <span>{dict.accordion.jedaAudio}</span>
-                    </>
-                  ) : (
-                    <>
-                      <Play className="w-3.5 h-3.5" />
-                      <span>{dict.accordion.putarAudio}</span>
-                    </>
-                  )}
-                </button>
-                <div className="flex items-center gap-1 text-[11px] font-mono text-stone-500">
-                  <Volume2 className="w-3.5 h-3.5 text-stone-400" />
-                  <span>{formatDetik(item.durasiAudioDetik)}</span>
+              {/* Pemutar Audio Interaktif (Hanya jika rekaman audio tersedia) */}
+              {item.audioSimulasiUrl && (
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={togglePlayAudio}
+                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors min-h-[36px] cursor-pointer shadow-2xs ${
+                      isPlayingAudio
+                        ? 'bg-orange-600 text-white hover:bg-orange-700'
+                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200 border border-stone-200'
+                    }`}
+                  >
+                    {isPlayingAudio ? (
+                      <>
+                        <Pause className="w-3.5 h-3.5" />
+                        <span>{dict.accordion.jedaAudio}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Play className="w-3.5 h-3.5" />
+                        <span>{dict.accordion.putarAudio}</span>
+                      </>
+                    )}
+                  </button>
+                  <div className="flex items-center gap-1 text-[11px] font-mono text-stone-500">
+                    <Volume2 className="w-3.5 h-3.5 text-stone-400" />
+                    <span>{formatDetik(item.durasiAudioDetik)}</span>
+                  </div>
                 </div>
-              </div>
+              )}
             </div>
 
             {/* Waveform / Visual Audio Bar jika sedang diputar */}

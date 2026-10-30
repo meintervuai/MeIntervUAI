@@ -560,6 +560,17 @@ export const kontenId: PusatBantuanKonten = {
     alertTanganMenghalangi: 'Jangan menghadapkan atau menutupi wajah dengan tangan agar kontak visual dengan pewawancara tetap terjaga.',
     alertTanganTidakSopan: 'Hindari gestur jari yang tidak pantas atau konfrontatif demi menjaga etika wawancara formal.',
     alertPosturMiring: 'Posisikan bahu tegak dan seimbang agar postur tubuh memancarkan rasa percaya diri.',
+    // Histori Simulasi & Tab Navigasi
+    tabPersiapan: 'Mulai Sesi Baru',
+    tabHistori: 'Histori Simulasi',
+    historiJudul: 'Histori Simulasi & Laporan Evaluasi',
+    historiSubjudul: 'Tinjau kembali rekaman percakapan dan analisis performa dari sesi wawancara sebelumnya.',
+    historiKosongJudul: 'Belum Ada Histori Simulasi',
+    historiKosongDesc: 'Anda belum menyelesaikan simulasi wawancara. Selesaikan satu sesi untuk melihat laporan evaluasi lengkap di sini.',
+    tombolLihatLaporan: 'Lihat Laporan Evaluasi',
+    skorBadge: 'Skor Akhir',
+    tanggalSesi: 'Waktu Sesi',
+    modeLabel: 'Format Sesi',
   },
   cvBuilder: {
     judulHalaman: 'Penyusun Resume Standar ATS',

@@ -479,3 +479,106 @@ async def sintesis_teks_ke_suara(data: PermintaanTTS):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Gagal sintesis teks ke suara: {str(e)}")
+
+# Memory store fallback untuk riwayat sesi & evaluasi per pengguna (BE-01 / DB-01 / UX-17)
+penyimpanan_histori_memori: Dict[str, List[Dict[str, Any]]] = {}
+
+class SimpanEvaluasiRequest(BaseModel):
+    pengguna_id: str
+    target_role: str
+    mode_simulasi: str
+    skor_keseluruhan: int
+    persentil: int
+    skor_car: int
+    skor_komunikasi: int
+    skor_teknis: int
+    skor_bahasa_tubuh: int
+    kontak_mata_rata_rata: int
+    catatan_postur: str
+    kutipan_bina: str
+    durasi_formatted: str
+    riwayat_pertanyaan: List[Dict[str, Any]]
+    riwayat_chat: Optional[List[Dict[str, Any]]] = None
+
+@router.post("/evaluasi/simpan")
+async def simpan_evaluasi_simulasi(payload: SimpanEvaluasiRequest):
+    """
+    Menyimpan laporan evaluasi hasil akhir simulasi wawancara ke basis data / store persisten.
+    """
+    eval_id = buat_id_terstruktur("eval")
+    item_histori = {
+        "id": eval_id,
+        "sesi_id": f"sesi_{int(time.time()*1000)}",
+        "pengguna_id": payload.pengguna_id,
+        "target_role": payload.target_role,
+        "mode_simulasi": payload.mode_simulasi,
+        "skor_keseluruhan": payload.skor_keseluruhan,
+        "persentil": payload.persentil,
+        "skor_car": payload.skor_car,
+        "skor_komunikasi": payload.skor_komunikasi,
+        "skor_teknis": payload.skor_teknis,
+        "skor_bahasa_tubuh": payload.skor_bahasa_tubuh,
+        "kontak_mata_rata_rata": payload.kontak_mata_rata_rata,
+        "catatan_postur": payload.catatan_postur,
+        "kutipan_bina": payload.kutipan_bina,
+        "durasi_formatted": payload.durasi_formatted,
+        "riwayat_pertanyaan": payload.riwayat_pertanyaan,
+        "riwayat_chat": payload.riwayat_chat or [],
+        "tanggal": time.strftime("%Y-%m-%d %H:%M"),
+        "dibuat_pada": time.time(),
+    }
+
+    # Coba simpan ke Supabase jika tabel tersedia
+    sb = get_supabase_client()
+    tersimpan_di_db = False
+    try:
+        sb.table("evaluasi_wawancara").insert({
+            "evaluasi_id": eval_id,
+            "pengguna_id": payload.pengguna_id,
+            "target_role": payload.target_role,
+            "mode_simulasi": payload.mode_simulasi,
+            "skor_keseluruhan": payload.skor_keseluruhan,
+            "konten_json": item_histori
+        }).execute()
+        tersimpan_di_db = True
+    except Exception as e:
+        # Fallback senyap jika tabel publik belum dimigrasi
+        pass
+
+    # Simpan di memori backend per pengguna
+    pid = payload.pengguna_id
+    if pid not in penyimpanan_histori_memori:
+        penyimpanan_histori_memori[pid] = []
+    penyimpanan_histori_memori[pid].insert(0, item_histori)
+
+    return {
+        "status": "sukses",
+        "evaluasi_id": eval_id,
+        "tersimpan_di_db": tersimpan_di_db,
+        "data": item_histori
+    }
+
+@router.get("/histori/{pengguna_id}")
+async def ambil_histori_simulasi(pengguna_id: str):
+    """
+    Mengambil daftar histori simulasi dan laporan evaluasi pengguna.
+    """
+    sb = get_supabase_client()
+    try:
+        res = sb.table("evaluasi_wawancara").select("*").eq("pengguna_id", pengguna_id).order("dibuat_pada", desc=True).execute()
+        if res.data and len(res.data) > 0:
+            histori_db = [r.get("konten_json", r) for r in res.data]
+            return {
+                "status": "sukses",
+                "histori": histori_db
+            }
+    except Exception:
+        pass
+
+    # Fallback ke memori
+    daftar_memori = penyimpanan_histori_memori.get(pengguna_id, [])
+    return {
+        "status": "sukses",
+        "histori": daftar_memori
+    }
+

@@ -17,6 +17,8 @@ import { VoiceRoomDedicated } from './komponen/VoiceRoomDedicated';
 import { VideoRoomDedicated } from './komponen/VideoRoomDedicated';
 import { TextRoomChat } from './komponen/TextRoomChat';
 import { LaporanEvaluasiWawancara } from './komponen/LaporanEvaluasiWawancara';
+import { HistoriSimulasiList, HistoriSimulasiItem } from './komponen/HistoriSimulasiList';
+import { adaptasiRiwayatChatKeEvaluasi, hitungMetrikTelemetri } from './komponen/evaluasi/evaluasiData';
 
 export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => {
   const { t } = useBahasa();
@@ -25,6 +27,19 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
   // Inisialisasi dari cache lokal browser (Stale-While-Revalidate: FE-07 / UX-17)
   const CACHE_KEY = `intervu_simulasi_kelayakan_${pengguna?.pengguna_id || 'guest'}`;
   const ACTIVE_SESSION_KEY = `intervu_simulasi_sesi_aktif_${pengguna?.pengguna_id || 'guest'}`;
+  const HISTORI_KEY = `intervu_histori_simulasi_${pengguna?.pengguna_id || 'guest'}`;
+
+  // State Tab Navigasi & Histori Sesi
+  const [tabAktif, setTabAktif] = useState<'persiapan' | 'histori'>('persiapan');
+  const [daftarHistori, setDaftarHistori] = useState<HistoriSimulasiItem[]>(() => {
+    try {
+      const raw = localStorage.getItem(HISTORI_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return [];
+  });
+  const [sedangMemuatHistori, setSedangMemuatHistori] = useState(false);
+  const [evaluasiTerpilih, setEvaluasiTerpilih] = useState<HistoriSimulasiItem | null>(null);
 
   // Cek apakah ada sesi wawancara aktif yang tersimpan di localStorage (< 4 jam yang lalu)
   const savedActiveSession = (() => {
@@ -477,15 +492,120 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
     }
   };
 
-  const tanganiAkhiriSesi = () => {
+  // Muat histori simulasi dari backend (dengan cache lokal fallback: FE-07 / UX-17)
+  const muatHistori = async () => {
+    if (!pengguna?.pengguna_id) return;
+    try {
+      setSedangMemuatHistori(true);
+      const res = await api.ambilHistoriSimulasi(pengguna.pengguna_id);
+      if (res.status === 'sukses' && Array.isArray(res.histori)) {
+        setDaftarHistori(res.histori);
+        localStorage.setItem(HISTORI_KEY, JSON.stringify(res.histori));
+      }
+    } catch (err) {
+      console.warn('Gagal memuat histori dari server, memakai cache lokal:', err);
+    } finally {
+      setSedangMemuatHistori(false);
+    }
+  };
+
+  useEffect(() => {
+    muatHistori();
+  }, [pengguna?.pengguna_id]);
+
+  const tanganiAkhiriSesi = async () => {
     if (audioPlayerRef.current) {
       audioPlayerRef.current.pause();
     }
     // Hapus sesi aktif dari localStorage karena pengguna sudah selesai/mengakhiri secara resmi
     localStorage.removeItem(ACTIVE_SESSION_KEY);
     setSesiAktif(false);
+
+    // Hitung evaluasi otomatis berbasis percakapan aktual
+    const daftarSoalEvaluasi = adaptasiRiwayatChatKeEvaluasi(daftarPesan, 'id');
+    const metrikEvaluasi = hitungMetrikTelemetri(daftarSoalEvaluasi);
+
+    const itemHistoriBaru: HistoriSimulasiItem = {
+      id: `eval_${Date.now()}`,
+      sesi_id: sesiId || `sesi_${Date.now()}`,
+      target_role: targetRole || 'Senior Candidate',
+      mode_simulasi: modeSimulasi,
+      skor_keseluruhan: metrikEvaluasi.skorKeseluruhan,
+      persentil: metrikEvaluasi.persentilKandidat,
+      skor_car: metrikEvaluasi.metodeCar,
+      skor_komunikasi: metrikEvaluasi.komunikasi,
+      skor_teknis: metrikEvaluasi.penguasaanTeknis,
+      skor_bahasa_tubuh: metrikEvaluasi.bahasaTubuh,
+      kontak_mata_rata_rata: metrikEvaluasi.kontakMataRataRata,
+      catatan_postur: metrikEvaluasi.catatanPosturDominan,
+      kutipan_bina: metrikEvaluasi.kutipanEvaluasiBina,
+      durasi_formatted: metrikEvaluasi.durasiSesiFormatted,
+      riwayat_pertanyaan: daftarSoalEvaluasi,
+      riwayat_chat: daftarPesan,
+      tanggal: new Date().toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }),
+    };
+
+    // Simpan ke local cache segera (0ms instant UI)
+    const updateHistori = [itemHistoriBaru, ...daftarHistori];
+    setDaftarHistori(updateHistori);
+    try {
+      localStorage.setItem(HISTORI_KEY, JSON.stringify(updateHistori));
+    } catch {}
+
+    // Simpan ke backend secara asinkron
+    if (pengguna?.pengguna_id) {
+      api.simpanEvaluasiSimulasi({
+        pengguna_id: pengguna.pengguna_id,
+        target_role: itemHistoriBaru.target_role,
+        mode_simulasi: itemHistoriBaru.mode_simulasi,
+        skor_keseluruhan: itemHistoriBaru.skor_keseluruhan,
+        persentil: itemHistoriBaru.persentil ?? 50,
+        skor_car: itemHistoriBaru.skor_car ?? 70,
+        skor_komunikasi: itemHistoriBaru.skor_komunikasi ?? 70,
+        skor_teknis: itemHistoriBaru.skor_teknis ?? 70,
+        skor_bahasa_tubuh: itemHistoriBaru.skor_bahasa_tubuh ?? 75,
+        kontak_mata_rata_rata: itemHistoriBaru.kontak_mata_rata_rata ?? 75,
+        catatan_postur: itemHistoriBaru.catatan_postur ?? '',
+        kutipan_bina: itemHistoriBaru.kutipan_bina ?? '',
+        durasi_formatted: itemHistoriBaru.durasi_formatted ?? '',
+        riwayat_pertanyaan: itemHistoriBaru.riwayat_pertanyaan ?? [],
+        riwayat_chat: daftarPesan,
+      }).catch((e) => console.warn('Penyimpanan evaluasi backend tertunda:', e));
+    }
+
     setTampilkanEvaluasi(true);
   };
+
+  if (evaluasiTerpilih) {
+    return (
+      <LaporanEvaluasiWawancara
+        targetRole={evaluasiTerpilih.target_role}
+        modeSimulasi={evaluasiTerpilih.mode_simulasi}
+        riwayatChat={evaluasiTerpilih.riwayat_chat || []}
+        skorTelemetri={{
+          skorKeseluruhan: evaluasiTerpilih.skor_keseluruhan,
+          persentilKandidat: evaluasiTerpilih.persentil,
+          metodeCar: evaluasiTerpilih.skor_car,
+          komunikasi: evaluasiTerpilih.skor_komunikasi,
+          penguasaanTeknis: evaluasiTerpilih.skor_teknis,
+          bahasaTubuh: evaluasiTerpilih.skor_bahasa_tubuh,
+          kontakMataRataRata: evaluasiTerpilih.kontak_mata_rata_rata,
+          catatanPosturDominan: evaluasiTerpilih.catatan_postur,
+          kutipanEvaluasiBina: evaluasiTerpilih.kutipan_bina,
+          durasiSesiFormatted: evaluasiTerpilih.durasi_formatted,
+        }}
+        onKembaliKeStudio={() => {
+          setEvaluasiTerpilih(null);
+        }}
+      />
+    );
+  }
 
   if (tampilkanEvaluasi) {
     return (
@@ -561,18 +681,49 @@ export const SimulasiWawancara: React.FC<{ pengguna: any }> = ({ pengguna }) => 
 
       {/* TAMPILAN BERDASARKAN STATUS SESI & FORMAT */}
       {!sesiAktif ? (
-        <FormPersiapanSimulasi
-          targetRole={targetRole}
-          setTargetRole={setTargetRole}
-          modeSimulasi={modeSimulasi}
-          setModeSimulasi={setModeSimulasi}
-          daftarRoleSaran={daftarRoleSaran}
-          kelayakan={kelayakan}
-          sedangMemeriksaKelayakan={sedangMemeriksaKelayakan}
-          sedangMemuatMulai={sedangMemuatMulai}
-          saldoTokenPengguna={saldoTokenState}
-          onMulaiSesi={tanganiMulaiSesi}
-        />
+        tabAktif === 'histori' ? (
+          <div className="space-y-6">
+            {/* Switcher Tab Navigasi */}
+            <div className="flex items-center gap-2 p-1 bg-stone-100/90 rounded-2xl w-fit border border-stone-200/80 shadow-2xs">
+              <button
+                type="button"
+                onClick={() => setTabAktif('persiapan')}
+                className="px-4 py-2 rounded-xl text-xs font-bold transition-all min-h-[40px] cursor-pointer text-stone-600 hover:text-stone-900"
+              >
+                {t.simulasiWawancara.tabPersiapan}
+              </button>
+              <button
+                type="button"
+                onClick={() => setTabAktif('histori')}
+                className="px-4 py-2 rounded-xl text-xs font-bold transition-all min-h-[40px] cursor-pointer bg-white text-stone-900 shadow-xs border border-stone-200/60"
+              >
+                {t.simulasiWawancara.tabHistori}
+              </button>
+            </div>
+
+            <HistoriSimulasiList
+              daftarHistori={daftarHistori}
+              sedangMemuat={sedangMemuatHistori}
+              onPilihItem={(item) => setEvaluasiTerpilih(item)}
+              onMulaiBaru={() => setTabAktif('persiapan')}
+            />
+          </div>
+        ) : (
+          <FormPersiapanSimulasi
+            targetRole={targetRole}
+            setTargetRole={setTargetRole}
+            modeSimulasi={modeSimulasi}
+            setModeSimulasi={setModeSimulasi}
+            daftarRoleSaran={daftarRoleSaran}
+            kelayakan={kelayakan}
+            sedangMemeriksaKelayakan={sedangMemeriksaKelayakan}
+            sedangMemuatMulai={sedangMemuatMulai}
+            saldoTokenPengguna={saldoTokenState}
+            onMulaiSesi={tanganiMulaiSesi}
+            tabAktif={tabAktif}
+            setTabAktif={setTabAktif}
+          />
+        )
       ) : modeSimulasi === 'video' ? (
         <VideoRoomDedicated
           targetRole={targetRole}

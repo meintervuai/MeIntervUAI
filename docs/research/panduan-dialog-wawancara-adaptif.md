@@ -85,3 +85,17 @@ Modul live video mengintegrasikan evaluasi non-verbal berbasis MediaPipe Tasks V
    - Gestur Tidak Sopan / Konfrontatif (gestur_tidak_sopan)
    - Menutupi Wajah / Kamera (menghalangi_kamera)
    - Menyentuh Wajah / Menopang Dagu (menyentuh_wajah)
+
+---
+
+## 5. Standar Laporan Evaluasi Wawancara & Histori Simulasi
+
+1. **Evaluasi Berbasis Jawaban Nyata**:
+   - Sistem wajib mengevaluasi percakapan riil kandidat, bukan template fallback fiktif multi-entitas akuntansi jika user telah menjawab sesi.
+   - Jawaban asal-asalan, ngawur, atau sangat singkat (< 10 kata) menerima skor rendah proporsional (15 - 45) dengan evaluasi tajam mengenai hilangnya struktur CAR/STAR.
+2. **Ketiadaan Audio Player Fiktif**:
+   - Karena rekaman audio suara kandidat tidak disimpan permanen di server demi privasi, tombol pemutar audio transkrip tidak dimunculkan jika berkas audio tidak ada.
+3. **Penyimpanan Histori Sesi (Multi-Tier Storage: Supabase & Local Cache)**:
+   - Setiap sesi yang diakhiri disimpan secara otomatis ke tabel `evaluasi_wawancara` di backend dan dicadangkan ke cache lokal browser (`intervu_histori_simulasi_${pengguna_id}`).
+   - Pengguna dapat membuka kembali laporan evaluasi lengkap kapan saja melalui tab **Histori Simulasi** di studio wawancara.
+

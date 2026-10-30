@@ -34,6 +34,8 @@ interface PropertiFormPersiapan {
   sedangMemuatMulai: boolean;
   saldoTokenPengguna?: number;
   onMulaiSesi: () => void;
+  tabAktif: 'persiapan' | 'histori';
+  setTabAktif: (tab: 'persiapan' | 'histori') => void;
 }
 
 export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
@@ -47,6 +49,8 @@ export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
   sedangMemuatMulai,
   saldoTokenPengguna,
   onMulaiSesi,
+  tabAktif,
+  setTabAktif,
 }) => {
   const { t } = useBahasa();
 
@@ -57,6 +61,32 @@ export const FormPersiapanSimulasi: React.FC<PropertiFormPersiapan> = ({
 
   return (
     <div className="space-y-6 animate-fadeIn">
+      {/* Switcher Tab Navigasi: Mulai Sesi Baru | Histori Simulasi */}
+      <div className="flex items-center gap-2 p-1 bg-stone-100/90 rounded-2xl w-fit border border-stone-200/80 shadow-2xs">
+        <button
+          type="button"
+          onClick={() => setTabAktif('persiapan')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all min-h-[40px] cursor-pointer ${
+            tabAktif === 'persiapan'
+              ? 'bg-white text-stone-900 shadow-xs border border-stone-200/60'
+              : 'text-stone-600 hover:text-stone-900'
+          }`}
+        >
+          {t.simulasiWawancara.tabPersiapan}
+        </button>
+        <button
+          type="button"
+          onClick={() => setTabAktif('histori')}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all min-h-[40px] cursor-pointer ${
+            tabAktif === 'histori'
+              ? 'bg-white text-stone-900 shadow-xs border border-stone-200/60'
+              : 'text-stone-600 hover:text-stone-900'
+          }`}
+        >
+          {t.simulasiWawancara.tabHistori}
+        </button>
+      </div>
+
       {/* KONDISI 1: SKELETON SHIMMER LOADING (FE-07 / UX-17) */}
       {sedangMemeriksaKelayakan ? (
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 p-6 sm:p-8 rounded-3xl bg-white border border-stone-200/80 shadow-xs animate-pulse">

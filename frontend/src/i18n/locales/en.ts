@@ -560,6 +560,17 @@ export const kontenEn: PusatBantuanKonten = {
     alertTanganMenghalangi: 'Keep your hands away from obstructing your face to maintain clear visual engagement.',
     alertTanganTidakSopan: 'Please maintain professional hand conduct and avoid inappropriate or confrontational finger gestures.',
     alertPosturMiring: 'Keep your shoulders straight and balanced to project confidence and poise.',
+    // Histori Simulasi & Tab Navigasi
+    tabPersiapan: 'Start New Session',
+    tabHistori: 'Simulation History',
+    historiJudul: 'Simulation History & Scorecards',
+    historiSubjudul: 'Review previous interview transcripts and detailed AI competency evaluations.',
+    historiKosongJudul: 'No Simulation History Yet',
+    historiKosongDesc: 'You have not completed any interview simulations yet. Complete a session to see your evaluation reports here.',
+    tombolLihatLaporan: 'View Evaluation Report',
+    skorBadge: 'Final Score',
+    tanggalSesi: 'Session Date',
+    modeLabel: 'Session Format',
   },
   cvBuilder: {
     judulHalaman: 'ATS-Standard Resume Builder',

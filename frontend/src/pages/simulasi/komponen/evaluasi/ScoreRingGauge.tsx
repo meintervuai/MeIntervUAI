@@ -24,9 +24,16 @@ export const ScoreRingGauge: React.FC<ScoreRingGaugeProps> = ({
   const progressClamped = Math.min(100, Math.max(0, skor));
   const offset = keliling - (progressClamped / 100) * keliling;
 
-  // Warna adaptif skor (skor >= 80 hijau terakreditasi, < 80 amber oranye)
-  const warnaStroke = skor >= 80 ? '#16A34A' : '#EA580C';
-  const warnaBgRing = skor >= 80 ? '#DCFCE7' : '#FFEDD5';
+  // Warna adaptif skor (skor >= 80 hijau, 60-79 amber/orange, < 60 rose merah)
+  const warnaStroke = skor >= 75 ? '#16A34A' : skor >= 50 ? '#EA580C' : '#E11D48';
+  const warnaBgRing = skor >= 75 ? '#DCFCE7' : skor >= 50 ? '#FFEDD5' : '#FFE4E6';
+
+  const badgeStyle =
+    skor >= 75
+      ? 'bg-emerald-50 border-emerald-200/80 text-emerald-800'
+      : skor >= 50
+      ? 'bg-amber-50 border-amber-200/80 text-amber-800'
+      : 'bg-rose-50 border-rose-200/80 text-rose-800';
 
   return (
     <div className="flex flex-col items-center text-center p-5 sm:p-6 bg-white rounded-2xl border border-[#E5E7EB] shadow-2xs h-full justify-between">
@@ -90,7 +97,7 @@ export const ScoreRingGauge: React.FC<ScoreRingGaugeProps> = ({
 
       {/* Status Kelayakan & Tag Persentil */}
       <div className="w-full space-y-2 pt-2">
-        <div className="inline-flex items-center px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs sm:text-sm font-extrabold shadow-2xs">
+        <div className={`inline-flex items-center px-3.5 py-1.5 rounded-full border text-xs sm:text-sm font-extrabold shadow-2xs ${badgeStyle}`}>
           <span>{statusLabel}</span>
         </div>
         <p className="text-xs text-stone-600 font-medium">
